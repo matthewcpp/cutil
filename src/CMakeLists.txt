@@ -1,5 +1,6 @@
 set(cutil_sources
     vector.c
+    list.c
 )
 
 add_library (cutil ${cutil_sources})
