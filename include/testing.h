@@ -3,7 +3,7 @@
 
 #include "vector.h"
 
-typedef void(*cutil_test_function)(void);
+typedef void(*cutil_test_function)();
 
 void cutil_testing_init();
 
