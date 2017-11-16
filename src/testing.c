@@ -39,11 +39,11 @@ void _cutil_testing_system_init(void) {
 }
 
 void _cutil_testing_system_destroy(void) {
-	_cutil_test_entry *entry;
+	_cutil_test_suite *suite;
 	for (unsigned int i = 0; i < test_system->_suites.size; i++) {
-		cutil_vector_getp(&test_system->_suites, i, (void**)&entry);
-		_cutil_testing_entry_destroy(entry);
-		free(entry);
+		cutil_vector_getp(&test_system->_suites, i, (void**)&suite);
+        _cutil_testing_suite_destroy(suite);
+		free(suite);
 	}
 	cutil_vector_destroy(&test_system->_suites);
 }
@@ -63,6 +63,8 @@ void _cutil_testing_suite_destroy(_cutil_test_suite *test_suite) {
 	_cutil_test_entry *test_entry;
 	for (unsigned int i = 0; i < test_suite->_tests.size; i++) {
 		cutil_vector_getp(&test_suite->_tests, i, (void**)&test_entry);
+        _cutil_testing_entry_destroy(test_entry);
+        free(test_entry);
 	}
 }
 
@@ -87,7 +89,7 @@ void _cutil_testing_entry_destroy(_cutil_test_entry *test_entry) {
 	}
 }
 
-void cutil_test_init() {
+void cutil_testing_init() {
 	if (!test_system) {
 		test_system = malloc(sizeof(_cutil_test_system));
 		_cutil_testing_system_init();
@@ -96,13 +98,14 @@ void cutil_test_init() {
 
 void cutil_testing_destroy() {
 	if (test_system) {
+        _cutil_testing_system_destroy();
 		free(test_system);
 		test_system = NULL;
 	}
 }
 
 void cutil_testing_suite(const char *name) {
-	cutil_test_init();
+    cutil_testing_init();
 
 	_cutil_test_suite * new_suite = _cutil_testing_suite_create(name);
 	cutil_vector_pushp(&test_system->_suites, new_suite);
@@ -111,7 +114,7 @@ void cutil_testing_suite(const char *name) {
 }
 
 void cutil_testing_add(const char *test_name, cutil_test_function test_func) {
-	cutil_test_init();
+    cutil_testing_init();
 
 	if (!test_system->_current_suite) {
 		cutil_testing_suite("Default");
@@ -132,8 +135,8 @@ int cutil_testing_run_all() {
 		printf("Test Suite: %s\n", current_suite->name);
 		printf("-----------------------------------\n");
 
-		for (unsigned int j = 0; j < current_suite->_tests.size; i++) {
-			cutil_vector_getp(&current_suite->_tests, j, (void**)&current_test);
+		for (unsigned int t = 0; t < current_suite->_tests.size; t++) {
+			cutil_vector_getp(&current_suite->_tests, t, (void**)&current_test);
 			test_system->_current_test = current_test;
 
 			printf("Test: %s\n", current_test->test_name);
@@ -156,7 +159,10 @@ int cutil_testing_run_all() {
 	printf("Tests Passed: %d\n", test_pass_count);
 	printf("Tests Failed: %d\n", test_fail_count);
 
-	return test_fail_count == 0;
+	if (test_fail_count > 0)
+        return 1;
+    else
+        return 0;
 }
 
 int _cutil_testing_assert_ieq(const char *exppression_str, int expected, int result) {
