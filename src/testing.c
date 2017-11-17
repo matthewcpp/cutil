@@ -31,6 +31,8 @@ void _cutil_testing_suite_destroy(_cutil_test_suite *test_suite);
 _cutil_test_entry *_cutil_testing_entry_create(const char *test_name, cutil_test_function test_func);
 void _cutil_testing_entry_destroy(_cutil_test_entry *test_entry);
 char *_str_cpy(const char *src);
+int _cutil_run_test_suites(cutil_vector *test_suites);
+_cutil_test_suite *_cutil_get_test_suite(const char *name);
 
 void _cutil_testing_system_init(void) {
 	cutil_vector_initp(&test_system->_suites);
@@ -124,50 +126,152 @@ void cutil_testing_add(const char *test_name, cutil_test_function test_func) {
 	cutil_vector_pushp(&test_system->_current_suite->_tests, test_entry);
 }
 
-int cutil_testing_run_all() {
-	int test_pass_count = 0;
-	int test_fail_count = 0;
-	_cutil_test_entry *current_test;
-	_cutil_test_suite *current_suite;
+int cutil_testing_run_suites(const char* suite_list) {
+	cutil_vector suites;
+	cutil_vector_initp(&suites);
 
-	for (unsigned int i = 0; i < test_system->_suites.size; i++) {
-		cutil_vector_getp(&test_system->_suites, i, (void**)&current_suite);
-		printf("Test Suite: %s\n", current_suite->name);
-		printf("-----------------------------------\n");
+	size_t len = strlen(suite_list);
+	size_t start = 0;
+	char suite_name[256];
+	
 
-		for (unsigned int t = 0; t < current_suite->_tests.size; t++) {
-			cutil_vector_getp(&current_suite->_tests, t, (void**)&current_test);
-			test_system->_current_test = current_test;
+	for (size_t i = 0; i < len; i++) {
+		if (suite_list[i] == ';') {
+			size_t str_size = min(i - start, 255);
 
-			printf("Test: %s\n", current_test->test_name);
-			current_test->test_func();
+			memset(suite_name, 0, 256);
+			strncpy(suite_name, suite_list + start, str_size);
 
-			if (current_test->test_result == 0) {
-				printf("Result: PASSED\n");
-				test_pass_count += 1;
-			}
-			else {
-				printf("Result: FAILED\n");
-				test_fail_count += 1;
+			start = i + 1;
+
+			_cutil_test_suite *test_suite = _cutil_get_test_suite(suite_name);
+
+			if (test_suite) {
+				cutil_vector_pushp(&suites, test_suite);
 			}
 		}
 	}
 
-	printf("\n-----------------------------------\n");
-	printf("TestResults:\n");
-	printf("Total Tests: %d\n", test_pass_count + test_fail_count);
-	printf("Tests Passed: %d\n", test_pass_count);
-	printf("Tests Failed: %d\n", test_fail_count);
+	if (start < len) {
+		size_t str_size = min(len - start, 255);
 
-	if (test_fail_count > 0)
-        return 1;
-    else
-        return 0;
+		memset(suite_name, 0, 256);
+		strncpy(suite_name, suite_list + start, str_size);
+
+		_cutil_test_suite *test_suite = _cutil_get_test_suite(suite_name);
+
+		if (test_suite) {
+			cutil_vector_pushp(&suites, test_suite);
+		}
+	}
+
+
+	int result = _cutil_run_test_suites(&suites);
+
+	cutil_vector_destroy(&suites);
+
+	return result;
 }
 
-int _cutil_testing_assert_ieq(const char *exppression_str, int expected, int result) {
+int _cutil_testing_process_suite(_cutil_test_suite *current_suite, int* out_pass_count, int* out_fail_count) {
+	int test_pass_count = 0;
+	int test_fail_count = 0;
+	_cutil_test_entry *current_test;
+
+	printf("Test Suite: %s\n", current_suite->name);
+	printf("-----------------------------------\n");
+
+	for (unsigned int t = 0; t < current_suite->_tests.size; t++) {
+		cutil_vector_getp(&current_suite->_tests, t, (void**)&current_test);
+		test_system->_current_test = current_test;
+
+		printf("Test: %s\n", current_test->test_name);
+		current_test->test_func();
+
+		if (current_test->test_result == 0) {
+			printf("Result: PASSED\n");
+			test_pass_count += 1;
+		}
+		else {
+			printf("Result: FAILED\n");
+			test_fail_count += 1;
+		}
+	}
+
+	*out_pass_count = test_pass_count;
+	*out_fail_count = test_fail_count;
+
+	if (test_fail_count > 0)
+		return 1;
+	else
+		return 0;
+}
+
+void _cutil_print_results(int total_pass_count, int total_fail_count) {
+	printf("\n-----------------------------------\n");
+	printf("TestResults:\n");
+	printf("Total Tests: %d\n", total_pass_count + total_fail_count);
+	printf("Tests Passed: %d\n", total_pass_count);
+	printf("Tests Failed: %d\n", total_fail_count);
+}
+
+int _cutil_run_test_suites(cutil_vector *test_suites) {
+	int total_pass_count = 0;
+	int total_fail_count = 0;
+	_cutil_test_suite *current_suite;
+
+	for (unsigned int i = 0; i < test_suites->size; i++) {
+		cutil_vector_getp(test_suites, i, (void**)&current_suite);
+
+		int suite_pass_count = 0;
+		int suite_fail_count = 0;
+
+		_cutil_testing_process_suite(current_suite, &suite_pass_count, &suite_fail_count);
+
+		total_pass_count += suite_pass_count;
+		total_fail_count += suite_fail_count;
+	}
+
+	_cutil_print_results(total_pass_count, total_fail_count);
+
+	if (total_fail_count > 0)
+		return 1;
+	else
+		return 0;
+}
+
+int cutil_testing_run_all() {
+	return _cutil_run_test_suites(&test_system->_suites);
+}
+
+_cutil_test_suite *_cutil_get_test_suite(const char *name) {
+	_cutil_test_suite *test_suite = NULL;
+
+	for (unsigned int i = 0; i < test_system->_suites.size; i++) {
+		cutil_vector_getp(&test_system->_suites, i, (void**)&test_suite);
+
+		if (strcmp(test_suite->name, name) == 0) {
+			return test_suite;
+		}
+	}
+
+	return NULL;
+}
+
+int _cutil_testing_assert_int_eq(const char *exppression_str, int expected, int result) {
 	if (expected != result) {
 		printf("Assertion: %s Expected: %i Actual: %i\n", exppression_str, expected, result);
+		test_system->_current_test->test_result = 1;
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
+
+int _cutil_testing_assert_ptr_eq(const char *exppression_str, void* expected, void* result) {
+	if (expected != result) {
+		printf("Assertion: %s Expected: %p Actual: %p\n", exppression_str, expected, result);
 		test_system->_current_test->test_result = 1;
 		return 1;
 	}

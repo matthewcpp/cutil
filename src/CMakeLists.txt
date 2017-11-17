@@ -1,11 +1,14 @@
 set(cutil_sources
+	../include/vector.h
     vector.c
+	../include/list.h
     list.c
 )
 
 add_library (cutil ${cutil_sources})
 
 set(testing_sources
+	../include/testing.h
     testing.c
 )
 
