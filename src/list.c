@@ -28,6 +28,10 @@ void cutil_list_clear(cutil_list* list) {
 		free(node_to_delete);
 		node_to_delete = next_node;
 	}
+
+	list->size = 0;
+	list->front = NULL;
+	list->back = NULL;
 }
 
 cutil_list_node* cutil_list_node_create(unsigned int item_size) {
@@ -49,12 +53,34 @@ void cutil_list_push_front(cutil_list* list, void *data) {
 	}
 
 	list->front = new_node;
+
+	if (list->back == NULL) {
+		list->back = list->front;
+	}
+
 	list->size += 1;
+}
+
+void cutil_list_push_frontp(cutil_list* list, void *data) {
+	uintptr_t int_ptr = (uintptr_t)data;
+	cutil_list_push_front(list, &int_ptr);
 }
 
 bool cutil_list_get_front(cutil_list* list, void *data) {
 	if (list->front) {
-		memcpy(data, list->front, list->_item_size);
+		memcpy(data, list->front->data, list->_item_size);
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+bool cutil_list_get_frontp(cutil_list* list, void **data) {
+	uintptr_t ptr;
+
+	if (cutil_list_get_front(list, &ptr)) {
+		*data = (void*)ptr;
 		return true;
 	}
 	else {
@@ -64,7 +90,19 @@ bool cutil_list_get_front(cutil_list* list, void *data) {
 
 bool cutil_list_get_back(cutil_list* list, void *data) {
 	if (list->back) {
-		memcpy(data, list->front, list->_item_size);
+		memcpy(data, list->back->data, list->_item_size);
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+bool cutil_list_get_backp(cutil_list* list, void **data) {
+	uintptr_t ptr;
+
+	if (cutil_list_get_back(list, &ptr)) {
+		*data = (void*)ptr;
 		return true;
 	}
 	else {
@@ -82,13 +120,31 @@ void cutil_list_push_back(cutil_list* list, void *data) {
 	}
 
 	list->back = new_node;
+
+	if (list->front == NULL) {
+		list->front = list->back;
+	}
+
 	list->size += 1;
+}
+
+void cutil_list_push_backp(cutil_list* list, void *data) {
+	uintptr_t int_ptr = (uintptr_t)data;
+	cutil_list_push_back(list, &int_ptr);
 }
 
 void cutil_list_pop_front(cutil_list* list) {
 	if (list->front) {
 		cutil_list_node* node_to_delete = list->front;
 		list->front = list->front->next;
+
+		if (list->front) {
+			list->front->prev = NULL;
+		}
+
+		if (list->back == node_to_delete) {
+			list->back = NULL;
+		}
 
 		free(node_to_delete);
 		list->size -= 1;
@@ -99,6 +155,14 @@ void cutil_list_pop_back(cutil_list* list) {
 	if (list->back) {
 		cutil_list_node* node_to_delete = list->back;
 		list->back = list->back->prev;
+
+		if (list->back) {
+			list->back->next = NULL;
+		}
+
+		if (list->front == node_to_delete) {
+			list->front = NULL;
+		}
 
 		free(node_to_delete);
 		list->size -= 1;

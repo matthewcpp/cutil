@@ -23,8 +23,14 @@ void cutil_list_clear(cutil_list* list);
 
 void cutil_list_pop_front(cutil_list* list);
 bool cutil_list_get_front(cutil_list* list, void *data);
+bool cutil_list_get_frontp(cutil_list* list, void **data);
+
 void cutil_list_pop_back(cutil_list* list);
 bool cutil_list_get_back(cutil_list* list, void *data);
+bool cutil_list_get_backp(cutil_list* list, void **data);
 
 void cutil_list_push_front(cutil_list* list, void *data);
+void cutil_list_push_frontp(cutil_list* list, void *data);
+
 void cutil_list_push_back(cutil_list* list, void *data);
+void cutil_list_push_backp(cutil_list* list, void *data);
