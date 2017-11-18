@@ -14,10 +14,26 @@ int cutil_testing_run_suites(const char* suite_list);
 void cutil_testing_destroy();
 
 int _cutil_testing_assert_int_eq(const char *exppression_str, int expected, int result);
+int _cutil_testing_assert_float_eq(const char *exppression_str, float expected, float result);
 int _cutil_testing_assert_ptr_eq(const char *exppression_str, void* expected, void* result);
+int _cutil_testing_assert_ptr_not_eq(const char *ptr1_str, void* ptr1, void* ptr2);
+int _cutil_testing_assert_ptr_null(const char *exppression_str, void* ptr);
+int _cutil_testing_assert_ptr_not_null(const char *exppression_str, void* ptr);
 
 #define CUTIL_TESTING_ASSERT_INT_EQ(EXP, VAL) \
 	if (_cutil_testing_assert_int_eq(#EXP, VAL, (EXP))) return;
 
+#define CUTIL_TESTING_ASSERT_FLOAT_EQ(EXP, VAL) \
+	if (_cutil_testing_assert_float_eq(#EXP, VAL, (EXP))) return;
+
 #define CUTIL_TESTING_ASSERT_PTR_EQ(EXP, VAL) \
 	if (_cutil_testing_assert_ptr_eq(#EXP, VAL, (EXP))) return;
+
+#define CUTIL_TESTING_ASSERT_PTR_NOT_EQ(PTR1, PTR2) \
+	if (_cutil_testing_assert_ptr_not_eq(#PTR1, (PTR1), (PTR2))) return;
+
+#define CUTIL_TESTING_ASSERT_PTR_NULL(EXP) \
+	if (_cutil_testing_assert_ptr_null(#EXP, (EXP))) return;
+
+#define CUTIL_TESTING_ASSERT_PTR_NOT_NULL(EXP) \
+	if (_cutil_testing_assert_ptr_not_null(#EXP, (EXP))) return;

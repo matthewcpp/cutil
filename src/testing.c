@@ -269,6 +269,17 @@ int _cutil_testing_assert_int_eq(const char *exppression_str, int expected, int 
 	}
 }
 
+int _cutil_testing_assert_float_eq(const char *exppression_str, float expected, float result) {
+	if (expected != result) {
+		printf("Assertion: %s Expected: %f Actual: %f\n", exppression_str, expected, result);
+		test_system->_current_test->test_result = 1;
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
+
 int _cutil_testing_assert_ptr_eq(const char *exppression_str, void* expected, void* result) {
 	if (expected != result) {
 		printf("Assertion: %s Expected: %p Actual: %p\n", exppression_str, expected, result);
@@ -278,6 +289,36 @@ int _cutil_testing_assert_ptr_eq(const char *exppression_str, void* expected, vo
 	else {
 		return 0;
 	}
+}
+
+int _cutil_testing_assert_ptr_null(const char *exppression_str, void* ptr) {
+	if (ptr != NULL) {
+		printf("Assertion: %s Expected: NULL Actual: %p\n", exppression_str, ptr);
+		test_system->_current_test->test_result = 1;
+		return 1;
+	}
+
+	return 0;
+}
+
+int _cutil_testing_assert_ptr_not_null(const char *exppression_str, void* ptr) {
+	if (ptr == NULL) {
+		printf("Assertion:  Expected: %s to be non-NULL\n", exppression_str);
+		test_system->_current_test->test_result = 1;
+		return 1;
+	}
+
+	return 0;
+}
+
+int _cutil_testing_assert_ptr_not_eq(const char *ptr1_str, void* ptr1, void* ptr2) {
+	if (ptr1 == ptr2) {
+		printf("Assertion:  Expected: %s to not equal %p\n", ptr1_str, ptr2);
+		test_system->_current_test->test_result = 1;
+		return 1;
+	}
+
+	return 0;
 }
 
 char *_str_cpy(const char *src) {
