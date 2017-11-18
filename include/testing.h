@@ -7,11 +7,12 @@ typedef void(*cutil_test_function)();
 
 void cutil_testing_init();
 
-void cutil_testing_add(const char *test_name, cutil_test_function test_func);
 void cutil_testing_suite(const char *name);
 int cutil_testing_run_all();
 int cutil_testing_run_suites(const char* suite_list);
 void cutil_testing_destroy();
+
+void _cutil_testing_add(const char *test_name, cutil_test_function test_func);
 
 int _cutil_testing_assert_int_eq(const char *exppression_str, int expected, int result);
 int _cutil_testing_assert_float_eq(const char *exppression_str, float expected, float result);
@@ -19,6 +20,9 @@ int _cutil_testing_assert_ptr_eq(const char *exppression_str, void* expected, vo
 int _cutil_testing_assert_ptr_not_eq(const char *ptr1_str, void* ptr1, void* ptr2);
 int _cutil_testing_assert_ptr_null(const char *exppression_str, void* ptr);
 int _cutil_testing_assert_ptr_not_null(const char *exppression_str, void* ptr);
+
+#define CUTIL_TESTING_ADD(FUNC) \
+	_cutil_testing_add(#FUNC, &FUNC);
 
 #define CUTIL_TESTING_ASSERT_INT_EQ(EXP, VAL) \
 	if (_cutil_testing_assert_int_eq(#EXP, VAL, (EXP))) return;

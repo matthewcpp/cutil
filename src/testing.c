@@ -115,7 +115,7 @@ void cutil_testing_suite(const char *name) {
 	test_system->_current_suite = new_suite;
 }
 
-void cutil_testing_add(const char *test_name, cutil_test_function test_func) {
+void _cutil_testing_add(const char *test_name, cutil_test_function test_func) {
     cutil_testing_init();
 
 	if (!test_system->_current_suite) {
