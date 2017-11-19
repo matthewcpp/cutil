@@ -4,19 +4,66 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <assert.h>
+
+cutil_list *cutil_list_create(unsigned int item_size) {
+	cutil_list *list = malloc(sizeof(cutil_list));
+	cutil_list_init(list, item_size);
+
+#ifdef _DEBUG
+	list->_debug_malloc = true;
+	list->_debug_ptr = false;
+#endif
+
+	return list;
+}
+
+cutil_list *cutil_list_createp() {
+#ifdef _DEBUG
+	cutil_list * list = cutil_list_create(sizeof(uintptr_t));
+	list->_debug_ptr = true;
+
+	return list;
+#else
+	return cutil_list_create(sizeof(uintptr_t));
+#endif
+	
+}
 
 void cutil_list_init(cutil_list * list, unsigned int item_size) {
 	list->size = 0;
 	list->front = NULL;
 	list->back = NULL;
 	list->_item_size = item_size;
+
+#ifdef _DEBUG
+	list->_debug_malloc = false;
+	list->_debug_ptr = false;
+#endif
 }
 
 void cutil_list_initp(cutil_list * list) {
 	cutil_list_init(list, sizeof(uintptr_t));
+
+#ifdef _DEBUG
+	list->_debug_ptr = true;
+#endif
 }
 
 void cutil_list_destroy(cutil_list* list) {
+#ifdef _DEBUG
+	assert(list->_debug_malloc);
+#endif
+
+	cutil_list_clear(list);
+	free(list);
+}
+
+void cutil_list_uninit(cutil_list* list) {
+#ifdef _DEBUG
+	assert(!list->_debug_malloc);
+#endif
+
 	cutil_list_clear(list);
 }
 
@@ -62,6 +109,10 @@ void cutil_list_push_front(cutil_list* list, void *data) {
 }
 
 void cutil_list_push_frontp(cutil_list* list, void *data) {
+#ifdef _DEBUG
+	assert(list->_debug_ptr);
+#endif
+
 	uintptr_t int_ptr = (uintptr_t)data;
 	cutil_list_push_front(list, &int_ptr);
 }
@@ -77,6 +128,10 @@ bool cutil_list_get_front(cutil_list* list, void *data) {
 }
 
 bool cutil_list_get_frontp(cutil_list* list, void **data) {
+#ifdef _DEBUG
+	assert(list->_debug_ptr);
+#endif
+
 	uintptr_t ptr;
 
 	if (cutil_list_get_front(list, &ptr)) {
@@ -99,6 +154,10 @@ bool cutil_list_get_back(cutil_list* list, void *data) {
 }
 
 bool cutil_list_get_backp(cutil_list* list, void **data) {
+#ifdef _DEBUG
+	assert(list->_debug_ptr);
+#endif
+
 	uintptr_t ptr;
 
 	if (cutil_list_get_back(list, &ptr)) {
@@ -129,6 +188,10 @@ void cutil_list_push_back(cutil_list* list, void *data) {
 }
 
 void cutil_list_push_backp(cutil_list* list, void *data) {
+#ifdef _DEBUG
+	assert(list->_debug_ptr);
+#endif
+
 	uintptr_t int_ptr = (uintptr_t)data;
 	cutil_list_push_back(list, &int_ptr);
 }

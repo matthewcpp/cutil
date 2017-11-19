@@ -258,6 +258,28 @@ _cutil_test_suite *_cutil_get_test_suite(const char *name) {
 	return NULL;
 }
 
+int _cutil_testing_assert_true(const char *exppression_str, bool result) {
+	if (!result) {
+		printf("Assertion: Expected: %s to be true\n", exppression_str);
+		test_system->_current_test->test_result = 1;
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
+
+int _cutil_testing_assert_false(const char *exppression_str, bool result) {
+	if (result) {
+		printf("Assertion: Expected: %s to be false\n", exppression_str);
+		test_system->_current_test->test_result = 1;
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
+
 int _cutil_testing_assert_int_eq(const char *exppression_str, int expected, int result) {
 	if (expected != result) {
 		printf("Assertion: %s Expected: %i Actual: %i\n", exppression_str, expected, result);

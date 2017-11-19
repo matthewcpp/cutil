@@ -11,6 +11,8 @@ void list_init_size_0(){
     cutil_list_init(&list, sizeof(int));
 
     CUTIL_TESTING_ASSERT_INT_EQ(list.size, 0);
+
+	cutil_list_uninit(&list);
 }
 
 // Initializing a list sets front and back to NULL
@@ -20,6 +22,8 @@ void list_init_null_pointers() {
 
 	CUTIL_TESTING_ASSERT_PTR_NULL(list.front);
 	CUTIL_TESTING_ASSERT_PTR_NULL(list.back);
+
+	cutil_list_uninit(&list);
 }
 
 // Clearing a list sets front and back to NULL
@@ -35,6 +39,8 @@ void list_clear_null_pointers() {
 
 	CUTIL_TESTING_ASSERT_PTR_NULL(list.front);
 	CUTIL_TESTING_ASSERT_PTR_NULL(list.back);
+
+	cutil_list_uninit(&list);
 }
 
 // Clearing an empty list does nothing
@@ -46,6 +52,8 @@ void list_clear_empty() {
 
 	CUTIL_TESTING_ASSERT_PTR_NULL(list.front);
 	CUTIL_TESTING_ASSERT_PTR_NULL(list.back);
+
+	cutil_list_uninit(&list);
 }
 
 // Clearing a list sets its size to 0
@@ -60,6 +68,8 @@ void list_clear_size_0 (){
 	cutil_list_clear(&list);
 
 	CUTIL_TESTING_ASSERT_INT_EQ(list.size, 0);
+
+	cutil_list_uninit(&list);
 }
 
 // Pushing data to the front of the list increses its size
@@ -74,7 +84,7 @@ void list_push_data_front_size() {
 		CUTIL_TESTING_ASSERT_INT_EQ(list.size, i + 1);
 	}
 	
-	cutil_list_destroy(&list);
+	cutil_list_uninit(&list);
 }
 
 // Pushing data to the back of the list increses its size
@@ -89,7 +99,7 @@ void list_push_data_back_size() {
 		CUTIL_TESTING_ASSERT_INT_EQ(list.size, i + 1);
 	}
 
-	cutil_list_destroy(&list);
+	cutil_list_uninit(&list);
 }
 
 // Pushing an item to the front of the list sets its pointers
@@ -104,7 +114,7 @@ void list_push_data_one_front_list_pointers() {
 	CUTIL_TESTING_ASSERT_PTR_NULL(list.front->next);
 	CUTIL_TESTING_ASSERT_PTR_NULL(list.front->prev);
 
-	cutil_list_destroy(&list);
+	cutil_list_uninit(&list);
 }
 
 // Pushing an item to the back of the list sets its pointers
@@ -119,7 +129,7 @@ void list_push_data_one_back_list_pointers() {
 	CUTIL_TESTING_ASSERT_PTR_NULL(list.back->next);
 	CUTIL_TESTING_ASSERT_PTR_NULL(list.back->prev);
 
-	cutil_list_destroy(&list);
+	cutil_list_uninit(&list);
 }
 
 // Pushing items to the back appends them to the list
@@ -151,7 +161,7 @@ void list_data_push_multiple_back() {
 		current_node = current_node->prev;
 	}
 
-	cutil_list_destroy(&list);
+	cutil_list_uninit(&list);
 }
 
 
@@ -184,7 +194,7 @@ void list_data_push_multiple_front() {
 		current_node = current_node->next;
 	}
 
-	cutil_list_destroy(&list);
+	cutil_list_uninit(&list);
 }
 
 
@@ -205,7 +215,7 @@ void list_multiple_pop_back_removes_item() {
 	CUTIL_TESTING_ASSERT_INT_EQ(list.size, list_size - 1);
 	CUTIL_TESTING_ASSERT_INT_EQ(back_node_value, list_size - 2);
 
-	cutil_list_destroy(&list);
+	cutil_list_uninit(&list);
 }
 
 // Popping an item from the front removes the item
@@ -225,7 +235,7 @@ void list_multiple_pop_front_removes_item() {
 	CUTIL_TESTING_ASSERT_INT_EQ(list.size, list_size - 1);
 	CUTIL_TESTING_ASSERT_INT_EQ(front_node_value, 1);
 
-	cutil_list_destroy(&list);
+	cutil_list_uninit(&list);
 }
 
 // Popping an item from the back updates node pointers
@@ -245,7 +255,7 @@ void list_pop_back_updates_node_pointers() {
 	CUTIL_TESTING_ASSERT_PTR_NULL(list.back->next);
 	CUTIL_TESTING_ASSERT_PTR_EQ(list.back, expected_back);
 
-	cutil_list_destroy(&list);
+	cutil_list_uninit(&list);
 }
 
 // Popping an item from the front updates node pointers
@@ -265,7 +275,7 @@ void list_pop_front_updates_node_pointers() {
 	CUTIL_TESTING_ASSERT_PTR_EQ(list.front, expected_front);
 	CUTIL_TESTING_ASSERT_PTR_NULL(list.front->prev);
 
-	cutil_list_destroy(&list);
+	cutil_list_uninit(&list);
 }
 
 
@@ -283,7 +293,7 @@ void list_pop_back_one_item() {
 	CUTIL_TESTING_ASSERT_PTR_NULL(list.front);
 	CUTIL_TESTING_ASSERT_PTR_NULL(list.back);
 
-	cutil_list_destroy(&list);
+	cutil_list_uninit(&list);
 }
 
 // Popping the only item from the back correctly sets list pointers
@@ -300,7 +310,7 @@ void list_pop_front_one_item() {
 	CUTIL_TESTING_ASSERT_PTR_NULL(list.front);
 	CUTIL_TESTING_ASSERT_PTR_NULL(list.back);
 
-	cutil_list_destroy(&list);
+	cutil_list_uninit(&list);
 }
 
 // Popping the front of an empty list does nothing
@@ -314,7 +324,7 @@ void list_pop_front_empty() {
 	CUTIL_TESTING_ASSERT_PTR_NULL(list.front);
 	CUTIL_TESTING_ASSERT_PTR_NULL(list.back);
 
-	cutil_list_destroy(&list);
+	cutil_list_uninit(&list);
 }
 
 // Popping the back of an empty list does nothing
@@ -328,11 +338,11 @@ void list_pop_back_empty() {
 	CUTIL_TESTING_ASSERT_PTR_NULL(list.front);
 	CUTIL_TESTING_ASSERT_PTR_NULL(list.back);
 
-	cutil_list_destroy(&list);
+	cutil_list_uninit(&list);
 }
 
 // Pushing a pointer to the front and retrieving it functions correctly
-void push_get_front_pointer() {
+void list_push_get_front_pointer() {
 	cutil_list list;
 	cutil_list_initp(&list);
 
@@ -342,11 +352,12 @@ void push_get_front_pointer() {
 	cutil_list_push_frontp(&list, iptr);
 
 	int *frontptr;
-	cutil_list_get_frontp(&list, &frontptr);
+	bool get_front_result = cutil_list_get_frontp(&list, &frontptr);
 
+	CUTIL_TESTING_ASSERT_TRUE(get_front_result);
 	CUTIL_TESTING_ASSERT_PTR_EQ(frontptr, iptr);
 
-	cutil_list_destroy(&list);
+	cutil_list_uninit(&list);
 	free(iptr);
 }
 
@@ -360,12 +371,39 @@ void push_get_back_pointer() {
 	cutil_list_push_backp(&list, iptr);
 
 	int *backptr;
-	cutil_list_get_backp(&list, &backptr);
+	bool get_back_result = cutil_list_get_backp(&list, &backptr);
 
+	CUTIL_TESTING_ASSERT_TRUE(get_back_result);
 	CUTIL_TESTING_ASSERT_PTR_EQ(backptr, iptr);
 
-	cutil_list_destroy(&list);
+	cutil_list_uninit(&list);
 	free(iptr);
+}
+
+// Getting the front item of an empty list returns false
+void list_get_back_pointer_empty() {
+	cutil_list list;
+	cutil_list_initp(&list);
+
+	int *backptr = NULL;
+	bool get_back_result = cutil_list_get_backp(&list, &backptr);
+
+	CUTIL_TESTING_ASSERT_FALSE(get_back_result);
+
+	cutil_list_uninit(&list);
+}
+
+// Getting the front item of an empty list returns false
+void list_get_front_pointer_empty() {
+	cutil_list list;
+	cutil_list_initp(&list);
+
+	int *frontptr = NULL;
+	bool get_front_result = cutil_list_get_frontp(&list, &frontptr);
+
+	CUTIL_TESTING_ASSERT_FALSE(get_front_result);
+
+	cutil_list_uninit(&list);
 }
 
 // Pushing data to the front and retrieving it functions correctly
@@ -377,11 +415,25 @@ void push_get_front_data() {
 	float front_val;
 
 	cutil_list_push_front(&list, &fval);
-	cutil_list_get_front(&list, &front_val);
+	bool get_front_result = cutil_list_get_front(&list, &front_val);
 
+	CUTIL_TESTING_ASSERT_TRUE(get_front_result);
 	CUTIL_TESTING_ASSERT_FLOAT_EQ(front_val, fval);
 
-	cutil_list_destroy(&list);
+	cutil_list_uninit(&list);
+}
+
+// Getting the front item of an empty list returns false
+void list_get_front_data_empty() {
+	cutil_list list;
+	cutil_list_init(&list, sizeof(int));
+
+	int front_val = NULL;
+	bool get_front_result = cutil_list_get_front(&list, &front_val);
+
+	CUTIL_TESTING_ASSERT_FALSE(get_front_result);
+
+	cutil_list_uninit(&list);
 }
 
 // Pushing data to the back and retrieving it functions correctly
@@ -393,11 +445,25 @@ void push_get_back_data() {
 	float back_val;
 
 	cutil_list_push_back(&list, &fval);
-	cutil_list_get_back(&list, &back_val);
+	bool get_back_result = cutil_list_get_back(&list, &back_val);
 
+	CUTIL_TESTING_ASSERT_TRUE(get_back_result);
 	CUTIL_TESTING_ASSERT_FLOAT_EQ(back_val, fval);
 
-	cutil_list_destroy(&list);
+	cutil_list_uninit(&list);
+}
+
+// Getting the front item of an empty list returns false
+void list_get_back_data_empty() {
+	cutil_list list;
+	cutil_list_init(&list, sizeof(int));
+
+	int front_val = NULL;
+	bool get_back_result = cutil_list_get_back(&list, &front_val);
+
+	CUTIL_TESTING_ASSERT_FALSE(get_back_result);
+
+	cutil_list_uninit(&list);
 }
 
 void add_list_tests(){
@@ -435,6 +501,12 @@ void add_list_tests(){
 	CUTIL_TESTING_ADD(push_get_front_data);
 	CUTIL_TESTING_ADD(push_get_back_data);
 
-	CUTIL_TESTING_ADD(push_get_front_pointer);
+	CUTIL_TESTING_ADD(list_push_get_front_pointer);
 	CUTIL_TESTING_ADD(push_get_back_pointer);
+
+	CUTIL_TESTING_ADD(list_get_back_data_empty);
+	CUTIL_TESTING_ADD(list_get_front_data_empty);
+
+	CUTIL_TESTING_ADD(list_get_back_pointer_empty);
+	CUTIL_TESTING_ADD(list_get_front_pointer_empty);
 }

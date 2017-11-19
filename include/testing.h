@@ -14,6 +14,8 @@ void cutil_testing_destroy();
 
 void _cutil_testing_add(const char *test_name, cutil_test_function test_func);
 
+int _cutil_testing_assert_true(const char *exppression_str, bool result);
+int _cutil_testing_assert_false(const char *exppression_str, bool result);
 int _cutil_testing_assert_int_eq(const char *exppression_str, int expected, int result);
 int _cutil_testing_assert_float_eq(const char *exppression_str, float expected, float result);
 int _cutil_testing_assert_ptr_eq(const char *exppression_str, void* expected, void* result);
@@ -23,6 +25,12 @@ int _cutil_testing_assert_ptr_not_null(const char *exppression_str, void* ptr);
 
 #define CUTIL_TESTING_ADD(FUNC) \
 	_cutil_testing_add(#FUNC, &FUNC);
+
+#define CUTIL_TESTING_ASSERT_TRUE(EXP) \
+	if (_cutil_testing_assert_true(#EXP, (EXP))) return;
+
+#define CUTIL_TESTING_ASSERT_FALSE(EXP) \
+	if (_cutil_testing_assert_false(#EXP, (EXP))) return;
 
 #define CUTIL_TESTING_ASSERT_INT_EQ(EXP, VAL) \
 	if (_cutil_testing_assert_int_eq(#EXP, VAL, (EXP))) return;
