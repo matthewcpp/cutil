@@ -24,16 +24,16 @@ void cutil_vector_clear(cutil_vector *vector) {
 	}
 
 	vector->_capacity = 1;
-	vector->size = 0;
+	vector->_size = 0;
 	vector->data = malloc(vector->_item_size);
 }
 
 void _grow_vector(cutil_vector *vector) {
-	if (vector->size == vector->_capacity) {
+	if (vector->_size == vector->_capacity) {
 		unsigned int new_capacity = vector->_capacity * 2;
 
 		void* new_data = malloc(vector->_item_size * new_capacity);
-		memcpy(new_data, vector->data, vector->size * vector->_item_size);
+		memcpy(new_data, vector->data, vector->_size * vector->_item_size);
 		free(vector->data);
 
 		vector->_capacity = new_capacity;
@@ -44,10 +44,10 @@ void _grow_vector(cutil_vector *vector) {
 void cutil_vector_push(cutil_vector *vector, void* data) {
 	_grow_vector(vector);
 
-	unsigned int byte_offset = vector->size * vector->_item_size;
+	unsigned int byte_offset = vector->_size * vector->_item_size;
 	memcpy((char*)vector->data + (byte_offset), data, vector->_item_size);
 
-	vector->size += 1;
+	vector->_size += 1;
 }
 
 void cutil_vector_pushp(cutil_vector *vector, void* data) {
@@ -56,13 +56,13 @@ void cutil_vector_pushp(cutil_vector *vector, void* data) {
 }
 
 void cutil_vector_pop(cutil_vector *vector) {
-	if (vector->size > 0) {
-		vector->size -= 1;
+	if (vector->_size > 0) {
+		vector->_size -= 1;
 	}
 }
 
 bool cutil_vector_get(cutil_vector *vector, unsigned int index, void *out) {
-	if (index < vector->size) {
+	if (index < vector->_size) {
 		unsigned int byte_offset = index * vector->_item_size;
 		memcpy(out, (char*)vector->data + byte_offset, vector->_item_size);
 

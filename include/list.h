@@ -2,16 +2,16 @@
 
 #include <stdbool.h>
 
-typedef struct cutil_list_node {
+typedef struct _cutil_list_node {
 	void *data;
-	struct cutil_list_node* next;
-	struct cutil_list_node* prev;
-} cutil_list_node;
+	struct _cutil_list_node* next;
+	struct _cutil_list_node* prev;
+} _cutil_list_node;
 
 typedef struct cutil_list {
-	unsigned int size;
-	cutil_list_node *front;
-	cutil_list_node *back;
+	unsigned int _size;
+	_cutil_list_node *_front;
+	_cutil_list_node *_back;
 	unsigned int _item_size;
 
 #ifdef _DEBUG
@@ -26,6 +26,7 @@ cutil_list *cutil_list_createp();
 void cutil_list_init(cutil_list *list, unsigned int item_size);
 void cutil_list_initp(cutil_list *list);
 
+unsigned int cutil_list_size(cutil_list* list);
 void cutil_list_clear(cutil_list* list);
 void cutil_list_uninit(cutil_list* list);
 void cutil_list_destroy(cutil_list* list);

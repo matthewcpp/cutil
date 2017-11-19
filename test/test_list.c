@@ -10,7 +10,7 @@ void list_init_size_0(){
     cutil_list list;
     cutil_list_init(&list, sizeof(int));
 
-    CUTIL_TESTING_ASSERT_INT_EQ(list.size, 0);
+    CUTIL_TESTING_ASSERT_INT_EQ(cutil_list_size(&list), 0);
 
 	cutil_list_uninit(&list);
 }
@@ -20,8 +20,8 @@ void list_init_null_pointers() {
 	cutil_list list;
 	cutil_list_init(&list, sizeof(int));
 
-	CUTIL_TESTING_ASSERT_PTR_NULL(list.front);
-	CUTIL_TESTING_ASSERT_PTR_NULL(list.back);
+	CUTIL_TESTING_ASSERT_PTR_NULL(list._front);
+	CUTIL_TESTING_ASSERT_PTR_NULL(list._back);
 
 	cutil_list_uninit(&list);
 }
@@ -37,8 +37,8 @@ void list_clear_null_pointers() {
 
 	cutil_list_clear(&list);
 
-	CUTIL_TESTING_ASSERT_PTR_NULL(list.front);
-	CUTIL_TESTING_ASSERT_PTR_NULL(list.back);
+	CUTIL_TESTING_ASSERT_PTR_NULL(list._front);
+	CUTIL_TESTING_ASSERT_PTR_NULL(list._back);
 
 	cutil_list_uninit(&list);
 }
@@ -50,8 +50,8 @@ void list_clear_empty() {
 
 	cutil_list_clear(&list);
 
-	CUTIL_TESTING_ASSERT_PTR_NULL(list.front);
-	CUTIL_TESTING_ASSERT_PTR_NULL(list.back);
+	CUTIL_TESTING_ASSERT_PTR_NULL(list._front);
+	CUTIL_TESTING_ASSERT_PTR_NULL(list._back);
 
 	cutil_list_uninit(&list);
 }
@@ -67,7 +67,7 @@ void list_clear_size_0 (){
 
 	cutil_list_clear(&list);
 
-	CUTIL_TESTING_ASSERT_INT_EQ(list.size, 0);
+	CUTIL_TESTING_ASSERT_INT_EQ(cutil_list_size(&list), 0);
 
 	cutil_list_uninit(&list);
 }
@@ -81,7 +81,8 @@ void list_push_data_front_size() {
 
 	for (int i = 0; i < 10; i++) {
 		cutil_list_push_front(&list, &value);
-		CUTIL_TESTING_ASSERT_INT_EQ(list.size, i + 1);
+
+		CUTIL_TESTING_ASSERT_INT_EQ(cutil_list_size(&list), i + 1);
 	}
 	
 	cutil_list_uninit(&list);
@@ -96,7 +97,8 @@ void list_push_data_back_size() {
 
 	for (int i = 0; i < 10; i++) {
 		cutil_list_push_back(&list, &value);
-		CUTIL_TESTING_ASSERT_INT_EQ(list.size, i + 1);
+		
+		CUTIL_TESTING_ASSERT_INT_EQ(cutil_list_size(&list), i + 1);
 	}
 
 	cutil_list_uninit(&list);
@@ -110,9 +112,9 @@ void list_push_data_one_front_list_pointers() {
 	int value = 10;
 	cutil_list_push_front(&list, &value);
 
-	CUTIL_TESTING_ASSERT_PTR_EQ(list.front, list.back);
-	CUTIL_TESTING_ASSERT_PTR_NULL(list.front->next);
-	CUTIL_TESTING_ASSERT_PTR_NULL(list.front->prev);
+	CUTIL_TESTING_ASSERT_PTR_EQ(list._front, list._back);
+	CUTIL_TESTING_ASSERT_PTR_NULL(list._front->next);
+	CUTIL_TESTING_ASSERT_PTR_NULL(list._front->prev);
 
 	cutil_list_uninit(&list);
 }
@@ -125,9 +127,9 @@ void list_push_data_one_back_list_pointers() {
 	int value = 10;
 	cutil_list_push_back(&list, &value);
 
-	CUTIL_TESTING_ASSERT_PTR_EQ(list.front, list.back);
-	CUTIL_TESTING_ASSERT_PTR_NULL(list.back->next);
-	CUTIL_TESTING_ASSERT_PTR_NULL(list.back->prev);
+	CUTIL_TESTING_ASSERT_PTR_EQ(list._front, list._back);
+	CUTIL_TESTING_ASSERT_PTR_NULL(list._back->next);
+	CUTIL_TESTING_ASSERT_PTR_NULL(list._back->prev);
 
 	cutil_list_uninit(&list);
 }
@@ -141,8 +143,10 @@ void list_data_push_multiple_back() {
 		cutil_list_push_back(&list, &i);
 	}
 
-	cutil_list_node* current_node = list.front;
-	for (unsigned int i = 0; i < list.size; i++) {
+	_cutil_list_node* current_node = list._front;
+	unsigned int list_size = cutil_list_size(&list);
+
+	for (unsigned int i = 0; i < list_size; i++) {
 		CUTIL_TESTING_ASSERT_PTR_NOT_NULL(current_node);
 
 		int current_node_value = *((int *)current_node->data);
@@ -151,8 +155,8 @@ void list_data_push_multiple_back() {
 		current_node = current_node->next;
 	}
 
-	current_node = list.back;
-	for (unsigned int i = list.size - 1; i > 0; i--) {
+	current_node = list._back;
+	for (unsigned int i = list_size - 1; i > 0; i--) {
 		CUTIL_TESTING_ASSERT_PTR_NOT_NULL(current_node);
 
 		int current_node_value = *((int *)current_node->data);
@@ -174,8 +178,10 @@ void list_data_push_multiple_front() {
 		cutil_list_push_front(&list, &i);
 	}
 
-	cutil_list_node* current_node = list.back;
-	for (unsigned int i = 0; i < list.size; i++) {
+	_cutil_list_node* current_node = list._back;
+	unsigned int list_size = cutil_list_size(&list);
+
+	for (unsigned int i = 0; i < list_size; i++) {
 		CUTIL_TESTING_ASSERT_PTR_NOT_NULL(current_node);
 
 		int current_node_value = *((int *)current_node->data);
@@ -184,8 +190,8 @@ void list_data_push_multiple_front() {
 		current_node = current_node->prev;
 	}
 
-	current_node = list.front;
-	for (unsigned int i = list.size - 1; i > 0; i--) {
+	current_node = list._front;
+	for (unsigned int i = list_size - 1; i > 0; i--) {
 		CUTIL_TESTING_ASSERT_PTR_NOT_NULL(current_node);
 
 		int current_node_value = *((int *)current_node->data);
@@ -210,9 +216,9 @@ void list_multiple_pop_back_removes_item() {
 	}
 
 	cutil_list_pop_back(&list);
-	int back_node_value = *((int *)list.back->data);
+	int back_node_value = *((int *)list._back->data);
 
-	CUTIL_TESTING_ASSERT_INT_EQ(list.size, list_size - 1);
+	CUTIL_TESTING_ASSERT_INT_EQ(cutil_list_size(&list), list_size - 1);
 	CUTIL_TESTING_ASSERT_INT_EQ(back_node_value, list_size - 2);
 
 	cutil_list_uninit(&list);
@@ -230,9 +236,9 @@ void list_multiple_pop_front_removes_item() {
 	}
 
 	cutil_list_pop_front(&list);
-	int front_node_value = *((int *)list.front->data);
+	int front_node_value = *((int *)list._front->data);
 
-	CUTIL_TESTING_ASSERT_INT_EQ(list.size, list_size - 1);
+	CUTIL_TESTING_ASSERT_INT_EQ(cutil_list_size(&list), list_size - 1);
 	CUTIL_TESTING_ASSERT_INT_EQ(front_node_value, 1);
 
 	cutil_list_uninit(&list);
@@ -249,11 +255,11 @@ void list_pop_back_updates_node_pointers() {
 		cutil_list_push_back(&list, &i);
 	}
 
-	cutil_list_node* expected_back = list.back->prev;
+	_cutil_list_node* expected_back = list._back->prev;
 
 	cutil_list_pop_back(&list);
-	CUTIL_TESTING_ASSERT_PTR_NULL(list.back->next);
-	CUTIL_TESTING_ASSERT_PTR_EQ(list.back, expected_back);
+	CUTIL_TESTING_ASSERT_PTR_NULL(list._back->next);
+	CUTIL_TESTING_ASSERT_PTR_EQ(list._back, expected_back);
 
 	cutil_list_uninit(&list);
 }
@@ -269,11 +275,11 @@ void list_pop_front_updates_node_pointers() {
 		cutil_list_push_back(&list, &i);
 	}
 
-	cutil_list_node* expected_front = list.front->next;
+	_cutil_list_node* expected_front = list._front->next;
 
 	cutil_list_pop_front(&list);
-	CUTIL_TESTING_ASSERT_PTR_EQ(list.front, expected_front);
-	CUTIL_TESTING_ASSERT_PTR_NULL(list.front->prev);
+	CUTIL_TESTING_ASSERT_PTR_EQ(list._front, expected_front);
+	CUTIL_TESTING_ASSERT_PTR_NULL(list._front->prev);
 
 	cutil_list_uninit(&list);
 }
@@ -289,9 +295,9 @@ void list_pop_back_one_item() {
 
 	cutil_list_pop_back(&list);
 
-	CUTIL_TESTING_ASSERT_INT_EQ(list.size, 0);
-	CUTIL_TESTING_ASSERT_PTR_NULL(list.front);
-	CUTIL_TESTING_ASSERT_PTR_NULL(list.back);
+	CUTIL_TESTING_ASSERT_INT_EQ(cutil_list_size(&list), 0);
+	CUTIL_TESTING_ASSERT_PTR_NULL(list._front);
+	CUTIL_TESTING_ASSERT_PTR_NULL(list._back);
 
 	cutil_list_uninit(&list);
 }
@@ -306,9 +312,9 @@ void list_pop_front_one_item() {
 
 	cutil_list_pop_front(&list);
 
-	CUTIL_TESTING_ASSERT_INT_EQ(list.size, 0);
-	CUTIL_TESTING_ASSERT_PTR_NULL(list.front);
-	CUTIL_TESTING_ASSERT_PTR_NULL(list.back);
+	CUTIL_TESTING_ASSERT_INT_EQ(cutil_list_size(&list), 0);
+	CUTIL_TESTING_ASSERT_PTR_NULL(list._front);
+	CUTIL_TESTING_ASSERT_PTR_NULL(list._back);
 
 	cutil_list_uninit(&list);
 }
@@ -320,9 +326,9 @@ void list_pop_front_empty() {
 
 	cutil_list_pop_front(&list);
 
-	CUTIL_TESTING_ASSERT_INT_EQ(list.size, 0);
-	CUTIL_TESTING_ASSERT_PTR_NULL(list.front);
-	CUTIL_TESTING_ASSERT_PTR_NULL(list.back);
+	CUTIL_TESTING_ASSERT_INT_EQ(cutil_list_size(&list), 0);
+	CUTIL_TESTING_ASSERT_PTR_NULL(list._front);
+	CUTIL_TESTING_ASSERT_PTR_NULL(list._back);
 
 	cutil_list_uninit(&list);
 }
@@ -334,9 +340,9 @@ void list_pop_back_empty() {
 
 	cutil_list_pop_back(&list);
 
-	CUTIL_TESTING_ASSERT_INT_EQ(list.size, 0);
-	CUTIL_TESTING_ASSERT_PTR_NULL(list.front);
-	CUTIL_TESTING_ASSERT_PTR_NULL(list.back);
+	CUTIL_TESTING_ASSERT_INT_EQ(cutil_list_size(&list), 0);
+	CUTIL_TESTING_ASSERT_PTR_NULL(list._front);
+	CUTIL_TESTING_ASSERT_PTR_NULL(list._back);
 
 	cutil_list_uninit(&list);
 }
@@ -428,7 +434,7 @@ void list_get_front_data_empty() {
 	cutil_list list;
 	cutil_list_init(&list, sizeof(int));
 
-	int front_val = NULL;
+	int front_val = 0;
 	bool get_front_result = cutil_list_get_front(&list, &front_val);
 
 	CUTIL_TESTING_ASSERT_FALSE(get_front_result);
@@ -458,7 +464,7 @@ void list_get_back_data_empty() {
 	cutil_list list;
 	cutil_list_init(&list, sizeof(int));
 
-	int front_val = NULL;
+	int front_val = 0;
 	bool get_back_result = cutil_list_get_back(&list, &front_val);
 
 	CUTIL_TESTING_ASSERT_FALSE(get_back_result);

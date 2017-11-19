@@ -42,7 +42,7 @@ void _cutil_testing_system_init(void) {
 
 void _cutil_testing_system_destroy(void) {
 	_cutil_test_suite *suite;
-	for (unsigned int i = 0; i < test_system->_suites.size; i++) {
+	for (unsigned int i = 0; i < test_system->_suites._size; i++) {
 		cutil_vector_getp(&test_system->_suites, i, (void**)&suite);
         _cutil_testing_suite_destroy(suite);
 		free(suite);
@@ -63,7 +63,7 @@ void _cutil_testing_suite_destroy(_cutil_test_suite *test_suite) {
 	}
 
 	_cutil_test_entry *test_entry;
-	for (unsigned int i = 0; i < test_suite->_tests.size; i++) {
+	for (unsigned int i = 0; i < test_suite->_tests._size; i++) {
 		cutil_vector_getp(&test_suite->_tests, i, (void**)&test_entry);
         _cutil_testing_entry_destroy(test_entry);
         free(test_entry);
@@ -181,7 +181,7 @@ int _cutil_testing_process_suite(_cutil_test_suite *current_suite, int* out_pass
 	printf("Test Suite: %s\n", current_suite->name);
 	printf("-----------------------------------\n");
 
-	for (unsigned int t = 0; t < current_suite->_tests.size; t++) {
+	for (unsigned int t = 0; t < current_suite->_tests._size; t++) {
 		cutil_vector_getp(&current_suite->_tests, t, (void**)&current_test);
 		test_system->_current_test = current_test;
 
@@ -220,7 +220,7 @@ int _cutil_run_test_suites(cutil_vector *test_suites) {
 	int total_fail_count = 0;
 	_cutil_test_suite *current_suite;
 
-	for (unsigned int i = 0; i < test_suites->size; i++) {
+	for (unsigned int i = 0; i < test_suites->_size; i++) {
 		cutil_vector_getp(test_suites, i, (void**)&current_suite);
 
 		int suite_pass_count = 0;
@@ -247,7 +247,7 @@ int cutil_testing_run_all() {
 _cutil_test_suite *_cutil_get_test_suite(const char *name) {
 	_cutil_test_suite *test_suite = NULL;
 
-	for (unsigned int i = 0; i < test_system->_suites.size; i++) {
+	for (unsigned int i = 0; i < test_system->_suites._size; i++) {
 		cutil_vector_getp(&test_system->_suites, i, (void**)&test_suite);
 
 		if (strcmp(test_suite->name, name) == 0) {

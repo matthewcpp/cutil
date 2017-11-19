@@ -8,7 +8,7 @@ void vector_init_size_0(){
     cutil_vector vector;
     cutil_vector_init(&vector, sizeof(int));
 
-    CUTIL_TESTING_ASSERT_INT_EQ(vector.size, 0);
+    CUTIL_TESTING_ASSERT_INT_EQ(vector._size, 0);
 }
 
 void add_vector_tests(){

@@ -3,7 +3,7 @@
 
 typedef struct cutil_vector {
 	void *data;
-	unsigned int size;
+	unsigned int _size;
 	unsigned int _capacity;
 	unsigned int _item_size;
 } cutil_vector;
