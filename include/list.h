@@ -66,3 +66,6 @@ bool cutil_list_itr_has_next(cutil_list_itr *itr);
 bool cutil_list_itr_next(cutil_list_itr *itr, void* data);
 bool cutil_list_itr_nextp(cutil_list_itr *itr, void** data);
 
+bool cutil_list_itr_has_prev(cutil_list_itr *itr);
+bool cutil_list_itr_prev(cutil_list_itr *itr, void* data);
+bool cutil_list_itr_prevp(cutil_list_itr *itr, void** data);

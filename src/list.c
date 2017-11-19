@@ -13,7 +13,6 @@ cutil_list *cutil_list_create(unsigned int item_size) {
 #ifdef CUTIL_DEBUGGING
 	list->_debug_malloc = true;
 	list->_debug_ptr = false;
-	list->_debug_generation = 0;
 #endif
 
 	return list;
@@ -39,6 +38,7 @@ void cutil_list_init(cutil_list * list, unsigned int item_size) {
 	list->_item_size = item_size;
 
 #ifdef CUTIL_DEBUGGING
+	list->_debug_generation = 0;
 	list->_debug_malloc = false;
 	list->_debug_ptr = false;
 #endif
@@ -337,6 +337,45 @@ bool cutil_list_itr_nextp(cutil_list_itr *itr, void** data) {
 
 	uintptr_t ptr;
 	bool result = cutil_list_itr_next(itr, &ptr);
+
+	if (result) {
+		*data = (void *)ptr;
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+bool cutil_list_itr_has_prev(cutil_list_itr *itr) {
+#ifdef CUTIL_DEBUGGING
+	assert(itr->_debug_generation == itr->_list->_debug_generation);
+#endif
+
+	return (itr->_node->prev->data != NULL);
+}
+
+bool cutil_list_itr_prev(cutil_list_itr *itr, void* data) {
+	if (cutil_list_itr_has_prev(itr)) {
+		itr->_node = itr->_node->prev;
+
+		if (data) {
+			memcpy(data, itr->_node->data, itr->_list->_item_size);
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
+bool cutil_list_itr_prevp(cutil_list_itr *itr, void** data) {
+#ifdef CUTIL_DEBUGGING
+	assert(itr->_list->_debug_ptr);
+#endif
+
+	uintptr_t ptr;
+	bool result = cutil_list_itr_prev(itr, &ptr);
 
 	if (result) {
 		*data = (void *)ptr;
