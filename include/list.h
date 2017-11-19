@@ -10,13 +10,13 @@ typedef struct _cutil_list_node {
 
 typedef struct cutil_list {
 	unsigned int _size;
-	_cutil_list_node *_front;
-	_cutil_list_node *_back;
+	_cutil_list_node _base;
 	unsigned int _item_size;
 
-#ifdef _DEBUG
+#ifdef CUTIL_DEBUGGING
 	bool _debug_malloc;
 	bool _debug_ptr;
+	unsigned int _debug_generation;
 #endif
 } cutil_list;
 
@@ -44,3 +44,25 @@ void cutil_list_push_frontp(cutil_list* list, void *data);
 
 void cutil_list_push_back(cutil_list* list, void *data);
 void cutil_list_push_backp(cutil_list* list, void *data);
+
+
+typedef struct cutil_list_itr {
+	cutil_list *_list;
+	_cutil_list_node* _node;
+
+#ifdef CUTIL_DEBUGGING
+	bool _debug_malloc;
+	unsigned int _debug_generation;
+#endif
+} cutil_list_itr;
+
+void cutil_list_itr_init(cutil_list_itr *itr, cutil_list *list);
+cutil_list_itr *cutil_list_itr_create(cutil_list *list);
+
+void cutil_list_itr_uninit(cutil_list_itr *itr);
+void cutil_list_itr_destroy(cutil_list_itr *itr);
+
+bool cutil_list_itr_has_next(cutil_list_itr *itr);
+bool cutil_list_itr_next(cutil_list_itr *itr, void* data);
+bool cutil_list_itr_nextp(cutil_list_itr *itr, void** data);
+

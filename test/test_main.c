@@ -7,6 +7,7 @@ int main(int argc, char** argv){
 
     add_vector_tests();
     add_list_tests();
+	add_list_itr_tests();
 
 	int result = 0;
 
