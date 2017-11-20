@@ -23,18 +23,21 @@ void cutil_vector_clear(cutil_vector *vector) {
 		free(vector->data);
 	}
 
-	vector->_capacity = 1;
+	vector->_capacity = 0;
 	vector->_size = 0;
-	vector->data = malloc(vector->_item_size);
+	vector->data = NULL;
 }
 
 void _grow_vector(cutil_vector *vector) {
 	if (vector->_size == vector->_capacity) {
-		unsigned int new_capacity = vector->_capacity * 2;
+		unsigned int new_capacity = (vector->_capacity > 0) ? vector->_capacity * 2 : 1;
 
 		void* new_data = malloc(vector->_item_size * new_capacity);
 		memcpy(new_data, vector->data, vector->_size * vector->_item_size);
-		free(vector->data);
+
+		if(vector->data){
+			free(vector->data);
+		}
 
 		vector->_capacity = new_capacity;
 		vector->data = new_data;

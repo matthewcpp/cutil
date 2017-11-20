@@ -6,6 +6,9 @@
 #include <stdint.h>
 #include <assert.h>
 
+void _cutil_list_node_destroy(_cutil_list_node *list_node);
+_cutil_list_node *_cutil_list_node_create(unsigned int item_size);
+
 cutil_list *cutil_list_create(unsigned int item_size) {
 	cutil_list *list = malloc(sizeof(cutil_list));
 	cutil_list_init(list, item_size);
@@ -71,7 +74,7 @@ void cutil_list_clear(cutil_list* list) {
 
 		while (node_to_delete != &list->_base) {
 			_cutil_list_node *next_node = node_to_delete->next;
-			free(node_to_delete);
+            _cutil_list_node_destroy(node_to_delete);
 			node_to_delete = next_node;
 		}
 
@@ -89,13 +92,18 @@ unsigned int cutil_list_size(cutil_list* list) {
 	return list->_size;
 }
 
-_cutil_list_node* cutil_list_node_create(unsigned int item_size) {
+_cutil_list_node *_cutil_list_node_create(unsigned int item_size) {
 	_cutil_list_node* new_node = (_cutil_list_node*)malloc(sizeof(_cutil_list_node));
 	new_node->data = malloc(item_size);
 	new_node->prev = NULL;
 	new_node->next = NULL;
 
 	return new_node;
+}
+
+void _cutil_list_node_destroy(_cutil_list_node *list_node){
+    free(list_node->data);
+    free(list_node);
 }
 
 void _cutil_list_push_add_first(cutil_list* list, _cutil_list_node* new_node) {
@@ -107,7 +115,7 @@ void _cutil_list_push_add_first(cutil_list* list, _cutil_list_node* new_node) {
 }
 
 void cutil_list_push_front(cutil_list* list, void *data) {
-	_cutil_list_node* new_node = cutil_list_node_create(list->_item_size);
+	_cutil_list_node* new_node = _cutil_list_node_create(list->_item_size);
 	memcpy(new_node->data, data, list->_item_size);
 
 	_cutil_list_node* current_front_node = list->_base.next;
@@ -192,7 +200,7 @@ bool cutil_list_get_backp(cutil_list* list, void **data) {
 }
 
 void cutil_list_push_back(cutil_list* list, void *data) {
-	_cutil_list_node* new_node = cutil_list_node_create(list->_item_size);
+	_cutil_list_node* new_node = _cutil_list_node_create(list->_item_size);
 	memcpy(new_node->data, data, list->_item_size);
 
 	if (list->_size > 0) {
@@ -237,7 +245,7 @@ void cutil_list_pop_front(cutil_list* list) {
 			list->_base.prev = &list->_base;
 		}
 
-		free(node_to_delete);
+        _cutil_list_node_destroy(node_to_delete);
 		list->_size -= 1;
 
 #ifdef CUTIL_DEBUGGING
@@ -261,7 +269,7 @@ void cutil_list_pop_back(cutil_list* list) {
 			list->_base.prev = &list->_base;
 		}
 
-		free(node_to_delete);
+		_cutil_list_node_destroy(node_to_delete);
 		list->_size -= 1;
 
 #ifdef CUTIL_DEBUGGING
@@ -297,11 +305,12 @@ void cutil_list_itr_uninit(cutil_list_itr *itr) {
 }
 
 void cutil_list_itr_destroy(cutil_list_itr *itr) {
-	cutil_list_itr_uninit(itr);
-
 #ifdef CUTIL_DEBUGGING
-	assert(itr->_debug_malloc);
+    assert(itr->_debug_malloc);
 #endif
+
+	cutil_list_itr_uninit(itr);
+    free(itr);
 }
 
 bool cutil_list_itr_has_next(cutil_list_itr *itr) {

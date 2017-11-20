@@ -73,6 +73,8 @@ void _cutil_testing_suite_destroy(_cutil_test_suite *test_suite) {
         _cutil_testing_entry_destroy(test_entry);
         free(test_entry);
 	}
+
+    cutil_vector_destroy(&test_suite->_tests);
 }
 
 _cutil_test_entry *_cutil_testing_entry_create(const char *test_name, cutil_test_function test_func) {
