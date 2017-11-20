@@ -8,6 +8,8 @@ typedef void(*cutil_test_function)();
 void cutil_testing_init();
 
 void cutil_testing_suite(const char *name);
+bool cutil_testing_suite_before_each(cutil_test_function func);
+bool cutil_testing_suite_after_each(cutil_test_function func);
 int cutil_testing_run_all();
 int cutil_testing_run_suites(const char* suite_list);
 void cutil_testing_destroy();

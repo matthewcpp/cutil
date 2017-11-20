@@ -13,6 +13,8 @@ typedef struct _cutil_test_entry {
 
 typedef struct _cutil_test_suite {
 	char* name;
+	cutil_test_function before_each;
+	cutil_test_function after_each;
 	cutil_vector _tests;
 } _cutil_test_suite;
 
@@ -54,6 +56,9 @@ _cutil_test_suite *_cutil_testing_suite_create(const char *name) {
 	_cutil_test_suite * suite = malloc(sizeof(_cutil_test_suite));
 	suite->name = _str_cpy(name);
 	cutil_vector_initp(&suite->_tests);
+
+	suite->before_each = NULL;
+	suite->after_each = NULL;
 
 	return suite;
 }
@@ -126,6 +131,28 @@ void _cutil_testing_add(const char *test_name, cutil_test_function test_func) {
 	cutil_vector_pushp(&test_system->_current_suite->_tests, test_entry);
 }
 
+bool cutil_testing_suite_before_each(cutil_test_function func) {
+	if (test_system->_current_suite) {
+		test_system->_current_suite->before_each = func;
+
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+bool cutil_testing_suite_after_each(cutil_test_function func) {
+	if (test_system->_current_suite) {
+		test_system->_current_suite->after_each = func;
+
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
 int cutil_testing_run_suites(const char* suite_list) {
 	cutil_vector suites;
 	cutil_vector_initp(&suites);
@@ -186,7 +213,15 @@ int _cutil_testing_process_suite(_cutil_test_suite *current_suite, int* out_pass
 		test_system->_current_test = current_test;
 
 		printf("Test: %s\n", current_test->test_name);
+		if (current_suite->before_each) {
+			current_suite->before_each();
+		}
+
 		current_test->test_func();
+
+		if (current_suite->after_each) {
+			current_suite->after_each();
+		}
 
 		if (current_test->test_result == 0) {
 			printf("Result: PASSED\n");
