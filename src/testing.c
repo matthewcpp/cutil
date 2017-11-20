@@ -153,6 +153,10 @@ bool cutil_testing_suite_after_each(cutil_test_function func) {
 	}
 }
 
+int _cutil_min_i(int i1, int i2){
+    return (i1 < i2) ? i1 : i2;
+}
+
 int cutil_testing_run_suites(const char* suite_list) {
 	cutil_vector suites;
 	cutil_vector_initp(&suites);
@@ -164,7 +168,7 @@ int cutil_testing_run_suites(const char* suite_list) {
 
 	for (size_t i = 0; i < len; i++) {
 		if (suite_list[i] == ';') {
-			size_t str_size = min(i - start, 255);
+			size_t str_size = _cutil_min_i(i - start, 255);
 
 			memset(suite_name, 0, 256);
 			strncpy(suite_name, suite_list + start, str_size);
@@ -180,7 +184,7 @@ int cutil_testing_run_suites(const char* suite_list) {
 	}
 
 	if (start < len) {
-		size_t str_size = min(len - start, 255);
+		size_t str_size = _cutil_min_i(len - start, 255);
 
 		memset(suite_name, 0, 256);
 		strncpy(suite_name, suite_list + start, str_size);

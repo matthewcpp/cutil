@@ -249,7 +249,7 @@ void list_push_get_front_pointer() {
 	cutil_list_push_frontp(g_listp, iptr);
 
 	int *frontptr;
-	bool get_front_result = cutil_list_get_frontp(g_listp, &frontptr);
+	bool get_front_result = cutil_list_get_frontp(g_listp, (void*)&frontptr);
 
 	CUTIL_TESTING_ASSERT_TRUE(get_front_result);
 	CUTIL_TESTING_ASSERT_PTR_EQ(frontptr, iptr);
@@ -264,7 +264,7 @@ void push_get_back_pointer() {
 	cutil_list_push_backp(g_listp, iptr);
 
 	int *backptr;
-	bool get_back_result = cutil_list_get_backp(g_listp, &backptr);
+	bool get_back_result = cutil_list_get_backp(g_listp, (void*)&backptr);
 
 	CUTIL_TESTING_ASSERT_TRUE(get_back_result);
 	CUTIL_TESTING_ASSERT_PTR_EQ(backptr, iptr);
@@ -275,7 +275,7 @@ void push_get_back_pointer() {
 // Getting the front item of an empty list returns false
 void list_get_back_pointer_empty() {
 	int *backptr = NULL;
-	bool get_back_result = cutil_list_get_backp(g_listp, &backptr);
+	bool get_back_result = cutil_list_get_backp(g_listp, (void *)&backptr);
 
 	CUTIL_TESTING_ASSERT_FALSE(get_back_result);
 }
@@ -283,7 +283,7 @@ void list_get_back_pointer_empty() {
 // Getting the front item of an empty list returns false
 void list_get_front_pointer_empty() {
 	int *frontptr = NULL;
-	bool get_front_result = cutil_list_get_frontp(g_listp, &frontptr);
+	bool get_front_result = cutil_list_get_frontp(g_listp, (void *)&frontptr);
 
 	CUTIL_TESTING_ASSERT_FALSE(get_front_result);
 }
@@ -303,7 +303,7 @@ void push_get_front_data() {
 // Getting the front item of an empty list returns false
 void list_get_front_data_empty() {
 	int front_val = 0;
-	bool get_front_result = cutil_list_get_front(g_list, &front_val);
+	bool get_front_result = cutil_list_get_front(g_list, (void *)&front_val);
 
 	CUTIL_TESTING_ASSERT_FALSE(get_front_result);
 }
@@ -314,7 +314,7 @@ void push_get_back_data() {
 	int back_val;
 
 	cutil_list_push_back(g_list, &ival);
-	bool get_back_result = cutil_list_get_back(g_list, &back_val);
+	bool get_back_result = cutil_list_get_back(g_list, (void *)&back_val);
 
 	CUTIL_TESTING_ASSERT_TRUE(get_back_result);
 	CUTIL_TESTING_ASSERT_INT_EQ(back_val, ival);
@@ -323,7 +323,7 @@ void push_get_back_data() {
 // Getting the front item of an empty list returns false
 void list_get_back_data_empty() {
 	int front_val = 0;
-	bool get_back_result = cutil_list_get_back(g_list, &front_val);
+	bool get_back_result = cutil_list_get_back(g_list, (void *)&front_val);
 
 	CUTIL_TESTING_ASSERT_FALSE(get_back_result);
 }

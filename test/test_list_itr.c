@@ -196,7 +196,7 @@ void list_itrp_iterate_list_ptr_next() {
 	int *current_ptr = NULL;
 	int prev_val = -1;
 
-	while (cutil_list_itr_nextp(it, &current_ptr)) {
+	while (cutil_list_itr_nextp(it, (void *)&current_ptr)) {
 		actual_sum += *current_ptr;
 
 		CUTIL_TESTING_ASSERT_TRUE(*current_ptr > prev_val);
@@ -227,7 +227,7 @@ void list_itrp_iterate_list_ptr_prev() {
 	int *current_ptr = NULL;
 	int prev_val = 10;
 
-	while (cutil_list_itr_prevp(it, &current_ptr)) {
+	while (cutil_list_itr_prevp(it, (void *)&current_ptr)) {
 		actual_sum += *current_ptr;
 
 		CUTIL_TESTING_ASSERT_TRUE(*current_ptr < prev_val);
