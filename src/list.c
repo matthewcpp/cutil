@@ -62,10 +62,6 @@ void cutil_list_destroy(cutil_list* list) {
 }
 
 void cutil_list_uninit(cutil_list* list) {
-#ifdef CUTIL_DEBUGGING
-	assert(!list->_debug_malloc);
-#endif
-
 	cutil_list_clear(list);
 }
 

@@ -12,7 +12,7 @@ void vector_init_size_0(){
 }
 
 void add_vector_tests(){
-    cutil_testing_suite("Vector");
+    cutil_testing_suite("vector");
 
 	CUTIL_TESTING_ADD(vector_init_size_0);
 }
