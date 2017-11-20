@@ -49,7 +49,8 @@ void _cutil_testing_system_destroy(void) {
         _cutil_testing_suite_destroy(suite);
 		free(suite);
 	}
-	cutil_vector_destroy(&test_system->_suites);
+
+    cutil_vector_uninit(&test_system->_suites);
 }
 
 _cutil_test_suite *_cutil_testing_suite_create(const char *name) {
@@ -74,7 +75,7 @@ void _cutil_testing_suite_destroy(_cutil_test_suite *test_suite) {
         free(test_entry);
 	}
 
-    cutil_vector_destroy(&test_suite->_tests);
+    cutil_vector_uninit(&test_suite->_tests);
 }
 
 _cutil_test_entry *_cutil_testing_entry_create(const char *test_name, cutil_test_function test_func) {
@@ -201,7 +202,7 @@ int cutil_testing_run_suites(const char* suite_list) {
 
 	int result = _cutil_run_test_suites(&suites);
 
-	cutil_vector_destroy(&suites);
+	cutil_vector_uninit(&suites);
 
 	return result;
 }
