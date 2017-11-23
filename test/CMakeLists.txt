@@ -2,6 +2,7 @@ set(testing_sources
         test_main.c test_suites.h 
 		test_vector.c 
 		test_list.c test_list_itr.c
+		test_btree.c
 	)
 
 add_executable(cutil_test ${testing_sources})

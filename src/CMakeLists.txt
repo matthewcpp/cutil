@@ -1,8 +1,7 @@
 set(cutil_sources
-	../include/vector.h
-    vector.c
-	../include/list.h
-    list.c
+	../include/vector.h vector.c
+	../include/list.h list.c
+	../include/btree.h btree.c
 )
 
 add_library (cutil ${cutil_sources})
