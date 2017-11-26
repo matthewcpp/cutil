@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define Q(x) #x
+#define QUOTE(x) Q(x)
+
 extern _btree_node *_btree_node_create();
 
 void indent(int depth, FILE* file) {
@@ -44,9 +47,42 @@ void dump_btree(cutil_btree* btree, const char* path) {
 	fclose(file);
 }
 
-_btree_node*read_btree_node(_btree_node* parent, FILE* file) {
+bool read_btree_from_file(cutil_btree* btree, const char* test_data_name) {
+	const char* test_data_dir = QUOTE(BTREE_TEST_DATA_DIR);
+	int path_size = snprintf(NULL, 0, "%s/%s.txt", test_data_dir, test_data_name);
+	char * path_str = malloc(path_size + 1);
+	sprintf(path_str, "%s/%s.txt", test_data_dir, test_data_name);
+
+	FILE * file = fopen(path_str, "r");
+	free(path_str);
+
+	if (file) {
+		long file_size = 0;
+		fseek(file, 0, SEEK_END);
+		file_size = ftell(file);
+		fseek(file, 0, SEEK_SET);
+
+		char* file_data = malloc(file_size + 1);
+		fread(file_data, 1, file_size, file);
+		file_data[file_size] = 0;
+		fclose(file);
+
+		read_btree(btree, file_data);
+
+		free(file_data);
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+_btree_node*read_btree_node(_btree_node* parent, const char* data, int* string_pos) {
+	int bytes_read = 0;
 	int item_count = 0;
-	fscanf(file, "%i", &item_count);
+
+	sscanf(data + *string_pos, "%i%n", &item_count, &bytes_read);
+	*string_pos += bytes_read;
 
 	if (item_count > 0) {
 		_btree_node* node = _btree_node_create();
@@ -55,12 +91,16 @@ _btree_node*read_btree_node(_btree_node* parent, FILE* file) {
 
 		int val = 0;
 		for (int i = 0; i < node->item_count; ++i) {
-			fscanf(file, "%i", &val);
+			sscanf(data + *string_pos, "%i%n", &val, &bytes_read);
+			*string_pos += bytes_read;
 			node->keys[i] = (char)val;
 		}
 
 		for (int i = 0; i < node->item_count + 1; ++i) {
-			node->branches[i] = read_btree_node(node, file);
+			node->branches[i] = read_btree_node(node, data, string_pos);
+			if (node->branches[i]) {
+				node->branches[i]->position = i;
+			}
 		}
 
 		return node;
@@ -71,15 +111,17 @@ _btree_node*read_btree_node(_btree_node* parent, FILE* file) {
 
 }
 
-void read_btree(cutil_btree* btree, const char* path) {
-	FILE * file = fopen(path, "r");
+void read_btree(cutil_btree* btree, const char* data) {
 	int order = 0;
-	fscanf(file, "%i", &order);
+	int string_pos = 0;
+	sscanf(data, "%i%n", &order, &string_pos);
 
-	btree->_root = read_btree_node(NULL, file);
-
-	fclose(file);
+	btree->_root = read_btree_node(NULL, data, &string_pos);
+	if (btree->_root) {
+		btree->_root->position = 0;
+	}
 }
+
 
 void insert_char_sequence(cutil_btree *btree, const char* sequence) {
 	int len = strlen(sequence);

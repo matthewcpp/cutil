@@ -48,7 +48,7 @@ typedef struct cutil_btree_itr {
 cutil_btree_itr *cutil_btree_itr_create(cutil_btree *btree);
 void cutil_btree_itr_init(cutil_btree_itr *itr, cutil_btree *btree);
 
-bool cutil_btree_has_next(cutil_btree_itr *itr);
+bool cutil_btree_itr_has_next(cutil_btree_itr *itr);
 bool cutil_btree_itr_next(cutil_btree_itr *itr, int* key);
 
 void cutil_btree_itr_uninit(cutil_btree_itr *itr);

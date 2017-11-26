@@ -7,3 +7,4 @@ set(testing_sources
 
 add_executable(cutil_test ${testing_sources})
 target_link_libraries(cutil_test cutil_testing)
+add_definitions(-DBTREE_TEST_DATA_DIR=${CMAKE_CURRENT_SOURCE_DIR}/btree_data)

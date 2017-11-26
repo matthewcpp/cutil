@@ -161,7 +161,6 @@ void _split_key_on_left(_btree_node *interior_node, _btree_node *split_node, _bt
 	}
 
 	for (int i = pivot_index; i > insert_position  + 1; --i) {
-		//interior_node->branches[i] = interior_node->branches[i -1];
 		_set_node_child(interior_node, interior_node->branches[i - 1], i);
 	}
 
@@ -447,7 +446,7 @@ _btree_node * _itr_find_next_leaf_node(_btree_node *node) {
 	return leaf;
 }
 
-bool cutil_btree_has_next(cutil_btree_itr *itr) {
+bool cutil_btree_itr_has_next(cutil_btree_itr *itr) {
 	if (itr->_node_pos == -1) {
 		_find_starting_node_pos(itr);
 	}

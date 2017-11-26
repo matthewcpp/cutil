@@ -9,24 +9,19 @@ extern cutil_btree *g_btree;
 extern void btree_before_each();
 extern void btree_after_each();
 
-void btree_test_split_right() {
-	insert_char_sequence(g_btree, "ACGNHEKQMFWLTZDPRXYS");
+void btree_itr_empty_tree() {
+	cutil_btree_itr * itr = cutil_btree_itr_create(g_btree);
 
-	const char* expected_sequence = "ACDEFGHKLMNPQRSTWXYZ";
-	CUTIL_TESTING_ASSERT_TRUE(confirm_forward_iteration_sequence(g_btree, expected_sequence));
+	CUTIL_TESTING_ASSERT_FALSE(cutil_btree_itr_has_next(itr));
+
+	cutil_btree_itr_destroy(itr);
 }
 
-void btree_test_split_middle() {
-	insert_char_sequence(g_btree, "ACGNHEKQMFWLTZDPRXYIJ");
-	const char* expected_sequence = "ACDEFGHIJKLMNPQRTWXYZ";
-	CUTIL_TESTING_ASSERT_TRUE(confirm_forward_iteration_sequence(g_btree, expected_sequence));
-}
 
 void add_btree_itr_tests() {
 	cutil_testing_suite("btree_itr");
 	cutil_testing_suite_before_each(&btree_before_each);
 	cutil_testing_suite_after_each(&btree_after_each);
 
-	CUTIL_TESTING_ADD(btree_test_split_right);
-	CUTIL_TESTING_ADD(btree_test_split_middle);
+	CUTIL_TESTING_ADD(btree_itr_empty_tree);
 }
