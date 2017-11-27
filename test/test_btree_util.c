@@ -18,6 +18,18 @@ void indent(int depth, FILE* file) {
 void dump_btree_node(_btree_node* node, int depth, FILE* file) {
 	indent(depth, file);
 
+	char node_type;
+	if (node->parent == NULL) {
+		node_type = 'R';
+	}
+	else if (node->branches[0] == NULL) {
+		node_type = 'L';
+	}
+	else {
+		node_type = 'I';
+	}
+
+	fprintf(file, "%c ", node_type);
 	fprintf(file, "%i ", node->item_count);
 
 	for (int i = 0; i < node->item_count; ++i) {
@@ -77,18 +89,24 @@ bool read_btree_from_file(cutil_btree* btree, const char* test_data_name) {
 	}
 }
 
-_btree_node*read_btree_node(_btree_node* parent, const char* data, int* string_pos) {
+_btree_node*read_btree_node(_btree_node* parent, int* node_counter, const char* data, int* string_pos) {
 	int bytes_read = 0;
 	int item_count = 0;
+	char node_type[2];
+
+	sscanf(data + *string_pos, "%2s%n", node_type, &bytes_read);
+	*string_pos += bytes_read;
 
 	sscanf(data + *string_pos, "%i%n", &item_count, &bytes_read);
 	*string_pos += bytes_read;
 
 	if (item_count > 0) {
 		_btree_node* node = _btree_node_create();
+		*node_counter += 1;
 		node->parent = parent;
 		node->item_count = item_count;
 
+		// read the key values for this node from the input
 		int val = 0;
 		for (int i = 0; i < node->item_count; ++i) {
 			sscanf(data + *string_pos, "%i%n", &val, &bytes_read);
@@ -96,10 +114,13 @@ _btree_node*read_btree_node(_btree_node* parent, const char* data, int* string_p
 			node->keys[i] = (char)val;
 		}
 
-		for (int i = 0; i < node->item_count + 1; ++i) {
-			node->branches[i] = read_btree_node(node, data, string_pos);
-			if (node->branches[i]) {
-				node->branches[i]->position = i;
+		//if this node is not a leaf, then read its children recursively
+		if (strcmp(node_type, "L") != 0) {
+			for (int i = 0; i < node->item_count + 1; ++i) {
+				node->branches[i] = read_btree_node(node, node_counter, data, string_pos);
+				if (node->branches[i]) {
+					node->branches[i]->position = i;
+				}
 			}
 		}
 
@@ -114,11 +135,20 @@ _btree_node*read_btree_node(_btree_node* parent, const char* data, int* string_p
 void read_btree(cutil_btree* btree, const char* data) {
 	int order = 0;
 	int string_pos = 0;
+	int node_counter = 0;
 	sscanf(data, "%i%n", &order, &string_pos);
 
-	btree->_root = read_btree_node(NULL, data, &string_pos);
-	if (btree->_root) {
-		btree->_root->position = 0;
+	_btree_node* new_root = read_btree_node(NULL, &node_counter, data, &string_pos);
+	if (new_root) {
+		cutil_btree_uninit(btree);
+
+		new_root->position = 0;
+		btree->_root = new_root;
+		btree->_size = node_counter;
+
+#ifdef CUTIL_DEBUGGING
+		btree->_debug_generation = 0;
+#endif
 	}
 }
 
@@ -146,4 +176,48 @@ bool confirm_forward_iteration_char_sequence(cutil_btree* btree, const char* exp
 
 	cutil_btree_itr_destroy(itr);
 	return ok;
+}
+
+bool _compare_btree_nodes(_btree_node* a, _btree_node* b) {
+	if (a->item_count != b->item_count) {
+		return false;
+	}
+	else {
+		for (int i = 0; i < a->item_count; i++) {
+			if (a->keys[i] != b->keys[i]) {
+				return false;
+			}
+		}
+
+		_btree_node* branch_a;
+		_btree_node* branch_b;
+		bool ok = true;
+
+		for (int i = 0; i < a->item_count + 1; i++) {
+			branch_a = a->branches[i];
+			branch_b = b->branches[i];
+
+			if (branch_a == NULL && branch_b == NULL) {
+				continue;
+			}
+			else if (branch_a == NULL && branch_b != NULL) {
+				return false;
+			}
+			else if (branch_a != NULL && branch_b == NULL) {
+				return false;
+			}
+			else {
+				ok = _compare_btree_nodes(branch_a, branch_b);
+				if (!ok) {
+					break;
+				}
+			}
+		}
+
+		return ok;
+	}
+}
+
+bool compare_btrees(cutil_btree* a, cutil_btree* b) {
+	return _compare_btree_nodes(a->_root, b->_root);
 }
