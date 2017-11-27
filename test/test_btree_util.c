@@ -131,7 +131,7 @@ void insert_char_sequence(cutil_btree *btree, const char* sequence) {
 	}
 }
 
-bool confirm_forward_iteration_sequence(cutil_btree* btree, const char* expected_sequence) {
+bool confirm_forward_iteration_char_sequence(cutil_btree* btree, const char* expected_sequence) {
 	cutil_btree_itr * itr = cutil_btree_itr_create(btree);
 	int val = 0;
 	int count = 0;

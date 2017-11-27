@@ -17,6 +17,10 @@ _btree_node *_btree_find_key(_btree_node * node, int key);
 
 void _set_node_child(_btree_node *parent, _btree_node *child, int index);
 
+int _get_pivot_index(cutil_btree *btree) {
+	return BTREE_NODE_KEY_COUNT / 2 + (BTREE_NODE_KEY_COUNT % 2 != 0);
+}
+
 _btree_node *_btree_node_create() {
 	_btree_node *node = malloc(sizeof(_btree_node));
 
@@ -76,8 +80,8 @@ void _btree_node_recursive_delete(_btree_node * node) {
 	free(node);
 }
 
-void _split_key_on_right(_btree_node *interior_node, _btree_node *split_node, _btree_node *left_node, _btree_node *right_node, char key, int insert_position) {
-	int pivot_index = BTREE_NODE_KEY_COUNT / 2 + (BTREE_NODE_KEY_COUNT % 2 != 0);
+void _split_node_right(cutil_btree *btree, _btree_node *interior_node, _btree_node *split_node, char key, int insert_position) {
+	int pivot_index = _get_pivot_index(btree);
 	int split_node_start = pivot_index + 1;
 	int split_node_key_index = insert_position - split_node_start;
 
@@ -86,16 +90,19 @@ void _split_key_on_right(_btree_node *interior_node, _btree_node *split_node, _b
 	if (item_count > 0) {
 		for (int i = 0; i < item_count; ++i) {
 			split_node->keys[i] = interior_node->keys[split_node_start + i];
+		}
+
+		for (int i = 0; i < item_count; ++i) {
 			_set_node_child(split_node, interior_node->branches[split_node_start + i], i);
 		}
 	}
 
 	//copy items after the key position
-	item_count = BTREE_NODE_KEY_COUNT - insert_position;
+	item_count = interior_node->item_count - insert_position;
 	if (item_count > 0) {
 		for (int i = 0; i < item_count; ++i) {
 			split_node->keys[split_node_key_index + 1 + i] = interior_node->keys[insert_position + i];
-			
+
 		}
 
 		for (int i = 0; i < item_count + 1; ++i) {
@@ -104,24 +111,52 @@ void _split_key_on_right(_btree_node *interior_node, _btree_node *split_node, _b
 	}
 
 	//insert the new key at the correct position
-	split_node->item_count = pivot_index;
+
 	split_node->keys[split_node_key_index] = key;
 
-	_set_node_child(split_node, left_node, split_node_key_index);
-	_set_node_child(split_node, right_node, split_node_key_index + 1);
-
 	//clear no longer used items from interior node
-	item_count = BTREE_NODE_KEY_COUNT - pivot_index;
+	item_count = interior_node->item_count - pivot_index;
 	memset(interior_node->keys + pivot_index, 0, item_count * sizeof(int));
 	memset(interior_node->branches + pivot_index + 1, 0, item_count * sizeof(_btree_node *));
 
+	split_node->item_count = interior_node->item_count - pivot_index;
 	interior_node->item_count = pivot_index;
+	
 }
 
-void _split_key_middle(_btree_node *interior_node, _btree_node *split_node, _btree_node *left_node, _btree_node *right_node, int insert_position) {
+void _split_interior_right(cutil_btree *btree, _btree_node *interior_node, _btree_node *split_node, _btree_node *left_node, _btree_node *right_node, char key, int insert_position) {
+	int pivot_index = _get_pivot_index(btree);
+	int split_node_start = pivot_index + 1;
+	int split_node_key_index = insert_position - split_node_start;
+
+	_split_node_right(btree, interior_node, split_node, key, insert_position);
+
+	_set_node_child(split_node, left_node, split_node_key_index);
+	_set_node_child(split_node, right_node, split_node_key_index + 1);
+}
+
+void _split_node_middle(cutil_btree *btree, _btree_node *interior_node, _btree_node *split_node, int insertion_position) {
+	// copy the keys after the insertion point to the new now
+	int insertion_pos = 0;
+
+	for (int i = insertion_position; i < interior_node->item_count; i++) {
+		split_node->keys[insertion_pos++] = interior_node->keys[i];
+		split_node->item_count += 1;
+	}
+
+	//clear no longer used items from the sourc enode
+	memset(interior_node->keys + insertion_position, 0, insertion_pos * sizeof(int));
+	interior_node->item_count = insertion_position;
+}
+
+void _split_interior_middle(_btree_node *interior_node, _btree_node *split_node, _btree_node *left_node, _btree_node *right_node, int insert_position) {
 	//copy the items from the right part of the interior node into the split node
 	for (int i = 0; i < insert_position; ++i) {
 		split_node->keys[i] = interior_node->keys[insert_position + i];
+		_set_node_child(split_node, interior_node->branches[insert_position + 1 + i], i + 1);
+	}
+
+	for (int i = 0; i < insert_position; ++i) {
 		_set_node_child(split_node, interior_node->branches[insert_position + 1 + i], i + 1);
 	}
 
@@ -139,11 +174,11 @@ void _split_key_middle(_btree_node *interior_node, _btree_node *split_node, _btr
 
 }
 
-void _split_key_on_left(_btree_node *interior_node, _btree_node *split_node, _btree_node *left_node, _btree_node *right_node, char key, int insert_position) {
-	int pivot_index = BTREE_NODE_KEY_COUNT / 2 + (BTREE_NODE_KEY_COUNT % 2 != 0);
+void _split_node_left(cutil_btree *btree, _btree_node *interior_node, _btree_node *split_node, int key, int insert_position) {
+	int pivot_index = _get_pivot_index(btree);
 
 	//copy items after the pivot position to the split node
-	int item_count = BTREE_NODE_KEY_COUNT - pivot_index;
+	int item_count = interior_node->item_count - pivot_index;
 	for (int i = 0; i < item_count; ++i) {
 		split_node->keys[i] = interior_node->keys[pivot_index + i];
 		split_node->item_count += 1;
@@ -160,21 +195,26 @@ void _split_key_on_left(_btree_node *interior_node, _btree_node *split_node, _bt
 		interior_node->keys[i + 1] = interior_node->keys[i];
 	}
 
-	for (int i = pivot_index; i > insert_position  + 1; --i) {
+	for (int i = pivot_index; i > insert_position + 1; --i) {
 		_set_node_child(interior_node, interior_node->branches[i - 1], i);
 	}
 
 	//add in the new key and its children to the interior node
 	interior_node->keys[insert_position] = key;
-	_set_node_child(interior_node, left_node, insert_position);
-	_set_node_child(interior_node, right_node, insert_position + 1);
 
 	interior_node->item_count = pivot_index;
 }
 
+void _split_interior_left(cutil_btree *btree,_btree_node *interior_node, _btree_node *split_node, _btree_node *left_node, _btree_node *right_node, int key, int insert_position) {
+	_split_node_left(btree, interior_node, split_node, key, insert_position);
+
+	_set_node_child(interior_node, left_node, insert_position);
+	_set_node_child(interior_node, right_node, insert_position + 1);
+}
+
 void _split_interior_node(cutil_btree *btree, _btree_node *interior_node, _btree_node *left_node, _btree_node *right_node, int key) {
 	int insert_position = _btree_node_get_item_position(interior_node, key);
-	int pivot_index = BTREE_NODE_KEY_COUNT / 2 + (BTREE_NODE_KEY_COUNT % 2 != 0);
+	int pivot_index = _get_pivot_index(btree);
 	int pivot_key;
 
 	_btree_node *split_node = _btree_node_create();
@@ -182,15 +222,15 @@ void _split_interior_node(cutil_btree *btree, _btree_node *interior_node, _btree
 	//the newly inserted key appears in the new split node.
 	if (insert_position > pivot_index) {
 		pivot_key = interior_node->keys[pivot_index];
-		_split_key_on_right(interior_node, split_node, left_node, right_node, key, insert_position);
+		_split_interior_right(btree, interior_node, split_node, left_node, right_node, key, insert_position);
 	}
 	else if (insert_position < pivot_index) {
 		pivot_key = pivot_key = interior_node->keys[pivot_index - 1];
-		_split_key_on_left(interior_node, split_node, left_node, right_node, key, insert_position);
+		_split_interior_left(btree, interior_node, split_node, left_node, right_node, key, insert_position);
 	}
 	else {
 		pivot_key = key;
-		_split_key_middle(interior_node, split_node, left_node, right_node, insert_position);
+		_split_interior_middle(interior_node, split_node, left_node, right_node, insert_position);
 	}
 
 	// We have split the top most level, create a new root node
@@ -238,31 +278,28 @@ void _push_up_one_level(cutil_btree *btree, _btree_node *parent, _btree_node *le
 }
 
 void _split_leaf_node(cutil_btree *btree, _btree_node * node, int key, int insert_position) {
-	//insert new item into a temp array
-	int* temp_arr = malloc((BTREE_NODE_KEY_COUNT + 1) * sizeof(int));
-	memcpy(temp_arr, node->keys, sizeof(int) * BTREE_NODE_KEY_COUNT);
-
-	for (int i = BTREE_NODE_KEY_COUNT; i > insert_position; i--) {
-		temp_arr[i] = temp_arr[i - 1];
-	}
-	temp_arr[insert_position] = key;
-
 	//get key that will be pushed up (ceil)
-	int pivot_key = BTREE_NODE_KEY_COUNT / 2 + (BTREE_NODE_KEY_COUNT % 2 != 0);
-
-	//create new left node and copy items to it
+	int pivot_index = _get_pivot_index(btree);
 	_btree_node * new_right_node = _btree_node_create();
-	new_right_node->item_count = BTREE_NODE_KEY_COUNT - pivot_key;
-	for (int i = 0; i < new_right_node->item_count; i++) {
-		new_right_node->keys[i] = temp_arr[pivot_key + 1 + i];
-	}
+	int pivot_key;
 
-	node->item_count = pivot_key;
+	if (insert_position > pivot_index ) {
+		pivot_key = node->keys[pivot_index];
+		_split_node_right(btree, node, new_right_node, key, insert_position);
+	}
+	else if (insert_position < pivot_index) {
+		pivot_key = node->keys[pivot_index - 1];
+		_split_node_left(btree, node, new_right_node, key, insert_position);
+	}
+	else {
+		_split_node_middle(btree, node, new_right_node, insert_position);
+		pivot_key = key;
+	}
 
 	// create a new root node and attach these children
 	if (_node_is_root(node)) {
 		_btree_node * new_root = _btree_node_create();
-		new_root->keys[0] = node->keys[pivot_key];
+		new_root->keys[0] = pivot_key;
 		new_root->item_count = 1;
 
 		_set_node_child(new_root, node, 0);
@@ -271,10 +308,9 @@ void _split_leaf_node(cutil_btree *btree, _btree_node * node, int key, int inser
 		btree->_root = new_root;
 	}
 	else {
-		_push_up_one_level(btree, node->parent, node, new_right_node, temp_arr[pivot_key]);
+		_push_up_one_level(btree, node->parent, node, new_right_node, pivot_key);
 	}
 
-	free(temp_arr);
 }
 
 bool cutil_btree_insert(cutil_btree *btree, int key) {
