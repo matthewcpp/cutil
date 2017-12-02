@@ -1,5 +1,5 @@
 language: c
-sudo: false
+sudo: required
 
 compiler: gcc
 
@@ -9,4 +9,14 @@ before_script:
   - cmake ..
 
 script:
+  - sudo unlink /usr/bin/gcc && sudo ln -s /usr/bin/gcc-5 /usr/bin/gcc
+  - gcc --version
   - make
+
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - gcc-5
+    - g++-5
