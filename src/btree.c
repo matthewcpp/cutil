@@ -2,8 +2,8 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 #include <assert.h>
+#include <limits.h>
 
 #define ITEM_ALREADY_INSERTED INT_MAX
 #define ITR_POS_UNINIT INT_MAX
@@ -242,7 +242,7 @@ void _split_interior_node(cutil_btree *btree, _btree_node *interior_node, _btree
 		_split_interior_right(btree, interior_node, split_node, left_node, right_node, key, insert_position);
 	}
 	else if (insert_position < pivot_index) {
-		pivot_key = pivot_key = interior_node->keys[pivot_index - 1];
+		pivot_key = interior_node->keys[pivot_index - 1];
 		_split_interior_left(btree, interior_node, split_node, left_node, right_node, key, insert_position);
 	}
 	else {
