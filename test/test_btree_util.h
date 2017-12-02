@@ -10,3 +10,4 @@ void read_btree(cutil_btree* btree, const char* data);
 void insert_char_sequence(cutil_btree *btree, const char* sequence);
 bool confirm_forward_iteration_char_sequence(cutil_btree* btree, const char* expected_sequence);
 bool compare_btrees(cutil_btree *a, cutil_btree *b);
+bool validate_btree(cutil_btree *btree);

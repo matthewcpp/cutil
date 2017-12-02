@@ -221,3 +221,58 @@ bool _compare_btree_nodes(_btree_node* a, _btree_node* b) {
 bool compare_btrees(cutil_btree* a, cutil_btree* b) {
 	return _compare_btree_nodes(a->_root, b->_root);
 }
+
+int _get_max_branch_val(_btree_node* node) {
+	while (node->parent && node->position >= node->parent->item_count) {
+		node = node->parent;
+	}
+
+	if (node->parent) {
+		return node->parent->keys[node->position];
+	}
+	else {
+		return INT_MAX;
+	}
+}
+
+bool _validate_btree_node(cutil_btree *btree, _btree_node* node, int parent_min_val, int parent_max_val) {
+	//non root nodes must have a size >= tree order / 2
+	if (node->parent && node->item_count < BTREE_NODE_BRANCH_COUNT / 2) {
+		return false;
+	}
+
+	for (int i = 0; i < node->item_count; i++) {
+		// all keys in the node must be less than the parent max and greater than the parent min
+		if (node->keys[i] <= parent_min_val || node->keys[i] >= parent_max_val) {
+			return false;
+		}
+
+		int subtree_min_value = parent_min_val;
+
+		// keys should be in ascending order
+		if (i) {
+			if (node->keys[i] <= node->keys[i - 1]) {
+				return false;
+			}
+
+			subtree_min_value = node->keys[i - 1];
+		}
+		
+		// recursive validation of subtree
+		if (node->branches[i] && !_validate_btree_node(btree, node->branches[i], subtree_min_value, node->keys[i])) {
+			return false;
+		}
+	}
+
+	if (node->branches[node->item_count]) {
+		if (!_validate_btree_node(btree, node->branches[node->item_count], node->keys[node->item_count - 1], _get_max_branch_val(node))) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool validate_btree(cutil_btree *btree) {
+	return _validate_btree_node(btree, btree->_root, INT_MIN, INT_MAX);
+}

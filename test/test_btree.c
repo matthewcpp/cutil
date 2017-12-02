@@ -40,6 +40,7 @@ void btree_test_split_leaf_node_right() {
 	read_btree_from_file(expected_btree, "btree_split_leaf_new_root_result");
 
 	CUTIL_TESTING_ASSERT_TRUE(compare_btrees(expected_btree, g_btree));
+	cutil_btree_destroy(expected_btree);
 }
 
 /*	inserts items into the tree that requires a leaf node to be split to the left of the node pivot */
@@ -50,6 +51,7 @@ void btree_test_split_leaf_node_left() {
 	read_btree_from_file(expected_btree, "btree_split_leaf_new_root_result");
 
 	CUTIL_TESTING_ASSERT_TRUE(compare_btrees(expected_btree, g_btree));
+	cutil_btree_destroy(expected_btree);
 }
 
 /*	inserts items into the tree that requires a leaf node to be split in the middle of the node */
@@ -60,6 +62,7 @@ void btree_test_split_leaf_node_middle() {
 	read_btree_from_file(expected_btree, "btree_split_leaf_new_root_result");
 
 	CUTIL_TESTING_ASSERT_TRUE(compare_btrees(expected_btree, g_btree));
+	cutil_btree_destroy(expected_btree);
 }
 
 /*	loads a tree and inserts a value that will require a split of an interior node at the right of the pivot and
@@ -68,9 +71,14 @@ void btree_test_split_right_new_root() {
 	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, "btree_split_interior_right"));
 
 	cutil_btree_insert(g_btree, 83);
+	CUTIL_TESTING_ASSERT_TRUE(validate_btree(g_btree));
 
-	const char* expected_sequence = "ACDEFGHKLMNPQRSTWXYZ";
-	CUTIL_TESTING_ASSERT_TRUE(confirm_forward_iteration_char_sequence(g_btree, expected_sequence));
+	cutil_btree *expected_btree = cutil_btree_create();
+	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(expected_btree, "btree_split_interior_right_result"));
+	CUTIL_TESTING_ASSERT_TRUE(compare_btrees(expected_btree, g_btree));
+
+	cutil_btree_destroy(expected_btree);
+
 }
 
 /*	loads a tree and inserts a value that will require a split of an interior node at the pivot and
@@ -79,9 +87,13 @@ void btree_test_split_middle_new_root() {
 	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, "btree_split_interior_middle"));
 
 	cutil_btree_insert(g_btree, 74);
+	CUTIL_TESTING_ASSERT_TRUE(validate_btree(g_btree));
 
-	const char* expected_sequence = "ACDEFGHIJKLMNPQRTWXYZ";
-	CUTIL_TESTING_ASSERT_TRUE(confirm_forward_iteration_char_sequence(g_btree, expected_sequence));
+	cutil_btree *expected_btree = cutil_btree_create();
+	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(expected_btree, "btree_split_interior_middle_result"));
+	CUTIL_TESTING_ASSERT_TRUE(compare_btrees(expected_btree, g_btree));
+
+	cutil_btree_destroy(expected_btree);
 }
 
 /*	loads a tree and inserts a value that will require a split of an interior node to the left of a pivot and
@@ -90,9 +102,13 @@ void btree_test_split_left_new_root() {
 	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, "btree_split_interior_left"));
 
 	cutil_btree_insert(g_btree, 69);
+	CUTIL_TESTING_ASSERT_TRUE(validate_btree(g_btree));
 
-	const char* expected_sequence = "ABCDEGHIJLMNOPQRST";
-	CUTIL_TESTING_ASSERT_TRUE(confirm_forward_iteration_char_sequence(g_btree, expected_sequence));
+	cutil_btree *expected_btree = cutil_btree_create();
+	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(expected_btree, "btree_split_interior_left_result"));
+	CUTIL_TESTING_ASSERT_TRUE(compare_btrees(expected_btree, g_btree));
+	
+	cutil_btree_destroy(expected_btree);
 }
 
 
