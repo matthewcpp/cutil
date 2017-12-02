@@ -5,7 +5,7 @@
 typedef struct _btree_node {
 	struct _btree_node *parent;
 	unsigned int item_count;
-	int position;
+	unsigned int position;
 	int* keys;
 	struct _btree_node **branches;
 } _btree_node;

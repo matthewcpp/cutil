@@ -80,7 +80,7 @@ void cutil_btree_destroy(cutil_btree *btree) {
 }
 
 void _btree_node_recursive_delete(_btree_node * node) {
-	for (int i = 0; i < node->item_count; i++) {
+	for (unsigned int i = 0; i < node->item_count; i++) {
 		if (node->branches[i]) {
 			_btree_node_recursive_delete(node->branches[i]);
 		}
@@ -92,7 +92,7 @@ void _btree_node_recursive_delete(_btree_node * node) {
 	_btree_node_destroy(node);
 }
 
-void _split_node_right(cutil_btree *btree, _btree_node *interior_node, _btree_node *split_node, char key, int insert_position) {
+void _split_node_right(cutil_btree *btree, _btree_node *interior_node, _btree_node *split_node, int key, int insert_position) {
 	int pivot_index = _get_pivot_index(btree);
 	int split_node_start = pivot_index + 1;
 	int split_node_key_index = insert_position - split_node_start;
@@ -136,7 +136,7 @@ void _split_node_right(cutil_btree *btree, _btree_node *interior_node, _btree_no
 	
 }
 
-void _split_interior_right(cutil_btree *btree, _btree_node *interior_node, _btree_node *split_node, _btree_node *left_node, _btree_node *right_node, char key, int insert_position) {
+void _split_interior_right(cutil_btree *btree, _btree_node *interior_node, _btree_node *split_node, _btree_node *left_node, _btree_node *right_node, int key, int insert_position) {
 	int pivot_index = _get_pivot_index(btree);
 	int split_node_start = pivot_index + 1;
 	int split_node_key_index = insert_position - split_node_start;
@@ -148,10 +148,12 @@ void _split_interior_right(cutil_btree *btree, _btree_node *interior_node, _btre
 }
 
 void _split_node_middle(cutil_btree *btree, _btree_node *interior_node, _btree_node *split_node, int insertion_position) {
+	(void)btree;
+
 	// copy the keys after the insertion point to the new now
 	int insertion_pos = 0;
 
-	for (int i = insertion_position; i < interior_node->item_count; i++) {
+	for (unsigned int i = insertion_position; i < interior_node->item_count; i++) {
 		split_node->keys[insertion_pos++] = interior_node->keys[i];
 		split_node->item_count += 1;
 	}
@@ -361,7 +363,7 @@ _btree_node *_btree_find_key(_btree_node * node, int key) {
 	}
 	else {
 		// find the correct branch to traverse down
-		for (int i = 0; i < node->item_count; i++) {
+		for (unsigned int i = 0; i < node->item_count; i++) {
 			if (key < node->keys[i]) {
 				return _btree_find_key(node->branches[i], key);
 			}
@@ -369,8 +371,6 @@ _btree_node *_btree_find_key(_btree_node * node, int key) {
 
 		return _btree_find_key(node->branches[node->item_count], key);
 	}
-
-	return NULL;
 }
 
 
@@ -410,7 +410,7 @@ bool _node_is_interior(_btree_node * node) {
 int _btree_node_get_item_position(_btree_node * node, int key) {
 	int insert_pos = 0;
 
-	for (int i = 0; i < node->item_count; i++) {
+	for (int i = 0; i < (int)node->item_count; i++) {
 		if (node->keys[i] == key) {
 			insert_pos = -i;
 			break;
@@ -465,7 +465,7 @@ void cutil_btree_itr_init(cutil_btree_itr *itr, cutil_btree *btree) {
 }
 
 void cutil_btree_itr_uninit(cutil_btree_itr *itr) {
-
+	(void)itr;
 }
 
 void cutil_btree_itr_destroy(cutil_btree_itr *itr) {
@@ -506,7 +506,7 @@ void _itr_set_next_parent_node(cutil_btree_itr *itr) {
 	do {
 		itr->_node_pos = itr->_node->position;
 		itr->_node = itr->_node->parent;
-	} while ((itr->_node != NULL) && (itr->_node_pos >= itr->_node->item_count));
+	} while ((itr->_node != NULL) && (itr->_node_pos >= (int)itr->_node->item_count));
 }
 
 bool cutil_btree_itr_next(cutil_btree_itr *itr, int* key) {
@@ -516,7 +516,7 @@ bool cutil_btree_itr_next(cutil_btree_itr *itr, int* key) {
 
 	if (_btree_node_is_leaf(itr->_node)) {
 		// all items in leaf node explored, return to parent
-		if (itr->_node_pos >= itr->_node->item_count) {
+		if (itr->_node_pos >= (int)itr->_node->item_count) {
 			_itr_set_next_parent_node(itr);
 		}
 	}

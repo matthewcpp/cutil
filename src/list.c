@@ -301,7 +301,7 @@ cutil_list_itr *cutil_list_itr_create(cutil_list *list) {
 }
 
 void cutil_list_itr_uninit(cutil_list_itr *itr) {
-
+	(void)itr;
 }
 
 void cutil_list_itr_destroy(cutil_list_itr *itr) {

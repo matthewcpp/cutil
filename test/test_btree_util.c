@@ -32,12 +32,12 @@ void dump_btree_node(_btree_node* node, int depth, FILE* file) {
 	fprintf(file, "%c ", node_type);
 	fprintf(file, "%i ", node->item_count);
 
-	for (int i = 0; i < node->item_count; ++i) {
+	for (unsigned int i = 0; i < node->item_count; ++i) {
 		fprintf(file, "%i ", node->keys[i]);
 	}
 	fputc('\n', file);
 
-	for (int i = 0; i < node->item_count + 1; ++i) {
+	for (unsigned int i = 0; i < node->item_count + 1; ++i) {
 		if (node->branches[i]) {
 			dump_btree_node(node->branches[i], depth + 1, file);
 		}
@@ -108,7 +108,7 @@ _btree_node*read_btree_node(cutil_btree* btree, _btree_node* parent, int* node_c
 
 		// read the key values for this node from the input
 		int val = 0;
-		for (int i = 0; i < node->item_count; ++i) {
+		for (unsigned int i = 0; i < node->item_count; ++i) {
 			sscanf(data + *string_pos, "%i%n", &val, &bytes_read);
 			*string_pos += bytes_read;
 			node->keys[i] = (char)val;
@@ -116,7 +116,7 @@ _btree_node*read_btree_node(cutil_btree* btree, _btree_node* parent, int* node_c
 
 		//if this node is not a leaf, then read its children recursively
 		if (strcmp(node_type, "L") != 0) {
-			for (int i = 0; i < node->item_count + 1; ++i) {
+			for (unsigned int i = 0; i < node->item_count + 1; ++i) {
 				node->branches[i] = read_btree_node(btree, node, node_counter, data, string_pos);
 				if (node->branches[i]) {
 					node->branches[i]->position = i;
@@ -183,7 +183,7 @@ bool _compare_btree_nodes(_btree_node* a, _btree_node* b) {
 		return false;
 	}
 	else {
-		for (int i = 0; i < a->item_count; i++) {
+		for (unsigned int i = 0; i < a->item_count; i++) {
 			if (a->keys[i] != b->keys[i]) {
 				return false;
 			}
@@ -193,7 +193,7 @@ bool _compare_btree_nodes(_btree_node* a, _btree_node* b) {
 		_btree_node* branch_b;
 		bool ok = true;
 
-		for (int i = 0; i < a->item_count + 1; i++) {
+		for (unsigned int i = 0; i < a->item_count + 1; i++) {
 			branch_a = a->branches[i];
 			branch_b = b->branches[i];
 
@@ -241,7 +241,7 @@ bool _validate_btree_node(cutil_btree *btree, _btree_node* node, int parent_min_
 		return false;
 	}
 
-	for (int i = 0; i < node->item_count; i++) {
+	for (unsigned int i = 0; i < node->item_count; i++) {
 		// all keys in the node must be less than the parent max and greater than the parent min
 		if (node->keys[i] <= parent_min_val || node->keys[i] >= parent_max_val) {
 			return false;
