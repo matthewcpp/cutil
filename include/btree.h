@@ -37,7 +37,7 @@ unsigned int cutil_btree_size(cutil_btree *btree);
 typedef struct cutil_btree_itr {
 	_btree_node* _node;
 	cutil_btree* _betree;
-	int _node_pos;
+	unsigned int _node_pos;
 
 #ifdef CUTIL_DEBUGGING
 	bool _debug_malloc;

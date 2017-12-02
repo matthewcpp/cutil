@@ -5,7 +5,10 @@
 #include <math.h>
 #include <assert.h>
 
-int _btree_node_get_item_position(_btree_node * node, int key);
+#define ITEM_ALREADY_INSERTED INT_MAX
+#define ITR_POS_UNINIT INT_MAX
+
+unsigned int _btree_node_get_item_position(_btree_node * node, int key);
 
 bool _node_full(cutil_btree *btree, _btree_node * node);
 bool _node_is_root(_btree_node * node);
@@ -17,7 +20,7 @@ _btree_node *_btree_find_key(_btree_node * node, int key);
 
 void _set_node_child(_btree_node *parent, _btree_node *child, int index);
 
-int _get_pivot_index(cutil_btree *btree) {
+unsigned int _get_pivot_index(cutil_btree *btree) {
 	return (btree->_order - 1) / 2 + ((btree->_order - 1) % 2 != 0);
 }
 
@@ -227,8 +230,8 @@ void _split_interior_left(cutil_btree *btree,_btree_node *interior_node, _btree_
 }
 
 void _split_interior_node(cutil_btree *btree, _btree_node *interior_node, _btree_node *left_node, _btree_node *right_node, int key) {
-	int insert_position = _btree_node_get_item_position(interior_node, key);
-	int pivot_index = _get_pivot_index(btree);
+	unsigned int insert_position = _btree_node_get_item_position(interior_node, key);
+	unsigned int pivot_index = _get_pivot_index(btree);
 	int pivot_key;
 
 	_btree_node *split_node = _btree_node_create(btree->_order);
@@ -269,17 +272,17 @@ void _set_node_child(_btree_node *parent, _btree_node *child, int index) {
 }
 
 void _push_up_one_level(cutil_btree *btree, _btree_node *parent, _btree_node *left_node, _btree_node *right_node, int key) {
-	int insertion_point = _btree_node_get_item_position(parent, key);
+	unsigned int insertion_point = _btree_node_get_item_position(parent, key);
 
 	if (_node_full(btree, parent)) {
 		_split_interior_node(btree, parent, left_node, right_node, key);
 	}
 	else { //adjust keys and branches to make room for new items
-		for (int i = parent->item_count; i > insertion_point; i--) {
+		for (unsigned int i = parent->item_count; i > insertion_point; i--) {
 			parent->keys[i] = parent->keys[i - 1];
 		}
 
-		for (int i = parent->item_count + 1; i > insertion_point; i--) {
+		for (unsigned int i = parent->item_count + 1; i > insertion_point; i--) {
 			_set_node_child(parent, parent->branches[i - 1], i);
 		}
 
@@ -291,9 +294,9 @@ void _push_up_one_level(cutil_btree *btree, _btree_node *parent, _btree_node *le
 	}
 }
 
-void _split_leaf_node(cutil_btree *btree, _btree_node * node, int key, int insert_position) {
+void _split_leaf_node(cutil_btree *btree, _btree_node * node, int key, unsigned int insert_position) {
 	//get key that will be pushed up (ceil)
-	int pivot_index = _get_pivot_index(btree);
+	unsigned int pivot_index = _get_pivot_index(btree);
 	_btree_node * new_right_node = _btree_node_create(btree->_order);
 	int pivot_key;
 
@@ -329,15 +332,15 @@ void _split_leaf_node(cutil_btree *btree, _btree_node * node, int key, int inser
 
 bool cutil_btree_insert(cutil_btree *btree, int key) {
 	_btree_node * node = _btree_find_key(btree->_root, key);
-	int insert_position = _btree_node_get_item_position(node, key);
+	unsigned int insert_position = _btree_node_get_item_position(node, key);
 
-	if (insert_position > -1) {
+	if (insert_position != ITEM_ALREADY_INSERTED) {
 		if (_node_full(btree, node)) {
 			_split_leaf_node(btree, node, key, insert_position);
 		}
 		else if (insert_position >= 0) {
 			// make room for new key in leaf node
-			for (int i = node->item_count; i > insert_position; i--) {
+			for (unsigned int i = node->item_count; i > insert_position; i--) {
 				node->keys[i] = node->keys[i - 1];
 			}
 
@@ -376,9 +379,9 @@ _btree_node *_btree_find_key(_btree_node * node, int key) {
 
 bool cutil_btree_find(cutil_btree *btree, int key) {
 	_btree_node * node = _btree_find_key(btree->_root, key);
-	int insert_position = _btree_node_get_item_position(node, key);
+	unsigned int insert_position = _btree_node_get_item_position(node, key);
 
-	return insert_position == -1;
+	return insert_position == ITEM_ALREADY_INSERTED;
 }
 
 void cutil_btree_clear(cutil_btree *btree) {
@@ -407,8 +410,8 @@ bool _node_is_interior(_btree_node * node) {
 /*	Gets the position for this item in the node key array.
 	If the return value is negative it is the index of them key.
 */
-int _btree_node_get_item_position(_btree_node * node, int key) {
-	int insert_pos = 0;
+unsigned int _btree_node_get_item_position(_btree_node * node, int key) {
+	unsigned int insert_pos = 0;
 
 	for (int i = 0; i < (int)node->item_count; i++) {
 		if (node->keys[i] == key) {
@@ -455,7 +458,7 @@ cutil_btree_itr *cutil_btree_itr_create(cutil_btree *btree) {
 void cutil_btree_itr_init(cutil_btree_itr *itr, cutil_btree *btree) {
 	itr->_node = NULL;
 	itr->_betree = btree;
-	itr->_node_pos = -1; //this signals that the iterator is uninitialized.
+	itr->_node_pos = ITR_POS_UNINIT;
 
 #ifdef CUTIL_DEBUGGING
 	
@@ -495,7 +498,7 @@ _btree_node * _itr_find_next_leaf_node(_btree_node *node) {
 }
 
 bool cutil_btree_itr_has_next(cutil_btree_itr *itr) {
-	if (itr->_node_pos == -1) {
+	if (itr->_node_pos == ITR_POS_UNINIT) {
 		_find_starting_node_pos(itr);
 	}
 
@@ -510,7 +513,7 @@ void _itr_set_next_parent_node(cutil_btree_itr *itr) {
 }
 
 bool cutil_btree_itr_next(cutil_btree_itr *itr, int* key) {
-	if (itr->_node_pos == -1) {
+	if (itr->_node_pos == ITR_POS_UNINIT) {
 		_find_starting_node_pos(itr);
 	}
 
