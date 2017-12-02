@@ -2,20 +2,18 @@
 
 #include <stdbool.h>
 
-#define BTREE_NODE_KEY_COUNT 4
-#define BTREE_NODE_BRANCH_COUNT 5
-
 typedef struct _btree_node {
 	struct _btree_node *parent;
-	int item_count;
+	unsigned int item_count;
 	int position;
-	int keys[BTREE_NODE_KEY_COUNT];
-	struct _btree_node *branches[BTREE_NODE_BRANCH_COUNT];
+	int* keys;
+	struct _btree_node **branches;
 } _btree_node;
 
 typedef struct cutil_btree{
 	_btree_node *_root;
 	unsigned int _size;
+	unsigned int _order;
 #ifdef CUTIL_DEBUGGING
 	bool _debug_malloc;
 	int _debug_generation;
@@ -27,6 +25,8 @@ void cutil_btree_init(cutil_btree *btree);
 
 void cutil_btree_uninit(cutil_btree *btree);
 void cutil_btree_destroy(cutil_btree *btree);
+
+unsigned int cutil_btree_get_order(cutil_btree *btree);
 
 bool cutil_btree_insert(cutil_btree *btree, int key);
 bool cutil_btree_find(cutil_btree *btree, int key);

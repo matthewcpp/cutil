@@ -53,7 +53,7 @@ void dump_btree_node(_btree_node* node, int depth, FILE* file) {
 void dump_btree(cutil_btree* btree, const char* path) {
 	FILE * file = fopen(path, "w");
 
-	fprintf(file, "%i\n", BTREE_NODE_BRANCH_COUNT);
+	fprintf(file, "%i\n", btree->_order);
 	dump_btree_node(btree->_root, 0, file);
 
 	fclose(file);
@@ -89,7 +89,7 @@ bool read_btree_from_file(cutil_btree* btree, const char* test_data_name) {
 	}
 }
 
-_btree_node*read_btree_node(_btree_node* parent, int* node_counter, const char* data, int* string_pos) {
+_btree_node*read_btree_node(cutil_btree* btree, _btree_node* parent, int* node_counter, const char* data, int* string_pos) {
 	int bytes_read = 0;
 	int item_count = 0;
 	char node_type[2];
@@ -101,7 +101,7 @@ _btree_node*read_btree_node(_btree_node* parent, int* node_counter, const char* 
 	*string_pos += bytes_read;
 
 	if (item_count > 0) {
-		_btree_node* node = _btree_node_create();
+		_btree_node* node = _btree_node_create(btree->_order);
 		*node_counter += 1;
 		node->parent = parent;
 		node->item_count = item_count;
@@ -117,7 +117,7 @@ _btree_node*read_btree_node(_btree_node* parent, int* node_counter, const char* 
 		//if this node is not a leaf, then read its children recursively
 		if (strcmp(node_type, "L") != 0) {
 			for (int i = 0; i < node->item_count + 1; ++i) {
-				node->branches[i] = read_btree_node(node, node_counter, data, string_pos);
+				node->branches[i] = read_btree_node(btree, node, node_counter, data, string_pos);
 				if (node->branches[i]) {
 					node->branches[i]->position = i;
 				}
@@ -138,7 +138,7 @@ void read_btree(cutil_btree* btree, const char* data) {
 	int node_counter = 0;
 	sscanf(data, "%i%n", &order, &string_pos);
 
-	_btree_node* new_root = read_btree_node(NULL, &node_counter, data, &string_pos);
+	_btree_node* new_root = read_btree_node(btree, NULL, &node_counter, data, &string_pos);
 	if (new_root) {
 		cutil_btree_uninit(btree);
 
@@ -237,7 +237,7 @@ int _get_max_branch_val(_btree_node* node) {
 
 bool _validate_btree_node(cutil_btree *btree, _btree_node* node, int parent_min_val, int parent_max_val) {
 	//non root nodes must have a size >= tree order / 2
-	if (node->parent && node->item_count < BTREE_NODE_BRANCH_COUNT / 2) {
+	if (node->parent && node->item_count < btree->_order / 2) {
 		return false;
 	}
 
