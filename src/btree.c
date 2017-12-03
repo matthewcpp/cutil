@@ -83,7 +83,7 @@ void cutil_btree_destroy(cutil_btree *btree) {
 }
 
 void _btree_node_recursive_delete(_btree_node * node) {
-	for (unsigned int i = 0; i < node->item_count; i++) {
+	for (unsigned int i = 0; i <= node->item_count; i++) {
 		if (node->branches[i]) {
 			_btree_node_recursive_delete(node->branches[i]);
 		}
@@ -126,10 +126,9 @@ void _split_node_right(cutil_btree *btree, _btree_node *interior_node, _btree_no
 	}
 
 	//insert the new key at the correct position
-
 	split_node->keys[split_node_key_index] = key;
 
-	//clear no longer used items from interior node
+	//clear no longer used items from the node
 	item_count = interior_node->item_count - pivot_index;
 	memset(interior_node->keys + pivot_index, 0, item_count * sizeof(int));
 	memset(interior_node->branches + pivot_index + 1, 0, item_count * sizeof(_btree_node *));
@@ -150,6 +149,8 @@ void _split_interior_right(cutil_btree *btree, _btree_node *interior_node, _btre
 	_set_node_child(split_node, right_node, split_node_key_index + 1);
 }
 
+//splitting a node in the middle has two distinct cases depending on whether it is a leaf or internal node.
+
 void _split_node_middle(cutil_btree *btree, _btree_node *interior_node, _btree_node *split_node, int insertion_position) {
 	(void)btree;
 
@@ -161,7 +162,7 @@ void _split_node_middle(cutil_btree *btree, _btree_node *interior_node, _btree_n
 		split_node->item_count += 1;
 	}
 
-	//clear no longer used items from the sourc enode
+	//clear no longer used items from the source node
 	memset(interior_node->keys + insertion_position, 0, insertion_pos * sizeof(int));
 	interior_node->item_count = insertion_position;
 }
@@ -192,7 +193,7 @@ void _split_interior_middle(_btree_node *interior_node, _btree_node *split_node,
 }
 
 void _split_node_left(cutil_btree *btree, _btree_node *interior_node, _btree_node *split_node, int key, int insert_position) {
-	int pivot_index = _get_pivot_index(btree);
+	unsigned int pivot_index = _get_pivot_index(btree);
 
 	//copy items after the pivot position to the split node
 	int item_count = interior_node->item_count - pivot_index;
@@ -218,6 +219,10 @@ void _split_node_left(cutil_btree *btree, _btree_node *interior_node, _btree_nod
 
 	//add in the new key and its children to the interior node
 	interior_node->keys[insert_position] = key;
+
+    //clear no longer used items from the node.  After this split only branches 0 -> pivot_index + 1 are valid.
+    memset(interior_node->keys + pivot_index, 0, item_count * sizeof(int));
+    memset(interior_node->branches + pivot_index + 1, 0, (btree->_order - (pivot_index + 1)) * sizeof(_btree_node *));
 
 	interior_node->item_count = pivot_index;
 }
@@ -413,9 +418,9 @@ bool _node_is_interior(_btree_node * node) {
 unsigned int _btree_node_get_item_position(_btree_node * node, int key) {
 	unsigned int insert_pos = 0;
 
-	for (int i = 0; i < (int)node->item_count; i++) {
+	for (unsigned int i = 0; i < (int)node->item_count; i++) {
 		if (node->keys[i] == key) {
-			insert_pos = -i;
+			insert_pos = ITEM_ALREADY_INSERTED;
 			break;
 		}
 		else if (node->keys[i] > key) {
