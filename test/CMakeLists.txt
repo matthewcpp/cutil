@@ -8,3 +8,7 @@ set(testing_sources
 add_executable(cutil_test ${testing_sources})
 target_link_libraries(cutil_test cutil_testing)
 add_definitions(-DBTREE_TEST_DATA_DIR=${CMAKE_CURRENT_SOURCE_DIR}/btree_data)
+
+add_test (NAME test_list COMMAND cutil_test "list;list_itr")
+add_test (NAME test_vector COMMAND cutil_test "vector")
+add_test (NAME test_btree COMMAND cutil_test "btree;btree_itr")

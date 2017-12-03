@@ -17,7 +17,7 @@ int main(int argc, char** argv){
 		result = cutil_testing_run_suites(argv[1]);
 	}
 	else {
-		cutil_testing_run_all();
+		result = cutil_testing_run_all();
 	}
     
     cutil_testing_destroy();

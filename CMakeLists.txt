@@ -14,6 +14,8 @@ if ( MSVC )
 	set(CMAKE_C_FLAGS_DEBUG  "${CMAKE_C_FLAGS_DEBUG} /W4 /WX")
 endif()
 
+enable_testing()
+
 include_directories(include)
 
 add_subdirectory (src)
