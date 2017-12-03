@@ -6,12 +6,18 @@ compiler: gcc
 before_script:
   - mkdir build
   - cd build
-  - cmake ..
+  - cmake .. -DCOVERAGE=1
+
+before_install:
+  - pip install --user cpp-coveralls
 
 script:
   - sudo unlink /usr/bin/gcc && sudo ln -s /usr/bin/gcc-5 /usr/bin/gcc
   - gcc --version
   - make && make test
+
+after_success:
+  - coveralls --root .
 
 addons:
   apt:
