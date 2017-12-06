@@ -7,6 +7,11 @@ set(testing_sources
 
 add_executable(cutil_test ${testing_sources})
 target_link_libraries(cutil_test cutil_testing)
+
+if ( CMAKE_COMPILER_IS_GNUCC )
+    target_link_libraries(cutil_test m)
+endif()
+
 add_definitions(-DBTREE_TEST_DATA_DIR=${CMAKE_CURRENT_SOURCE_DIR}/btree_data)
 
 add_test (NAME test_list COMMAND cutil_test "list;list_itr")
