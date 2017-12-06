@@ -113,7 +113,7 @@ _btree_node*read_btree_node(cutil_btree* btree, _btree_node* parent, int* node_c
 		for (unsigned int i = 0; i < node->item_count; ++i) {
 			sscanf(data + *string_pos, "%i%n", &val, &bytes_read);
 			*string_pos += bytes_read;
-			node->keys[i] = (char)val;
+			node->keys[i] = val;
 		}
 
 		//if this node is not a leaf, then read its children recursively

@@ -44,6 +44,20 @@ void btree_create_order_sets_correct_value() {
 	cutil_btree_destroy(btree);
 }
 
+void btree_split_interior_node_push_up(){
+    CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, "btree4_split_interior_push_up"));
+    CUTIL_TESTING_ASSERT_TRUE(validate_btree(g_btree));
+
+    cutil_btree_insert(g_btree, 123);
+    CUTIL_TESTING_ASSERT_TRUE(validate_btree(g_btree));
+
+    cutil_btree *expected_btree = cutil_btree_create();
+    read_btree_from_file(expected_btree, "btree4_split_interior_push_up_result");
+
+    CUTIL_TESTING_ASSERT_TRUE(compare_btrees(expected_btree, g_btree));
+    cutil_btree_destroy(expected_btree);
+}
+
 /*	inserts items into the tree  with odd number order that requires a leaf node to be split to the right of the node pivot */
 void btree_test_split_leaf_node_right() {
 	insert_char_sequence(g_btree,"ABCDE");
@@ -217,6 +231,8 @@ void add_btree_tests() {
 
 	CUTIL_TESTING_ADD(btree_test_size_empty);
 	CUTIL_TESTING_ADD(btree_test_size_non_empty);
+
+    CUTIL_TESTING_ADD(btree_split_interior_node_push_up);
 
 	CUTIL_TESTING_ADD(btree_test_split_leaf_node_right);
 	CUTIL_TESTING_ADD(btree_test_split_leaf_node_left);

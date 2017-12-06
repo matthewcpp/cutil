@@ -272,6 +272,9 @@ void _split_interior_node(cutil_btree *btree, _btree_node *interior_node, _btree
 		_set_node_child(new_root_node, interior_node, 0);
 		_set_node_child(new_root_node, split_node, 1);
 	}
+    else{
+        _push_up_one_level(btree, interior_node->parent, interior_node, split_node, pivot_key);
+    }
 }
 
 void _set_node_child(_btree_node *parent, _btree_node *child, int index) {
