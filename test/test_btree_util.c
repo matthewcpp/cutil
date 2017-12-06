@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <math.h>
 
 #define Q(x) #x
 #define QUOTE(x) Q(x)
@@ -144,6 +145,7 @@ void read_btree(cutil_btree* btree, const char* data) {
 		cutil_btree_uninit(btree);
 
 		new_root->position = 0;
+		btree->_order = order;
 		btree->_root = new_root;
 		btree->_size = node_counter;
 
@@ -220,7 +222,12 @@ bool _compare_btree_nodes(_btree_node* a, _btree_node* b) {
 }
 
 bool compare_btrees(cutil_btree* a, cutil_btree* b) {
-	return _compare_btree_nodes(a->_root, b->_root);
+	if (a->_order != b->_order) {
+		return false;
+	}
+	else {
+		return _compare_btree_nodes(a->_root, b->_root);
+	}
 }
 
 int _get_max_branch_val(_btree_node* node) {
@@ -237,9 +244,21 @@ int _get_max_branch_val(_btree_node* node) {
 }
 
 bool _validate_btree_node(cutil_btree *btree, _btree_node* node, int parent_min_val, int parent_max_val) {
-	//non root nodes must have a size >= tree order / 2
-	if (node->parent && node->item_count < btree->_order / 2) {
-		return false;
+	if (node->parent) {
+		unsigned int ceil_order_div_2 = (unsigned int)ceil((double)btree->_order / 2.0);
+
+		if (node->branches[0]) { //interior node
+			// All internal nodes (except the root node) have at least ceil(order / 2) nonempty children.
+			if (node->branches[ceil_order_div_2 - 1] == NULL) {
+				return false;
+			}
+		}
+		else { //leaf node
+			// Each leaf node (other than the root node if it is a leaf) must contain at least ceil(m / 2) - 1 keys
+			if (node->item_count < ceil_order_div_2 - 1) {
+				return false;
+			}
+		}
 	}
 
 	for (unsigned int i = 0; i < node->item_count; i++) {

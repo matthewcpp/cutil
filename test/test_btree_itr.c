@@ -18,25 +18,27 @@ void btree_itr_empty_tree() {
 }
 
 /* ensures that the forward iterator visits nodes in the expected order */
-void btree_itr_forward_iteration_order1() {
-	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, "btree_split_interior_right_result"));
-	const char* expected_sequence = "ACDEFGHKLMNPQRSTWXYZ";
-	CUTIL_TESTING_ASSERT_TRUE(confirm_forward_iteration_char_sequence(g_btree, expected_sequence));
+void btree_itr_forward_iteration_order() {
+	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, "btree5_split_interior_left_result"));
+	
+	int key = 0;
+	int prev_key = 0;
+	int i = 0;
+
+	cutil_btree_itr * itr = cutil_btree_itr_create(g_btree);
+
+	while (cutil_btree_itr_next(itr, &key)) {
+		if (i) {
+			CUTIL_TESTING_ASSERT_TRUE(prev_key < key);
+		}
+
+		prev_key = key;
+	}
+
+	cutil_btree_itr_destroy(itr);
 }
 
-/* ensures that the forward iterator visits nodes in the expected order */
-void btree_itr_forward_iteration_order2() {
-	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, "btree_split_interior_middle_result"));
-	const char* expected_sequence = "ACDEFGHIJKLMNPQRTWXYZ";
-	CUTIL_TESTING_ASSERT_TRUE(confirm_forward_iteration_char_sequence(g_btree, expected_sequence));
-}
 
-/* ensures that the forward iterator visits nodes in the expected order */
-void btree_itr_forward_iteration_order3() {
-	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, "btree_split_interior_left_result"));
-	const char* expected_sequence = "ABCDEGHIJLMNOPQRST";
-	CUTIL_TESTING_ASSERT_TRUE(confirm_forward_iteration_char_sequence(g_btree, expected_sequence));
-}
 
 void add_btree_itr_tests() {
 	cutil_testing_suite("btree_itr");
@@ -44,7 +46,5 @@ void add_btree_itr_tests() {
 	cutil_testing_suite_after_each(&btree_after_each);
 
 	CUTIL_TESTING_ADD(btree_itr_empty_tree);
-	CUTIL_TESTING_ADD(btree_itr_forward_iteration_order1);
-	CUTIL_TESTING_ADD(btree_itr_forward_iteration_order2);
-	CUTIL_TESTING_ADD(btree_itr_forward_iteration_order3);
+	CUTIL_TESTING_ADD(btree_itr_forward_iteration_order);
 }

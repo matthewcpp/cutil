@@ -11,4 +11,4 @@ add_definitions(-DBTREE_TEST_DATA_DIR=${CMAKE_CURRENT_SOURCE_DIR}/btree_data)
 
 add_test (NAME test_list COMMAND cutil_test "list;list_itr")
 add_test (NAME test_vector COMMAND cutil_test "vector")
-add_test (NAME test_btree COMMAND cutil_test "btree;btree_itr")
+add_test (NAME test_btree COMMAND cutil_test "btree;btree_itr;btree_even_order")

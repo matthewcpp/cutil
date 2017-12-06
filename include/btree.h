@@ -21,7 +21,10 @@ typedef struct cutil_btree{
 } cutil_btree;
 
 cutil_btree *cutil_btree_create();
+cutil_btree *cutil_btree_create_with_order(unsigned int order);
+
 void cutil_btree_init(cutil_btree *btree);
+void cutil_btree_init_with_order(cutil_btree *btree, unsigned int order);
 
 void cutil_btree_uninit(cutil_btree *btree);
 void cutil_btree_destroy(cutil_btree *btree);
