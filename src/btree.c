@@ -385,6 +385,9 @@ _btree_node *_btree_find_key(_btree_node * node, int key) {
 			if (key < node->keys[i]) {
 				return _btree_find_key(node->branches[i], key);
 			}
+            else if (key == node->keys[i]){
+                return node;
+            }
 		}
 
 		return _btree_find_key(node->branches[node->item_count], key);

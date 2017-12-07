@@ -32,8 +32,8 @@ void btree_test_size_non_empty() {
 
 	for (int i = 0; i < expected_tree_size; ++i) {
 		cutil_btree_insert(g_btree, i);
+        CUTIL_TESTING_ASSERT_INT_EQ(cutil_btree_size(g_btree), i + 1);
 	}
-	CUTIL_TESTING_ASSERT_INT_EQ(cutil_btree_size(g_btree), 5);
 }
 
 void btree_create_order_sets_correct_value() {
@@ -42,6 +42,45 @@ void btree_create_order_sets_correct_value() {
 	CUTIL_TESTING_ASSERT_INT_EQ(cutil_btree_get_order(btree), 4);
 
 	cutil_btree_destroy(btree);
+}
+
+void btree_find_returns_true_if_key_in_leaf_node(){
+    CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, "btree4_split_interior_left_result"));
+    CUTIL_TESTING_ASSERT_TRUE(cutil_btree_find(g_btree, 34));
+}
+
+void btree_find_returns_true_if_key_in_interior_node(){
+    CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, "btree4_split_interior_left_result"));
+    CUTIL_TESTING_ASSERT_TRUE(cutil_btree_find(g_btree, 30));
+}
+
+void btree_find_returns_true_if_key_in_root_node(){
+    CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, "btree4_split_interior_left_result"));
+    CUTIL_TESTING_ASSERT_TRUE(cutil_btree_find(g_btree, 20));
+}
+
+void btree_find_returns_false_if_key_not_present(){
+    for (int i =0; i < 10; ++i){
+        cutil_btree_insert(g_btree, i);
+    }
+
+    for (int i =100; i < 110; ++i){
+        CUTIL_TESTING_ASSERT_FALSE(cutil_btree_find(g_btree, i));
+    }
+}
+
+void btree_clear_removes_all_items(){
+    for (int i =0; i < 10; ++i){
+        cutil_btree_insert(g_btree, i);
+    }
+
+    CUTIL_TESTING_ASSERT_INT_EQ(cutil_btree_size(g_btree), 10);
+    CUTIL_TESTING_ASSERT_TRUE(cutil_btree_find(g_btree, 5));
+
+    cutil_btree_clear(g_btree);
+
+    CUTIL_TESTING_ASSERT_INT_EQ(cutil_btree_size(g_btree), 0);
+    CUTIL_TESTING_ASSERT_FALSE(cutil_btree_find(g_btree, 5));
 }
 
 void btree_split_interior_node_push_up(){
@@ -231,6 +270,13 @@ void add_btree_tests() {
 
 	CUTIL_TESTING_ADD(btree_test_size_empty);
 	CUTIL_TESTING_ADD(btree_test_size_non_empty);
+
+    CUTIL_TESTING_ADD(btree_clear_removes_all_items);
+
+    CUTIL_TESTING_ADD(btree_find_returns_true_if_key_in_leaf_node);
+    CUTIL_TESTING_ADD(btree_find_returns_true_if_key_in_interior_node);
+    CUTIL_TESTING_ADD(btree_find_returns_true_if_key_in_root_node);
+    CUTIL_TESTING_ADD(btree_find_returns_false_if_key_not_present);
 
     CUTIL_TESTING_ADD(btree_split_interior_node_push_up);
 
