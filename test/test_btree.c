@@ -260,6 +260,57 @@ void btree_even_test_split_right_new_root() {
 	cutil_btree_destroy(expected_btree);
 }
 
+/* deletes a key from a leaf node that has extra keys and does not require any borrowing.
+*/
+void btree_simple_delete_leaf_node() {
+	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, "btree5_delete_leaf_noborrow"));
+
+	CUTIL_TESTING_ASSERT_TRUE(cutil_btree_delete(g_btree, 75));
+	CUTIL_TESTING_ASSERT_TRUE(validate_btree(g_btree));
+
+	CUTIL_TESTING_ASSERT_FALSE(cutil_btree_find(g_btree, 75));
+
+	cutil_btree *expected_btree = cutil_btree_create();
+	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(expected_btree, "btree5_delete_leaf_noborrow_result"));
+	CUTIL_TESTING_ASSERT_TRUE(compare_btrees(expected_btree, g_btree));
+
+	cutil_btree_destroy(expected_btree);
+}
+
+/* deletes a key from a leaf node that requires a borrow from its sibing on the right.
+*/
+void btree_delete_leaf_borrow_right() {
+	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, "btree5_delete_leaf_borrow_right"));
+
+	CUTIL_TESTING_ASSERT_TRUE(cutil_btree_delete(g_btree, 55));
+	CUTIL_TESTING_ASSERT_TRUE(validate_btree(g_btree));
+
+	CUTIL_TESTING_ASSERT_FALSE(cutil_btree_find(g_btree, 55));
+
+	cutil_btree *expected_btree = cutil_btree_create();
+	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(expected_btree, "btree5_delete_leaf_borrow_right_result"));
+	CUTIL_TESTING_ASSERT_TRUE(compare_btrees(expected_btree, g_btree));
+
+	cutil_btree_destroy(expected_btree);
+}
+
+/* deletes a key from a leaf node that requires a borrow from its sibling on the left.
+*/
+void btree_delete_leaf_borrow_left() {
+	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, "btree5_delete_leaf_borrow_left"));
+
+	CUTIL_TESTING_ASSERT_TRUE(cutil_btree_delete(g_btree, 31));
+	CUTIL_TESTING_ASSERT_TRUE(validate_btree(g_btree));
+
+	CUTIL_TESTING_ASSERT_FALSE(cutil_btree_find(g_btree, 31));
+
+	cutil_btree *expected_btree = cutil_btree_create();
+	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(expected_btree, "btree5_delete_leaf_borrow_left_result"));
+	CUTIL_TESTING_ASSERT_TRUE(compare_btrees(expected_btree, g_btree));
+
+	cutil_btree_destroy(expected_btree);
+}
+
 
 void add_btree_tests() {
 	cutil_testing_suite("btree");
@@ -299,6 +350,13 @@ void add_btree_tests() {
 	CUTIL_TESTING_ADD(btree_even_test_split_left_new_root);
 	CUTIL_TESTING_ADD(btree_even_test_split_right_new_root);
 	CUTIL_TESTING_ADD(btree_even_test_split_middle_new_root);
+
+	cutil_testing_suite("btree_delete");
+	cutil_testing_suite_before_each(&btree_before_each);
+	cutil_testing_suite_after_each(&btree_after_each);
+	CUTIL_TESTING_ADD(btree_simple_delete_leaf_node);
+	CUTIL_TESTING_ADD(btree_delete_leaf_borrow_right);
+	CUTIL_TESTING_ADD(btree_delete_leaf_borrow_left);
 }
 
 

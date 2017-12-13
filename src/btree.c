@@ -4,21 +4,28 @@
 #include <string.h>
 #include <assert.h>
 #include <limits.h>
+#include <math.h>
 
 #define ITEM_ALREADY_INSERTED INT_MAX
+#define ITEM_NOT_PRESENT INT_MAX
 #define ITR_POS_UNINIT INT_MAX
 
 #define DEFAULT_BTREE_ORDER 5
 
-unsigned int _btree_node_get_item_position(_btree_node * node, int key);
+unsigned int _btree_node_get_insertion_position(_btree_node * node, int key);
+unsigned int _btree_node_key_position(_btree_node * node, int key);
 
 bool _node_full(cutil_btree *btree, _btree_node * node);
 bool _node_is_root(_btree_node * node);
-bool _btree_node_is_leaf(_btree_node * node);
+bool _node_is_leaf(_btree_node * node);
 bool _node_is_interior(_btree_node * node);
+unsigned int _min_leaf_item_count(cutil_btree* btree);
 
 void _btree_node_recursive_delete(_btree_node * node);
 _btree_node *_btree_find_key(_btree_node * node, int key);
+
+_btree_node *_node_right_sibling(_btree_node * node);
+_btree_node *_node_left_sibling(_btree_node * node);
 
 void _set_node_child(_btree_node *parent, _btree_node *child, int index);
 void _push_up_one_level(cutil_btree *btree, _btree_node *parent, _btree_node *left_node, _btree_node *right_node, int key);
@@ -242,7 +249,7 @@ void _split_interior_left(cutil_btree *btree,_btree_node *interior_node, _btree_
 }
 
 void _split_interior_node(cutil_btree *btree, _btree_node *interior_node, _btree_node *left_node, _btree_node *right_node, int key) {
-	unsigned int insert_position = _btree_node_get_item_position(interior_node, key);
+	unsigned int insert_position = _btree_node_get_insertion_position(interior_node, key);
 	unsigned int pivot_index = _get_pivot_index(btree);
 	int pivot_key;
 
@@ -287,7 +294,7 @@ void _set_node_child(_btree_node *parent, _btree_node *child, int index) {
 }
 
 void _push_up_one_level(cutil_btree *btree, _btree_node *parent, _btree_node *left_node, _btree_node *right_node, int key) {
-	unsigned int insertion_point = _btree_node_get_item_position(parent, key);
+	unsigned int insertion_point = _btree_node_get_insertion_position(parent, key);
 
 	if (_node_full(btree, parent)) {
 		_split_interior_node(btree, parent, left_node, right_node, key);
@@ -347,7 +354,7 @@ void _split_leaf_node(cutil_btree *btree, _btree_node * node, int key, unsigned 
 
 bool cutil_btree_insert(cutil_btree *btree, int key) {
 	_btree_node * node = _btree_find_key(btree->_root, key);
-	unsigned int insert_position = _btree_node_get_item_position(node, key);
+	unsigned int insert_position = _btree_node_get_insertion_position(node, key);
 
 	if (insert_position != ITEM_ALREADY_INSERTED) {
 		if (_node_full(btree, node)) {
@@ -376,7 +383,7 @@ bool cutil_btree_insert(cutil_btree *btree, int key) {
 }
 
 _btree_node *_btree_find_key(_btree_node * node, int key) {
-	if (_btree_node_is_leaf(node)) {
+	if (_node_is_leaf(node)) {
 		return node;
 	}
 	else {
@@ -394,10 +401,142 @@ _btree_node *_btree_find_key(_btree_node * node, int key) {
 	}
 }
 
+unsigned int _min_leaf_item_count(cutil_btree* btree) {
+	return ((unsigned int)ceil((double)btree->_order / 2.0)) - 1;
+}
+
+void _slide_keys_left(_btree_node* node, int item_pos) {
+	for (unsigned int i = item_pos; i < node->item_count - 1; ++i) {
+		node->keys[i] = node->keys[i + 1];
+	}
+}
+
+void _slide_keys_right(_btree_node* node, unsigned int item_pos) {
+	for (unsigned int i = item_pos; i > 0; --i) {
+		node->keys[i] = node->keys[i -1];
+	}
+}
+
+/*	Easiest delete case.  The leaf node has more keys than the minimium.  Keys that are greater than the
+ *	taget just need to slide over.  no need to worry about branches since this is a leaf node.
+*/
+void _simple_remove_from_leaf(_btree_node* node, unsigned int item_pos) {
+	_slide_keys_left(node, item_pos);
+	node->item_count -= 1;
+
+	//temp
+	node->keys[node->item_count] = 0;
+}
+
+bool _delete_from_leaf_with_borrow_right(_btree_node * node, int item_pos, unsigned int min_count) {
+	_btree_node *sibling = _node_right_sibling(node);
+
+	if (sibling && sibling->item_count > min_count) {
+		int borrowed_key = sibling->keys[0];
+
+		_slide_keys_left(node, item_pos);
+		_simple_remove_from_leaf(sibling, 0);
+
+		node->keys[node->item_count -1] = node->parent->keys[node->position];
+		node->parent->keys[node->position] = borrowed_key;
+
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+bool _delete_from_leaf_with_borrow_left(_btree_node * node, int item_pos, unsigned int min_count) {
+	_btree_node *sibling = _node_left_sibling(node);
+
+	if (sibling && sibling->item_count > min_count) {
+		//remove the borrowed key from the sibling
+		int borrowed_key = sibling->keys[sibling->item_count-1];
+		_simple_remove_from_leaf(sibling, sibling->item_count - 1);
+
+		//move our siblings parent ky into this new node
+		_slide_keys_right(node, item_pos);
+		node->keys[0] = sibling->parent->keys[sibling->position];
+
+		//borrowed key becomes the new parent key
+		sibling->parent->keys[sibling->position] = borrowed_key;
+
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+unsigned int _btree_node_key_position(_btree_node * node, int key) {
+	for (unsigned int i = 0; i < node->item_count; i++) {
+		if (node->keys[i] == key) {
+			return i;
+		}
+	}
+
+	return ITEM_NOT_PRESENT;
+}
+
+_btree_node *_node_right_sibling(_btree_node * node) {
+	if (node->parent && node->position < node->parent->item_count) {
+		return node->parent->branches[node->position + 1];
+	}
+	else {
+		return NULL;
+	}
+}
+
+_btree_node *_node_left_sibling(_btree_node * node) {
+	if (node->parent && node->position > 0) {
+		return node->parent->branches[node->position - 1];
+	}
+	else {
+		return false;
+	}
+}
+
+bool _delete_from_leaf_with_borrow(_btree_node * node, unsigned int item_pos, unsigned int min_count) {
+	bool deleted = _delete_from_leaf_with_borrow_right(node, item_pos, min_count);
+
+	if (!deleted) {
+		deleted = _delete_from_leaf_with_borrow_left(node, item_pos, min_count);
+	}
+
+	return deleted;
+}
+
+bool cutil_btree_delete(cutil_btree *btree, int key) {
+	_btree_node * node = _btree_find_key(btree->_root, key);
+	unsigned int item_pos = _btree_node_key_position(node, key);
+
+	if (item_pos != ITEM_NOT_PRESENT) {
+		if (_node_is_leaf(node)) {
+			unsigned int min_count = _min_leaf_item_count(btree);
+
+			// this leaf has enough keys to maintain minimum
+			if (node->item_count > min_count) {
+				_simple_remove_from_leaf(node, item_pos);
+			}
+			else { //not enough keys in this node.  try to borrow
+				if (!_delete_from_leaf_with_borrow(node, item_pos, min_count)) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
 
 bool cutil_btree_find(cutil_btree *btree, int key) {
 	_btree_node * node = _btree_find_key(btree->_root, key);
-	unsigned int insert_position = _btree_node_get_item_position(node, key);
+	unsigned int insert_position = _btree_node_get_insertion_position(node, key);
 
 	return insert_position == ITEM_ALREADY_INSERTED;
 }
@@ -417,18 +556,16 @@ unsigned int cutil_btree_size(cutil_btree *btree) {
 	return btree->_size;
 }
 
-bool _btree_node_is_leaf(_btree_node * node) {
+bool _node_is_leaf(_btree_node * node) {
 	return node->branches[0] == NULL;
 }
 
 bool _node_is_interior(_btree_node * node) {
-	return !_node_is_root(node) && !_btree_node_is_leaf(node);
+	return !_node_is_root(node) && !_node_is_leaf(node);
 }
 
-/*	Gets the position for this item in the node key array.
-	If the return value is negative it is the index of them key.
-*/
-unsigned int _btree_node_get_item_position(_btree_node * node, int key) {
+// Gets the position for this item in the node key array. Returns ITEM_ALREADY_INSERTED if already present
+unsigned int _btree_node_get_insertion_position(_btree_node * node, int key) {
 	unsigned int insert_pos = 0;
 
 	for (unsigned int i = 0; i < (int)node->item_count; i++) {
@@ -455,7 +592,6 @@ bool _node_full(cutil_btree *btree, _btree_node * node) {
 bool _node_is_root(_btree_node * node) {
 	return node->parent == NULL;
 }
-
 
 ///-------------------------
 _btree_node * _itr_find_next_leaf_node(_btree_node *node);
@@ -535,7 +671,7 @@ bool cutil_btree_itr_next(cutil_btree_itr *itr, int* key) {
 		_find_starting_node_pos(itr);
 	}
 
-	if (_btree_node_is_leaf(itr->_node)) {
+	if (_node_is_leaf(itr->_node)) {
 		// all items in leaf node explored, return to parent
 		if (itr->_node_pos >= (int)itr->_node->item_count) {
 			_itr_set_next_parent_node(itr);

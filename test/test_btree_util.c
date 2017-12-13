@@ -102,7 +102,8 @@ _btree_node*read_btree_node(cutil_btree* btree, _btree_node* parent, int* node_c
 	sscanf(data + *string_pos, "%i%n", &item_count, &bytes_read);
 	*string_pos += bytes_read;
 
-	if (item_count > 0) {
+	//process node if it is not NULL and has items
+	if (strcmp(node_type, "N") != 0 && item_count > 0) {
 		_btree_node* node = _btree_node_create(btree->_order);
 		*node_counter += 1;
 		node->parent = parent;

@@ -36,6 +36,8 @@ bool cutil_btree_find(cutil_btree *btree, int key);
 void cutil_btree_clear(cutil_btree *btree);
 unsigned int cutil_btree_size(cutil_btree *btree);
 
+bool cutil_btree_delete(cutil_btree *btree, int key);
+
 
 typedef struct cutil_btree_itr {
 	_btree_node* _node;
