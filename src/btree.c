@@ -405,15 +405,21 @@ unsigned int _min_leaf_item_count(cutil_btree* btree) {
 	return ((unsigned int)ceil((double)btree->_order / 2.0)) - 1;
 }
 
+//will slide all keys and branches with index > item pos to the right by 1
 void _slide_keys_left(_btree_node* node, int item_pos) {
 	for (unsigned int i = item_pos; i < node->item_count - 1; ++i) {
 		node->keys[i] = node->keys[i + 1];
+		_set_node_child(node, node->branches[i + 1], i);
 	}
+
+	_set_node_child(node, node->branches[node->item_count], node->item_count -1);
+	node->branches[node->item_count] = NULL;
 }
 
-void _slide_keys_right(_btree_node* node, unsigned int item_pos) {
-	for (unsigned int i = item_pos; i > 0; --i) {
-		node->keys[i] = node->keys[i -1];
+//will slide all keys with index >= item_pos to the right by count positions
+void _slide_keys_right(_btree_node* node, unsigned int start_index, unsigned int end_index, unsigned int count) {
+	for (unsigned int i = end_index + count; i >= start_index + count; --i) {
+		node->keys[i] = node->keys[i -count];
 	}
 }
 
@@ -456,7 +462,10 @@ bool _delete_from_leaf_with_borrow_left(_btree_node * node, int item_pos, unsign
 		_simple_remove_from_leaf(sibling, sibling->item_count - 1);
 
 		//move our siblings parent ky into this new node
-		_slide_keys_right(node, item_pos);
+		if (item_pos > 0) {
+			_slide_keys_right(node, 0, item_pos - 1, 1);
+		}
+		
 		node->keys[0] = sibling->parent->keys[sibling->position];
 
 		//borrowed key becomes the new parent key
@@ -507,6 +516,59 @@ bool _delete_from_leaf_with_borrow(_btree_node * node, unsigned int item_pos, un
 	return deleted;
 }
 
+bool _delete_from_leaf_and_combine(cutil_btree *btree, _btree_node *node, unsigned int item_pos) {
+	//not the final node
+	if (node->position < btree->_order - 1) {
+		_btree_node *right_sibling = _node_right_sibling(node);
+
+		//slide all item in the right sibling over to make room for the to-be deleted node
+		_slide_keys_right(right_sibling, 0, node->item_count -1, node->item_count);
+
+		//place all ite items in the to-be deleted node in the right sibling
+		int target_index = 0;
+		for (unsigned int i = 0; i <item_pos; ++i) {
+			right_sibling->keys[target_index++] = node->keys[i];
+		}
+
+		for (unsigned int i = item_pos + 1; i < node->item_count; ++i) {
+			right_sibling->keys[target_index++] = node->keys[i];
+		}
+
+		right_sibling->keys[node->item_count - 1] = node->parent->keys[node->position];
+		right_sibling->item_count += node->item_count;
+
+		//remove this node from the parent
+		_simple_remove_from_leaf(node->parent, node->position);
+	}
+	else {
+		//move key from rightmost node down to child
+		_btree_node *left_sibling = _node_left_sibling(node);
+		left_sibling->keys[left_sibling->item_count] = left_sibling->parent->keys[left_sibling->position];
+
+		//copy keys from final node to left_sibling
+		int target_index = left_sibling->item_count + 1;
+		for (unsigned int i = 0; i < item_pos; ++i) {
+			left_sibling->keys[target_index++] = node->keys[i];
+		}
+
+		for (unsigned int i = item_pos + 1; i < node->item_count -1; ++i) {
+			left_sibling->keys[target_index++] = node->keys[i];
+		}
+
+		left_sibling->item_count += node->item_count - 1;
+
+		//move greatest key from final node to final key of parent
+		node->parent->keys[left_sibling->position] = node->keys[node->item_count - 1];
+
+		//remove node from the parent
+		node->parent->branches[node->position] = NULL;
+	}
+
+	free(node);
+
+	return true;
+}
+
 bool cutil_btree_delete(cutil_btree *btree, int key) {
 	_btree_node * node = _btree_find_key(btree->_root, key);
 	unsigned int item_pos = _btree_node_key_position(node, key);
@@ -520,9 +582,12 @@ bool cutil_btree_delete(cutil_btree *btree, int key) {
 				_simple_remove_from_leaf(node, item_pos);
 			}
 			else { //not enough keys in this node.  try to borrow
-				if (!_delete_from_leaf_with_borrow(node, item_pos, min_count)) {
-					return false;
+				bool deleted = _delete_from_leaf_with_borrow(node, item_pos, min_count);
+				if (!deleted) {
+					deleted = _delete_from_leaf_and_combine(btree, node, item_pos);
 				}
+
+				return deleted;
 			}
 		}
 
