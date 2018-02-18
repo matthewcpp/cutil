@@ -34,14 +34,6 @@ void cutil_list_init(cutil_list * list, unsigned int item_size) {
 #endif
 }
 
-void cutil_list_initp(cutil_list * list) {
-	cutil_list_init(list, sizeof(uintptr_t));
-
-#ifdef CUTIL_DEBUGGING
-	list->_debug_ptr = true;
-#endif
-}
-
 void cutil_list_destroy(cutil_list* list) {
 #ifdef CUTIL_DEBUGGING
 	assert(list->_debug_malloc);

@@ -1,7 +1,6 @@
 #include "test_suites.h"
 
 #include "list.h"
-
 #include "testing.h"
 
 #include <stdlib.h>
