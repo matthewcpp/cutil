@@ -6,7 +6,6 @@
 #include <stdlib.h>
 
 cutil_vector *g_vector = NULL;
-cutil_vector *g_vectorp = NULL;
 
 void vector_before_each(){
     g_vector = cutil_vector_create(sizeof(int));
@@ -18,12 +17,7 @@ void vector_after_each(){
 }
 
 void vectorp_before_each(){
-    g_vectorp = cutil_vector_createp();
-}
-
-void vectorp_after_each(){
-    cutil_vector_destroy(g_vectorp);
-    g_vectorp = NULL;
+	g_vector = cutil_vector_create(sizeof(int*));
 }
 
 // Initializing Vector sets size to 0
@@ -154,8 +148,8 @@ void vectorp_push_and_get(){
 
     int* actual_ptr;
 
-    cutil_vector_pushp(g_vectorp, int_ptr);
-    cutil_vector_getp(g_vectorp, 0, (void *)&actual_ptr);
+    cutil_vector_push(g_vector, &int_ptr);
+    cutil_vector_get(g_vector, 0, &actual_ptr);
 
     CUTIL_TESTING_ASSERT_PTR_EQ(actual_ptr, int_ptr);
     CUTIL_TESTING_ASSERT_INT_EQ(expected_val, *actual_ptr);
@@ -187,7 +181,7 @@ void add_vector_tests(){
 
     cutil_testing_suite("vectorp");
     cutil_testing_suite_before_each(&vectorp_before_each);
-    cutil_testing_suite_after_each(&vectorp_after_each);
+    cutil_testing_suite_after_each(&vector_after_each);
 
     CUTIL_TESTING_ADD(vectorp_push_and_get);
 }

@@ -15,7 +15,6 @@ typedef struct cutil_list {
 
 #ifdef CUTIL_DEBUGGING
 	bool _debug_malloc;
-	bool _debug_ptr;
 	unsigned int _debug_generation;
 #endif
 } cutil_list;

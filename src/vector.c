@@ -2,7 +2,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
 #include <assert.h>
 
 cutil_vector *cutil_vector_create(unsigned int item_size){
@@ -16,16 +15,6 @@ cutil_vector *cutil_vector_create(unsigned int item_size){
     return vector;
 }
 
-cutil_vector *cutil_vector_createp(){
-    cutil_vector * vector =  cutil_vector_create(sizeof(uintptr_t));
-
-#ifdef CUTIL_DEBUGGING
-    vector->_debug_ptr = true;
-#endif
-
-    return vector;
-}
-
 void cutil_vector_init(cutil_vector *vector, unsigned int item_size) {
 	vector->_item_size = item_size;
 	vector->_data = NULL;
@@ -34,15 +23,6 @@ void cutil_vector_init(cutil_vector *vector, unsigned int item_size) {
 
 #ifdef CUTIL_DEBUGGING
     vector->_debug_malloc = false;
-    vector->_debug_ptr = false;
-#endif
-}
-
-void cutil_vector_initp(cutil_vector *vector) {
-	cutil_vector_init(vector, sizeof(uintptr_t));
-
-#ifdef CUTIL_DEBUGGING
-    vector->_debug_ptr = true;
 #endif
 }
 
@@ -98,15 +78,6 @@ void cutil_vector_push(cutil_vector *vector, void* data) {
 	vector->_size += 1;
 }
 
-void cutil_vector_pushp(cutil_vector *vector, void* data) {
-#ifdef CUTIL_DEBUGGING
-    assert(vector->_debug_ptr);
-#endif
-
-	uintptr_t int_ptr = (uintptr_t)data;
-	cutil_vector_push(vector, &int_ptr);
-}
-
 void cutil_vector_pop(cutil_vector *vector) {
 	if (vector->_size > 0) {
 		vector->_size -= 1;
@@ -121,22 +92,6 @@ bool cutil_vector_get(cutil_vector *vector, unsigned int index, void *out) {
 		return true;
 	}
 	else {
-		return false;
-	}
-}
-
-bool cutil_vector_getp(cutil_vector *vector, unsigned int index, void **out) {
-#ifdef CUTIL_DEBUGGING
-    assert(vector->_debug_ptr);
-#endif
-
-	uintptr_t ptr;
-	if (cutil_vector_get(vector, index, &ptr)) {
-		*out = (void *)ptr;
-		return true;
-	}
-	else {
-		*out = NULL;
 		return false;
 	}
 }

@@ -37,7 +37,7 @@ int _cutil_run_test_suites(cutil_vector *test_suites);
 _cutil_test_suite *_cutil_get_test_suite(const char *name);
 
 void _cutil_testing_system_init(void) {
-	cutil_vector_initp(&test_system->_suites);
+	cutil_vector_init(&test_system->_suites, sizeof (_cutil_test_suite*));
 	test_system->_current_test = NULL;
 	test_system->_current_suite = NULL;
 }
@@ -45,7 +45,7 @@ void _cutil_testing_system_init(void) {
 void _cutil_testing_system_destroy(void) {
 	_cutil_test_suite *suite;
 	for (unsigned int i = 0; i < test_system->_suites._size; i++) {
-		cutil_vector_getp(&test_system->_suites, i, (void**)&suite);
+		cutil_vector_get(&test_system->_suites, i, &suite);
         _cutil_testing_suite_destroy(suite);
 		free(suite);
 	}
@@ -56,7 +56,7 @@ void _cutil_testing_system_destroy(void) {
 _cutil_test_suite *_cutil_testing_suite_create(const char *name) {
 	_cutil_test_suite * suite = malloc(sizeof(_cutil_test_suite));
 	suite->name = _str_cpy(name);
-	cutil_vector_initp(&suite->_tests);
+	cutil_vector_init(&suite->_tests, sizeof(_cutil_test_entry*));
 
 	suite->before_each = NULL;
 	suite->after_each = NULL;
@@ -70,7 +70,7 @@ void _cutil_testing_suite_destroy(_cutil_test_suite *test_suite) {
 
 	_cutil_test_entry *test_entry;
 	for (unsigned int i = 0; i < test_suite->_tests._size; i++) {
-		cutil_vector_getp(&test_suite->_tests, i, (void**)&test_entry);
+		cutil_vector_get(&test_suite->_tests, i, &test_entry);
         _cutil_testing_entry_destroy(test_entry);
         free(test_entry);
 	}
@@ -118,7 +118,7 @@ void cutil_testing_suite(const char *name) {
     cutil_testing_init();
 
 	_cutil_test_suite * new_suite = _cutil_testing_suite_create(name);
-	cutil_vector_pushp(&test_system->_suites, new_suite);
+	cutil_vector_push(&test_system->_suites, &new_suite);
 
 	test_system->_current_suite = new_suite;
 }
@@ -131,7 +131,7 @@ void _cutil_testing_add(const char *test_name, cutil_test_function test_func) {
 	}
 
 	_cutil_test_entry *test_entry = _cutil_testing_entry_create(test_name, test_func);
-	cutil_vector_pushp(&test_system->_current_suite->_tests, test_entry);
+	cutil_vector_push(&test_system->_current_suite->_tests, &test_entry);
 }
 
 bool cutil_testing_suite_before_each(cutil_test_function func) {
@@ -162,7 +162,7 @@ int _cutil_min_i(int i1, int i2){
 
 int cutil_testing_run_suites(const char* suite_list) {
 	cutil_vector suites;
-	cutil_vector_initp(&suites);
+	cutil_vector_init(&suites, sizeof(_cutil_test_suite*));
 
 	size_t len = strlen(suite_list);
 	size_t start = 0;
@@ -181,7 +181,7 @@ int cutil_testing_run_suites(const char* suite_list) {
 			_cutil_test_suite *test_suite = _cutil_get_test_suite(suite_name);
 
 			if (test_suite) {
-				cutil_vector_pushp(&suites, test_suite);
+				cutil_vector_push(&suites, &test_suite);
 			}
 		}
 	}
@@ -195,7 +195,7 @@ int cutil_testing_run_suites(const char* suite_list) {
 		_cutil_test_suite *test_suite = _cutil_get_test_suite(suite_name);
 
 		if (test_suite) {
-			cutil_vector_pushp(&suites, test_suite);
+			cutil_vector_push(&suites, &test_suite);
 		}
 	}
 
@@ -216,7 +216,7 @@ int _cutil_testing_process_suite(_cutil_test_suite *current_suite, int* out_pass
 	printf("-----------------------------------\n");
 
 	for (unsigned int t = 0; t < current_suite->_tests._size; t++) {
-		cutil_vector_getp(&current_suite->_tests, t, (void**)&current_test);
+		cutil_vector_get(&current_suite->_tests, t, &current_test);
 		test_system->_current_test = current_test;
 
 		printf("Test: %s\n", current_test->test_name);
@@ -263,7 +263,7 @@ int _cutil_run_test_suites(cutil_vector *test_suites) {
 	_cutil_test_suite *current_suite;
 
 	for (unsigned int i = 0; i < test_suites->_size; i++) {
-		cutil_vector_getp(test_suites, i, (void**)&current_suite);
+		cutil_vector_get(test_suites, i, &current_suite);
 
 		int suite_pass_count = 0;
 		int suite_fail_count = 0;
@@ -290,7 +290,7 @@ _cutil_test_suite *_cutil_get_test_suite(const char *name) {
 	_cutil_test_suite *test_suite = NULL;
 
 	for (unsigned int i = 0; i < test_system->_suites._size; i++) {
-		cutil_vector_getp(&test_system->_suites, i, (void**)&test_suite);
+		cutil_vector_get(&test_system->_suites, i, &test_suite);
 
 		if (strcmp(test_suite->name, name) == 0) {
 			return test_suite;

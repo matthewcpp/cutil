@@ -14,7 +14,6 @@ cutil_list *cutil_list_create(unsigned int item_size) {
 
 #ifdef CUTIL_DEBUGGING
 	list->_debug_malloc = true;
-	list->_debug_ptr = false;
 #endif
 
 	return list;
@@ -30,7 +29,6 @@ void cutil_list_init(cutil_list * list, unsigned int item_size) {
 #ifdef CUTIL_DEBUGGING
 	list->_debug_generation = 0;
 	list->_debug_malloc = false;
-	list->_debug_ptr = false;
 #endif
 }
 
