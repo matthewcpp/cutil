@@ -7,25 +7,20 @@
 #include <stdlib.h>
 
 cutil_list* g_itr_list = NULL;
-cutil_list* g_itr_listp = NULL;
 
-void list_before_each() {
+void list_itr_before_each() {
 	g_itr_list = cutil_list_create(sizeof(int));
 }
 
-void list_after_each() {
+void list_itr_after_each() {
 	cutil_list_destroy(g_itr_list);
 	g_itr_list = NULL;
 }
 
-void listp_before_each() {
-	g_itr_listp = cutil_list_createp();
+void list_itrp_before_each() {
+	g_itr_list = cutil_list_create(sizeof(int*));
 }
 
-void listp_after_each() {
-	cutil_list_destroy(g_itr_listp);
-	g_itr_listp = NULL;
-}
 
 void list_itr_empty_list_has_next() {
 	cutil_list_itr* it = cutil_list_itr_create(g_itr_list);
@@ -182,21 +177,20 @@ void list_itr_iterate_list_prev() {
 void list_itrp_iterate_list_ptr_next() {
 	int expected_sum = 0;
 	for (int i = 0; i < 10; i++) {
-		expected_sum += i;
-
 		int* intptr = malloc(sizeof(int));
 		*intptr = i;
+		cutil_list_push_back(g_itr_list, &intptr);
 
-		cutil_list_push_backp(g_itr_listp, intptr);
+		expected_sum += i;
 	}
 
-	cutil_list_itr* it = cutil_list_itr_create(g_itr_listp);
+	cutil_list_itr* it = cutil_list_itr_create(g_itr_list);
 
 	int actual_sum = 0;
 	int *current_ptr = NULL;
 	int prev_val = -1;
 
-	while (cutil_list_itr_nextp(it, (void *)&current_ptr)) {
+	while (cutil_list_itr_next(it, &current_ptr)) {
 		actual_sum += *current_ptr;
 
 		CUTIL_TESTING_ASSERT_TRUE(*current_ptr > prev_val);
@@ -213,21 +207,21 @@ void list_itrp_iterate_list_ptr_next() {
 void list_itrp_iterate_list_ptr_prev() {
 	int expected_sum = 0;
 	for (int i = 0; i < 10; i++) {
-		expected_sum += i;
-
 		int* intptr = malloc(sizeof(int));
 		*intptr = i;
 
-		cutil_list_push_backp(g_itr_listp, intptr);
+		cutil_list_push_back(g_itr_list, &intptr);
+
+		expected_sum += i;
 	}
 
-	cutil_list_itr* it = cutil_list_itr_create(g_itr_listp);
+	cutil_list_itr* it = cutil_list_itr_create(g_itr_list);
 
 	int actual_sum = 0;
 	int *current_ptr = NULL;
 	int prev_val = 10;
 
-	while (cutil_list_itr_prevp(it, (void *)&current_ptr)) {
+	while (cutil_list_itr_prev(it, &current_ptr)) {
 		actual_sum += *current_ptr;
 
 		CUTIL_TESTING_ASSERT_TRUE(*current_ptr < prev_val);
@@ -265,8 +259,8 @@ void list_itr_back_forward() {
 
 void add_list_itr_tests() {
 	cutil_testing_suite("list_itr");
-	cutil_testing_suite_before_each(&list_before_each);
-	cutil_testing_suite_after_each(&list_after_each);
+	cutil_testing_suite_before_each(&list_itr_before_each);
+	cutil_testing_suite_after_each(&list_itr_after_each);
 
 	CUTIL_TESTING_ADD(list_itr_empty_list_has_next);
 	CUTIL_TESTING_ADD(list_itr_empty_list_has_prev);
@@ -290,8 +284,8 @@ void add_list_itr_tests() {
 	CUTIL_TESTING_ADD(list_itr_back_forward);
 
 	cutil_testing_suite("list_itrp");
-	cutil_testing_suite_before_each(&listp_before_each);
-	cutil_testing_suite_after_each(&listp_after_each);
+	cutil_testing_suite_before_each(&list_itrp_before_each);
+	cutil_testing_suite_after_each(&list_itr_after_each);
 
 	CUTIL_TESTING_ADD(list_itrp_iterate_list_ptr_next);
 	CUTIL_TESTING_ADD(list_itrp_iterate_list_ptr_prev);

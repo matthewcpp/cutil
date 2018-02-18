@@ -7,24 +7,18 @@
 #include <stdlib.h>
 
 cutil_list* g_list = NULL;
-cutil_list* g_listp = NULL;
 
-void list_itr_before_each() {
+void list_before_each() {
 	g_list = cutil_list_create(sizeof(int));
 }
 
-void list_itr_after_each() {
+void list_after_each() {
 	cutil_list_destroy(g_list);
 	g_list = NULL;
 }
 
-void list_itrp_before_each() {
-	g_listp = cutil_list_createp();
-}
-
-void list_itrp_after_each() {
-	cutil_list_destroy(g_listp);
-	g_listp = NULL;
+void listp_before_each() {
+	g_list = cutil_list_create(sizeof(int*));
 }
 
 // Initializing a list sets size to 0
@@ -80,29 +74,29 @@ void list_push_data_back_size() {
 // Pushing an item to the front of the list sets its pointers
 void list_push_data_one_front_list_pointers() {
 	int value = 10;
-	cutil_list_push_front(g_listp, &value);
+	cutil_list_push_front(g_list, &value);
 
-	_cutil_list_node* new_node = g_listp->_base.next;
+	_cutil_list_node* new_node = g_list->_base.next;
 
-	CUTIL_TESTING_ASSERT_PTR_EQ(g_listp->_base.next, new_node);
-	CUTIL_TESTING_ASSERT_PTR_EQ(g_listp->_base.prev, new_node);
+	CUTIL_TESTING_ASSERT_PTR_EQ(g_list->_base.next, new_node);
+	CUTIL_TESTING_ASSERT_PTR_EQ(g_list->_base.prev, new_node);
 
-	CUTIL_TESTING_ASSERT_PTR_EQ(new_node->prev, &g_listp->_base);
-	CUTIL_TESTING_ASSERT_PTR_EQ(new_node->next, &g_listp->_base);
+	CUTIL_TESTING_ASSERT_PTR_EQ(new_node->prev, &g_list->_base);
+	CUTIL_TESTING_ASSERT_PTR_EQ(new_node->next, &g_list->_base);
 }
 
 // Pushing an item to the back of the list sets its pointers
 void list_push_data_one_back_list_pointers() {
 	int value = 10;
-	cutil_list_push_back(g_listp, &value);
+	cutil_list_push_back(g_list, &value);
 
-	_cutil_list_node* new_node = g_listp->_base.next;
+	_cutil_list_node* new_node = g_list->_base.next;
 
-	CUTIL_TESTING_ASSERT_PTR_EQ(g_listp->_base.next, new_node);
-	CUTIL_TESTING_ASSERT_PTR_EQ(g_listp->_base.prev, new_node);
+	CUTIL_TESTING_ASSERT_PTR_EQ(g_list->_base.next, new_node);
+	CUTIL_TESTING_ASSERT_PTR_EQ(g_list->_base.prev, new_node);
 
-	CUTIL_TESTING_ASSERT_PTR_EQ(new_node->prev, &g_listp->_base);
-	CUTIL_TESTING_ASSERT_PTR_EQ(new_node->next, &g_listp->_base);
+	CUTIL_TESTING_ASSERT_PTR_EQ(new_node->prev, &g_list->_base);
+	CUTIL_TESTING_ASSERT_PTR_EQ(new_node->next, &g_list->_base);
 }
 
 // Pushing items to the back appends them to the list
@@ -246,10 +240,10 @@ void list_push_get_front_pointer() {
 	int *iptr = malloc(sizeof(int));
 	*iptr = 55;
 
-	cutil_list_push_frontp(g_listp, iptr);
+	cutil_list_push_front(g_list, &iptr);
 
 	int *frontptr;
-	bool get_front_result = cutil_list_get_frontp(g_listp, (void*)&frontptr);
+	bool get_front_result = cutil_list_get_front(g_list, &frontptr);
 
 	CUTIL_TESTING_ASSERT_TRUE(get_front_result);
 	CUTIL_TESTING_ASSERT_PTR_EQ(frontptr, iptr);
@@ -261,31 +255,15 @@ void list_push_get_front_pointer() {
 void push_get_back_pointer() {
 	int *iptr = malloc(sizeof(int));
 	*iptr = 55;
-	cutil_list_push_backp(g_listp, iptr);
+	cutil_list_push_back(g_list, &iptr);
 
-	int *backptr;
-	bool get_back_result = cutil_list_get_backp(g_listp, (void*)&backptr);
+	int *backptr = NULL;
+	bool get_back_result = cutil_list_get_back(g_list, &backptr);
 
 	CUTIL_TESTING_ASSERT_TRUE(get_back_result);
 	CUTIL_TESTING_ASSERT_PTR_EQ(backptr, iptr);
 
 	free(iptr);
-}
-
-// Getting the front item of an empty list returns false
-void list_get_back_pointer_empty() {
-	int *backptr = NULL;
-	bool get_back_result = cutil_list_get_backp(g_listp, (void *)&backptr);
-
-	CUTIL_TESTING_ASSERT_FALSE(get_back_result);
-}
-
-// Getting the front item of an empty list returns false
-void list_get_front_pointer_empty() {
-	int *frontptr = NULL;
-	bool get_front_result = cutil_list_get_frontp(g_listp, (void *)&frontptr);
-
-	CUTIL_TESTING_ASSERT_FALSE(get_front_result);
 }
 
 // Pushing data to the front and retrieving it functions correctly
@@ -330,8 +308,8 @@ void list_get_back_data_empty() {
 
 void add_list_tests(){
     cutil_testing_suite("list");
-	cutil_testing_suite_before_each(&list_itr_before_each);
-	cutil_testing_suite_after_each(&list_itr_after_each);
+	cutil_testing_suite_before_each(&list_before_each);
+	cutil_testing_suite_after_each(&list_after_each);
 
 	CUTIL_TESTING_ADD(list_init_size_0);
 
@@ -360,15 +338,9 @@ void add_list_tests(){
 	CUTIL_TESTING_ADD(list_get_front_data_empty);
 
 	cutil_testing_suite("listp");
-	cutil_testing_suite_before_each(&list_itrp_before_each);
-	cutil_testing_suite_after_each(&list_itrp_after_each);
+	cutil_testing_suite_before_each(&listp_before_each);
+	cutil_testing_suite_after_each(&list_after_each);
 
 	CUTIL_TESTING_ADD(list_push_get_front_pointer);
 	CUTIL_TESTING_ADD(push_get_back_pointer);
-
-	CUTIL_TESTING_ADD(list_get_back_pointer_empty);
-	CUTIL_TESTING_ADD(list_get_front_pointer_empty);
-
-	CUTIL_TESTING_ADD(list_push_data_one_front_list_pointers);
-	CUTIL_TESTING_ADD(list_push_data_one_back_list_pointers);
 }

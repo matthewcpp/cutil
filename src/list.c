@@ -3,7 +3,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
 #include <assert.h>
 
 void _cutil_list_node_destroy(_cutil_list_node *list_node);
@@ -19,18 +18,6 @@ cutil_list *cutil_list_create(unsigned int item_size) {
 #endif
 
 	return list;
-}
-
-cutil_list *cutil_list_createp() {
-#ifdef CUTIL_DEBUGGING
-	cutil_list * list = cutil_list_create(sizeof(uintptr_t));
-	list->_debug_ptr = true;
-
-	return list;
-#else
-	return cutil_list_create(sizeof(uintptr_t));
-#endif
-	
 }
 
 void cutil_list_init(cutil_list * list, unsigned int item_size) {
@@ -138,15 +125,6 @@ void cutil_list_push_front(cutil_list* list, void *data) {
 #endif
 }
 
-void cutil_list_push_frontp(cutil_list* list, void *data) {
-#ifdef CUTIL_DEBUGGING
-	assert(list->_debug_ptr);
-#endif
-
-	uintptr_t int_ptr = (uintptr_t)data;
-	cutil_list_push_front(list, &int_ptr);
-}
-
 bool cutil_list_get_front(cutil_list* list, void *data) {
 	if (list->_size > 0) {
 		memcpy(data, list->_base.next->data, list->_item_size);
@@ -157,41 +135,9 @@ bool cutil_list_get_front(cutil_list* list, void *data) {
 	}
 }
 
-bool cutil_list_get_frontp(cutil_list* list, void **data) {
-#ifdef CUTIL_DEBUGGING
-	assert(list->_debug_ptr);
-#endif
-
-	uintptr_t ptr;
-
-	if (cutil_list_get_front(list, &ptr)) {
-		*data = (void*)ptr;
-		return true;
-	}
-	else {
-		return false;
-	}
-}
-
 bool cutil_list_get_back(cutil_list* list, void *data) {
 	if (list->_size > 0) {
 		memcpy(data, list->_base.prev->data, list->_item_size);
-		return true;
-	}
-	else {
-		return false;
-	}
-}
-
-bool cutil_list_get_backp(cutil_list* list, void **data) {
-#ifdef CUTIL_DEBUGGING
-	assert(list->_debug_ptr);
-#endif
-
-	uintptr_t ptr;
-
-	if (cutil_list_get_back(list, &ptr)) {
-		*data = (void*)ptr;
 		return true;
 	}
 	else {
@@ -219,15 +165,6 @@ void cutil_list_push_back(cutil_list* list, void *data) {
 #ifdef CUTIL_DEBUGGING
 	list->_debug_generation += 1;
 #endif
-}
-
-void cutil_list_push_backp(cutil_list* list, void *data) {
-#ifdef CUTIL_DEBUGGING
-	assert(list->_debug_ptr);
-#endif
-
-	uintptr_t int_ptr = (uintptr_t)data;
-	cutil_list_push_back(list, &int_ptr);
 }
 
 void cutil_list_pop_front(cutil_list* list) {
@@ -335,23 +272,6 @@ bool cutil_list_itr_next(cutil_list_itr *itr, void* data) {
 	return false;
 }
 
-bool cutil_list_itr_nextp(cutil_list_itr *itr, void** data) {
-#ifdef CUTIL_DEBUGGING
-	assert(itr->_list->_debug_ptr);
-#endif
-
-	uintptr_t ptr;
-	bool result = cutil_list_itr_next(itr, &ptr);
-
-	if (result) {
-		*data = (void *)ptr;
-		return true;
-	}
-	else {
-		return false;
-	}
-}
-
 bool cutil_list_itr_has_prev(cutil_list_itr *itr) {
 #ifdef CUTIL_DEBUGGING
 	assert(itr->_debug_generation == itr->_list->_debug_generation);
@@ -372,21 +292,4 @@ bool cutil_list_itr_prev(cutil_list_itr *itr, void* data) {
 	}
 
 	return false;
-}
-
-bool cutil_list_itr_prevp(cutil_list_itr *itr, void** data) {
-#ifdef CUTIL_DEBUGGING
-	assert(itr->_list->_debug_ptr);
-#endif
-
-	uintptr_t ptr;
-	bool result = cutil_list_itr_prev(itr, &ptr);
-
-	if (result) {
-		*data = (void *)ptr;
-		return true;
-	}
-	else {
-		return false;
-	}
 }

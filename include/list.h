@@ -21,10 +21,8 @@ typedef struct cutil_list {
 } cutil_list;
 
 cutil_list *cutil_list_create(unsigned int item_size);
-cutil_list *cutil_list_createp();
 
 void cutil_list_init(cutil_list *list, unsigned int item_size);
-void cutil_list_initp(cutil_list *list);
 
 unsigned int cutil_list_size(cutil_list* list);
 void cutil_list_clear(cutil_list* list);
@@ -32,18 +30,13 @@ void cutil_list_uninit(cutil_list* list);
 void cutil_list_destroy(cutil_list* list);
 
 void cutil_list_pop_front(cutil_list* list);
-bool cutil_list_get_front(cutil_list* list, void *data);
-bool cutil_list_get_frontp(cutil_list* list, void **data);
-
 void cutil_list_pop_back(cutil_list* list);
+
+bool cutil_list_get_front(cutil_list* list, void *data);
 bool cutil_list_get_back(cutil_list* list, void *data);
-bool cutil_list_get_backp(cutil_list* list, void **data);
 
 void cutil_list_push_front(cutil_list* list, void *data);
-void cutil_list_push_frontp(cutil_list* list, void *data);
-
 void cutil_list_push_back(cutil_list* list, void *data);
-void cutil_list_push_backp(cutil_list* list, void *data);
 
 
 typedef struct cutil_list_itr {
@@ -64,8 +57,6 @@ void cutil_list_itr_destroy(cutil_list_itr *itr);
 
 bool cutil_list_itr_has_next(cutil_list_itr *itr);
 bool cutil_list_itr_next(cutil_list_itr *itr, void* data);
-bool cutil_list_itr_nextp(cutil_list_itr *itr, void** data);
 
 bool cutil_list_itr_has_prev(cutil_list_itr *itr);
 bool cutil_list_itr_prev(cutil_list_itr *itr, void* data);
-bool cutil_list_itr_prevp(cutil_list_itr *itr, void** data);
