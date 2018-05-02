@@ -3,15 +3,15 @@
 #include <stdbool.h>
 
 typedef struct _btree_node {
-	struct _btree_node *parent;
+	struct _btree_node* parent;
 	unsigned int item_count;
 	unsigned int position;
 	int* keys;
-	struct _btree_node **branches;
+	struct _btree_node* *branches;
 } _btree_node;
 
 typedef struct cutil_btree{
-	_btree_node *_root;
+	_btree_node* _root;
 	unsigned int _size;
 	unsigned int _order;
 #ifdef CUTIL_DEBUGGING
@@ -20,23 +20,23 @@ typedef struct cutil_btree{
 #endif
 } cutil_btree;
 
-cutil_btree *cutil_btree_create();
-cutil_btree *cutil_btree_create_with_order(unsigned int order);
+cutil_btree* cutil_btree_create();
+cutil_btree* cutil_btree_create_with_order(unsigned int order);
 
-void cutil_btree_init(cutil_btree *btree);
-void cutil_btree_init_with_order(cutil_btree *btree, unsigned int order);
+void cutil_btree_init(cutil_btree* btree);
+void cutil_btree_init_with_order(cutil_btree* btree, unsigned int order);
 
-void cutil_btree_uninit(cutil_btree *btree);
-void cutil_btree_destroy(cutil_btree *btree);
+void cutil_btree_uninit(cutil_btree* btree);
+void cutil_btree_destroy(cutil_btree* btree);
 
-unsigned int cutil_btree_get_order(cutil_btree *btree);
+unsigned int cutil_btree_get_order(cutil_btree* btree);
 
-bool cutil_btree_insert(cutil_btree *btree, int key);
-bool cutil_btree_find(cutil_btree *btree, int key);
-void cutil_btree_clear(cutil_btree *btree);
-unsigned int cutil_btree_size(cutil_btree *btree);
+bool cutil_btree_insert(cutil_btree* btree, int key);
+bool cutil_btree_find(cutil_btree* btree, int key);
+void cutil_btree_clear(cutil_btree* btree);
+unsigned int cutil_btree_size(cutil_btree* btree);
 
-bool cutil_btree_delete(cutil_btree *btree, int key);
+bool cutil_btree_delete(cutil_btree* btree, int key);
 
 
 typedef struct cutil_btree_itr {
@@ -50,11 +50,11 @@ typedef struct cutil_btree_itr {
 #endif
 } cutil_btree_itr;
 
-cutil_btree_itr *cutil_btree_itr_create(cutil_btree *btree);
-void cutil_btree_itr_init(cutil_btree_itr *itr, cutil_btree *btree);
+cutil_btree_itr* cutil_btree_itr_create(cutil_btree* btree);
+void cutil_btree_itr_init(cutil_btree_itr* itr, cutil_btree* btree);
 
-bool cutil_btree_itr_has_next(cutil_btree_itr *itr);
-bool cutil_btree_itr_next(cutil_btree_itr *itr, int* key);
+bool cutil_btree_itr_has_next(cutil_btree_itr* itr);
+bool cutil_btree_itr_next(cutil_btree_itr* itr, int* key);
 
-void cutil_btree_itr_uninit(cutil_btree_itr *itr);
-void cutil_btree_itr_destroy(cutil_btree_itr *itr);
+void cutil_btree_itr_uninit(cutil_btree_itr* itr);
+void cutil_btree_itr_destroy(cutil_btree_itr* itr);

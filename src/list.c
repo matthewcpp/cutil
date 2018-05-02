@@ -5,11 +5,11 @@
 #include <string.h>
 #include <assert.h>
 
-void _cutil_list_node_destroy(_cutil_list_node *list_node);
-_cutil_list_node *_cutil_list_node_create(unsigned int item_size);
+void _cutil_list_node_destroy(_cutil_list_node* list_node);
+_cutil_list_node* _cutil_list_node_create(unsigned int item_size);
 
-cutil_list *cutil_list_create(unsigned int item_size) {
-	cutil_list *list = malloc(sizeof(cutil_list));
+cutil_list* cutil_list_create(unsigned int item_size) {
+	cutil_list* list = malloc(sizeof(cutil_list));
 	cutil_list_init(list, item_size);
 
 #ifdef CUTIL_DEBUGGING
@@ -19,7 +19,7 @@ cutil_list *cutil_list_create(unsigned int item_size) {
 	return list;
 }
 
-void cutil_list_init(cutil_list * list, unsigned int item_size) {
+void cutil_list_init(cutil_list*  list, unsigned int item_size) {
 	list->_size = 0;
 	list->_base.prev = &list->_base;
 	list->_base.next = &list->_base;
@@ -50,7 +50,7 @@ void cutil_list_clear(cutil_list* list) {
 		_cutil_list_node* node_to_delete = list->_base.next;
 
 		while (node_to_delete != &list->_base) {
-			_cutil_list_node *next_node = node_to_delete->next;
+			_cutil_list_node* next_node = node_to_delete->next;
             _cutil_list_node_destroy(node_to_delete);
 			node_to_delete = next_node;
 		}
@@ -69,7 +69,7 @@ unsigned int cutil_list_size(cutil_list* list) {
 	return list->_size;
 }
 
-_cutil_list_node *_cutil_list_node_create(unsigned int item_size) {
+_cutil_list_node* _cutil_list_node_create(unsigned int item_size) {
 	_cutil_list_node* new_node = (_cutil_list_node*)malloc(sizeof(_cutil_list_node));
 	new_node->data = malloc(item_size);
 	new_node->prev = NULL;
@@ -78,7 +78,7 @@ _cutil_list_node *_cutil_list_node_create(unsigned int item_size) {
 	return new_node;
 }
 
-void _cutil_list_node_destroy(_cutil_list_node *list_node){
+void _cutil_list_node_destroy(_cutil_list_node* list_node){
     free(list_node->data);
     free(list_node);
 }
@@ -91,7 +91,7 @@ void _cutil_list_push_add_first(cutil_list* list, _cutil_list_node* new_node) {
 	list->_base.next = new_node;
 }
 
-void cutil_list_push_front(cutil_list* list, void *data) {
+void cutil_list_push_front(cutil_list* list, void* data) {
 	_cutil_list_node* new_node = _cutil_list_node_create(list->_item_size);
 	memcpy(new_node->data, data, list->_item_size);
 
@@ -115,7 +115,7 @@ void cutil_list_push_front(cutil_list* list, void *data) {
 #endif
 }
 
-bool cutil_list_get_front(cutil_list* list, void *data) {
+bool cutil_list_get_front(cutil_list* list, void* data) {
 	if (list->_size > 0) {
 		memcpy(data, list->_base.next->data, list->_item_size);
 		return true;
@@ -125,7 +125,7 @@ bool cutil_list_get_front(cutil_list* list, void *data) {
 	}
 }
 
-bool cutil_list_get_back(cutil_list* list, void *data) {
+bool cutil_list_get_back(cutil_list* list, void* data) {
 	if (list->_size > 0) {
 		memcpy(data, list->_base.prev->data, list->_item_size);
 		return true;
@@ -135,7 +135,7 @@ bool cutil_list_get_back(cutil_list* list, void *data) {
 	}
 }
 
-void cutil_list_push_back(cutil_list* list, void *data) {
+void cutil_list_push_back(cutil_list* list, void* data) {
 	_cutil_list_node* new_node = _cutil_list_node_create(list->_item_size);
 	memcpy(new_node->data, data, list->_item_size);
 
@@ -206,7 +206,7 @@ void cutil_list_pop_back(cutil_list* list) {
 }
 
 
-void cutil_list_itr_init(cutil_list_itr *itr, cutil_list *list) {
+void cutil_list_itr_init(cutil_list_itr* itr, cutil_list* list) {
 	itr->_list = list;
 	itr->_node = &list->_base;
 
@@ -216,8 +216,8 @@ void cutil_list_itr_init(cutil_list_itr *itr, cutil_list *list) {
 #endif
 }
 
-cutil_list_itr *cutil_list_itr_create(cutil_list *list) {
-	cutil_list_itr *itr = malloc(sizeof(cutil_list_itr));
+cutil_list_itr* cutil_list_itr_create(cutil_list* list) {
+	cutil_list_itr* itr = malloc(sizeof(cutil_list_itr));
 	cutil_list_itr_init(itr, list);
 
 #ifdef CUTIL_DEBUGGING
@@ -227,11 +227,11 @@ cutil_list_itr *cutil_list_itr_create(cutil_list *list) {
 	return itr;
 }
 
-void cutil_list_itr_uninit(cutil_list_itr *itr) {
+void cutil_list_itr_uninit(cutil_list_itr* itr) {
 	(void)itr;
 }
 
-void cutil_list_itr_destroy(cutil_list_itr *itr) {
+void cutil_list_itr_destroy(cutil_list_itr* itr) {
 #ifdef CUTIL_DEBUGGING
     assert(itr->_debug_malloc);
 #endif
@@ -240,7 +240,7 @@ void cutil_list_itr_destroy(cutil_list_itr *itr) {
     free(itr);
 }
 
-bool cutil_list_itr_has_next(cutil_list_itr *itr) {
+bool cutil_list_itr_has_next(cutil_list_itr* itr) {
 #ifdef CUTIL_DEBUGGING
 	assert(itr->_debug_generation == itr->_list->_debug_generation);
 #endif
@@ -248,7 +248,7 @@ bool cutil_list_itr_has_next(cutil_list_itr *itr) {
 	return (itr->_node->next->data != NULL);
 }
 
-bool cutil_list_itr_next(cutil_list_itr *itr, void* data) {
+bool cutil_list_itr_next(cutil_list_itr* itr, void* data) {
 	if (cutil_list_itr_has_next(itr)) {
 		itr->_node = itr->_node->next;
 
@@ -262,7 +262,7 @@ bool cutil_list_itr_next(cutil_list_itr *itr, void* data) {
 	return false;
 }
 
-bool cutil_list_itr_has_prev(cutil_list_itr *itr) {
+bool cutil_list_itr_has_prev(cutil_list_itr* itr) {
 #ifdef CUTIL_DEBUGGING
 	assert(itr->_debug_generation == itr->_list->_debug_generation);
 #endif
@@ -270,7 +270,7 @@ bool cutil_list_itr_has_prev(cutil_list_itr *itr) {
 	return (itr->_node->prev->data != NULL);
 }
 
-bool cutil_list_itr_prev(cutil_list_itr *itr, void* data) {
+bool cutil_list_itr_prev(cutil_list_itr* itr, void* data) {
 	if (cutil_list_itr_has_prev(itr)) {
 		itr->_node = itr->_node->prev;
 

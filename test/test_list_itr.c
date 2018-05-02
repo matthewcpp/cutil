@@ -186,7 +186,7 @@ void list_itrp_iterate_list_ptr_next() {
 	cutil_list_itr* it = cutil_list_itr_create(g_itr_list);
 
 	int actual_sum = 0;
-	int *current_ptr = NULL;
+	int* current_ptr = NULL;
 	int prev_val = -1;
 
 	while (cutil_list_itr_next(it, &current_ptr)) {
@@ -217,7 +217,7 @@ void list_itrp_iterate_list_ptr_prev() {
 	cutil_list_itr* it = cutil_list_itr_create(g_itr_list);
 
 	int actual_sum = 0;
-	int *current_ptr = NULL;
+	int* current_ptr = NULL;
 	int prev_val = 10;
 
 	while (cutil_list_itr_prev(it, &current_ptr)) {

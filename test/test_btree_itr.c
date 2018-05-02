@@ -5,12 +5,12 @@
 
 #include "test_btree_util.h"
 
-extern cutil_btree *g_btree;
+extern cutil_btree* g_btree;
 extern void btree_before_each();
 extern void btree_after_each();
 
 void btree_itr_empty_tree() {
-	cutil_btree_itr * itr = cutil_btree_itr_create(g_btree);
+	cutil_btree_itr*  itr = cutil_btree_itr_create(g_btree);
 
 	CUTIL_TESTING_ASSERT_FALSE(cutil_btree_itr_has_next(itr));
 
@@ -25,7 +25,7 @@ void btree_itr_forward_iteration_order() {
 	int prev_key = 0;
 	int i = 0;
 
-	cutil_btree_itr * itr = cutil_btree_itr_create(g_btree);
+	cutil_btree_itr*  itr = cutil_btree_itr_create(g_btree);
 
 	while (cutil_btree_itr_next(itr, &key)) {
 		if (i) {

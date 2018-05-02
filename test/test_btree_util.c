@@ -9,7 +9,7 @@
 #define Q(x) #x
 #define QUOTE(x) Q(x)
 
-extern _btree_node *_btree_node_create();
+extern _btree_node* _btree_node_create();
 
 void indent(int depth, FILE* file) {
 	for (int i = 0; i < depth; ++i) {
@@ -53,7 +53,7 @@ void dump_btree_node(_btree_node* node, int depth, FILE* file) {
 }
 
 void dump_btree(cutil_btree* btree, const char* path) {
-	FILE * file = fopen(path, "w");
+	FILE*  file = fopen(path, "w");
 
 	fprintf(file, "%i\n", btree->_order);
 	dump_btree_node(btree->_root, 0, file);
@@ -64,10 +64,10 @@ void dump_btree(cutil_btree* btree, const char* path) {
 bool read_btree_from_file(cutil_btree* btree, const char* test_data_name) {
 	const char* test_data_dir = QUOTE(BTREE_TEST_DATA_DIR);
 	int path_size = snprintf(NULL, 0, "%s/%s.txt", test_data_dir, test_data_name);
-	char * path_str = malloc(path_size + 1);
+	char*  path_str = malloc(path_size + 1);
 	sprintf(path_str, "%s/%s.txt", test_data_dir, test_data_name);
 
-	FILE * file = fopen(path_str, "r");
+	FILE*  file = fopen(path_str, "r");
 	free(path_str);
 
 	if (file) {
@@ -157,7 +157,7 @@ void read_btree(cutil_btree* btree, const char* data) {
 }
 
 
-void insert_char_sequence(cutil_btree *btree, const char* sequence) {
+void insert_char_sequence(cutil_btree* btree, const char* sequence) {
 	int len = strlen(sequence);
 
 	for (int i = 0; i < len; i++) {
@@ -166,7 +166,7 @@ void insert_char_sequence(cutil_btree *btree, const char* sequence) {
 }
 
 bool confirm_forward_iteration_char_sequence(cutil_btree* btree, const char* expected_sequence) {
-	cutil_btree_itr * itr = cutil_btree_itr_create(btree);
+	cutil_btree_itr*  itr = cutil_btree_itr_create(btree);
 	int val = 0;
 	int count = 0;
 	bool ok = true;
@@ -244,7 +244,7 @@ int _get_max_branch_val(_btree_node* node) {
 	}
 }
 
-bool _validate_btree_node(cutil_btree *btree, _btree_node* node, int parent_min_val, int parent_max_val) {
+bool _validate_btree_node(cutil_btree* btree, _btree_node* node, int parent_min_val, int parent_max_val) {
 	if (node->parent) {
 		unsigned int ceil_order_div_2 = (unsigned int)ceil((double)btree->_order / 2.0);
 
@@ -294,6 +294,6 @@ bool _validate_btree_node(cutil_btree *btree, _btree_node* node, int parent_min_
 	return true;
 }
 
-bool validate_btree(cutil_btree *btree) {
+bool validate_btree(cutil_btree* btree) {
 	return _validate_btree_node(btree, btree->_root, INT_MIN, INT_MAX);
 }

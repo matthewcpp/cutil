@@ -5,7 +5,7 @@
 
 #include <stdlib.h>
 
-cutil_vector *g_vector = NULL;
+cutil_vector* g_vector = NULL;
 
 void vector_before_each(){
     g_vector = cutil_vector_create(sizeof(int));
@@ -143,7 +143,7 @@ void vector_pop_get() {
 void vectorp_push_and_get(){
     int expected_val = 999;
 
-    int *int_ptr = (int *)malloc(sizeof(int));
+    int* int_ptr = (int*)malloc(sizeof(int));
     *int_ptr = expected_val;
 
     int* actual_ptr;

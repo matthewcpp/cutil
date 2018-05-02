@@ -110,7 +110,7 @@ void list_data_push_multiple_back() {
 	for (unsigned int i = 0; i < list_size; i++) {
 		CUTIL_TESTING_ASSERT_PTR_NOT_NULL(current_node);
 
-		int current_node_value = *((int *)current_node->data);
+		int current_node_value = *((int*)current_node->data);
 		CUTIL_TESTING_ASSERT_INT_EQ(current_node_value, i);
 
 		current_node = current_node->next;
@@ -120,7 +120,7 @@ void list_data_push_multiple_back() {
 	for (unsigned int i = list_size - 1; i > 0; i--) {
 		CUTIL_TESTING_ASSERT_PTR_NOT_NULL(current_node);
 
-		int current_node_value = *((int *)current_node->data);
+		int current_node_value = *((int*)current_node->data);
 		CUTIL_TESTING_ASSERT_INT_EQ(current_node_value, i);
 
 		current_node = current_node->prev;
@@ -140,7 +140,7 @@ void list_data_push_multiple_front() {
 	for (unsigned int i = 0; i < list_size; i++) {
 		CUTIL_TESTING_ASSERT_PTR_NOT_NULL(current_node);
 
-		int current_node_value = *((int *)current_node->data);
+		int current_node_value = *((int*)current_node->data);
 		CUTIL_TESTING_ASSERT_INT_EQ(current_node_value, i);
 
 		current_node = current_node->prev;
@@ -150,7 +150,7 @@ void list_data_push_multiple_front() {
 	for (unsigned int i = list_size - 1; i > 0; i--) {
 		CUTIL_TESTING_ASSERT_PTR_NOT_NULL(current_node);
 
-		int current_node_value = *((int *)current_node->data);
+		int current_node_value = *((int*)current_node->data);
 		CUTIL_TESTING_ASSERT_INT_EQ(current_node_value, i);
 
 		current_node = current_node->next;
@@ -167,7 +167,7 @@ void list_multiple_pop_back_removes_item() {
 	}
 
 	cutil_list_pop_back(g_list);
-	int back_node_value = *((int *)g_list->_base.prev->data);
+	int back_node_value = *((int*)g_list->_base.prev->data);
 
 	CUTIL_TESTING_ASSERT_INT_EQ(cutil_list_size(g_list), list_size - 1);
 	CUTIL_TESTING_ASSERT_INT_EQ(back_node_value, list_size - 2);
@@ -182,7 +182,7 @@ void list_multiple_pop_front_removes_item() {
 	}
 
 	cutil_list_pop_front(g_list);
-	int front_node_value = *((int *)g_list->_base.next->data);
+	int front_node_value = *((int*)g_list->_base.next->data);
 
 	CUTIL_TESTING_ASSERT_INT_EQ(cutil_list_size(g_list), list_size - 1);
 	CUTIL_TESTING_ASSERT_INT_EQ(front_node_value, 1);
@@ -236,12 +236,12 @@ void list_pop_back_empty() {
 
 // Pushing a pointer to the front and retrieving it functions correctly
 void list_push_get_front_pointer() {
-	int *iptr = malloc(sizeof(int));
+	int* iptr = malloc(sizeof(int));
 	*iptr = 55;
 
 	cutil_list_push_front(g_list, &iptr);
 
-	int *frontptr;
+	int* frontptr;
 	bool get_front_result = cutil_list_get_front(g_list, &frontptr);
 
 	CUTIL_TESTING_ASSERT_TRUE(get_front_result);
@@ -252,11 +252,11 @@ void list_push_get_front_pointer() {
 
 // Pushing a pointer to the back and retrieving it functions correctly
 void push_get_back_pointer() {
-	int *iptr = malloc(sizeof(int));
+	int* iptr = malloc(sizeof(int));
 	*iptr = 55;
 	cutil_list_push_back(g_list, &iptr);
 
-	int *backptr = NULL;
+	int* backptr = NULL;
 	bool get_back_result = cutil_list_get_back(g_list, &backptr);
 
 	CUTIL_TESTING_ASSERT_TRUE(get_back_result);
@@ -280,7 +280,7 @@ void push_get_front_data() {
 // Getting the front item of an empty list returns false
 void list_get_front_data_empty() {
 	int front_val = 0;
-	bool get_front_result = cutil_list_get_front(g_list, (void *)&front_val);
+	bool get_front_result = cutil_list_get_front(g_list, (void*)&front_val);
 
 	CUTIL_TESTING_ASSERT_FALSE(get_front_result);
 }
@@ -291,7 +291,7 @@ void push_get_back_data() {
 	int back_val;
 
 	cutil_list_push_back(g_list, &ival);
-	bool get_back_result = cutil_list_get_back(g_list, (void *)&back_val);
+	bool get_back_result = cutil_list_get_back(g_list, (void*)&back_val);
 
 	CUTIL_TESTING_ASSERT_TRUE(get_back_result);
 	CUTIL_TESTING_ASSERT_INT_EQ(back_val, ival);
@@ -300,7 +300,7 @@ void push_get_back_data() {
 // Getting the front item of an empty list returns false
 void list_get_back_data_empty() {
 	int front_val = 0;
-	bool get_back_result = cutil_list_get_back(g_list, (void *)&front_val);
+	bool get_back_result = cutil_list_get_back(g_list, (void*)&front_val);
 
 	CUTIL_TESTING_ASSERT_FALSE(get_back_result);
 }
