@@ -356,30 +356,28 @@ bool cutil_btree_insert(cutil_btree* btree, int key) {
 	_btree_node*  node = _btree_find_key(btree->_root, key);
 	unsigned int insert_position = _btree_node_get_insertion_position(node, key);
 
-	if (insert_position != ITEM_ALREADY_INSERTED) {
-		if (_node_full(btree, node)) {
-			_split_leaf_node(btree, node, key, insert_position);
-		}
-		else if (insert_position >= 0) {
-			// make room for new key in leaf node
-			for (unsigned int i = node->item_count; i > insert_position; i--) {
-				node->keys[i] = node->keys[i - 1];
-			}
-
-			node->keys[insert_position] = key;
-
-			node->item_count += 1;
-#ifdef CUTIL_DEBUGGING
-			btree->_debug_generation += 1;
-#endif
-		}
-
-		btree->_size += 1;
-		return true;
-	}
-	else {
+	if (insert_position == ITEM_ALREADY_INSERTED) {
 		return false;
 	}
+	if (_node_full(btree, node)) {
+		_split_leaf_node(btree, node, key, insert_position);
+	}
+	else {
+		// make room for new key in leaf node
+		for (unsigned int i = node->item_count; i > insert_position; i--) {
+			node->keys[i] = node->keys[i - 1];
+		}
+
+		node->keys[insert_position] = key;
+
+		node->item_count += 1;
+#ifdef CUTIL_DEBUGGING
+		btree->_debug_generation += 1;
+#endif
+	}
+
+	btree->_size += 1;
+	return true;
 }
 
 _btree_node* _btree_find_key(_btree_node*  node, int key) {
