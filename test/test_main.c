@@ -5,7 +5,7 @@
 
 int main(int argc, char** argv) {
 	cutil_test_settings_init();
-	if (!cutil_test_settings_parse(argc, argv)) {
+	if (!cutil_test_settings_parse(argc, (const char**)argv)) {
 		cutil_test_settings_destroy();
 		return 1;
 	}
