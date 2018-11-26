@@ -1,13 +1,12 @@
 #include "test_btree_util.h"
 
+#include "test_settings.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
 #include <math.h>
-
-#define Q(x) #x
-#define QUOTE(x) Q(x)
 
 extern _btree_node* _btree_node_create();
 
@@ -62,7 +61,7 @@ void dump_btree(cutil_btree* btree, const char* path) {
 }
 
 bool read_btree_from_file(cutil_btree* btree, const char* test_data_name) {
-	const char* test_data_dir = QUOTE(BTREE_TEST_DATA_DIR);
+	const char* test_data_dir = cutil_test_get_data_directory();
 	int path_size = snprintf(NULL, 0, "%s/%s.txt", test_data_dir, test_data_name);
 	char*  path_str = malloc(path_size + 1);
 	sprintf(path_str, "%s/%s.txt", test_data_dir, test_data_name);
