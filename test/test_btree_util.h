@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CUTIL_TEST_BTREE_UTIL_H
+#define CUTIL_TEST_BTREE_UTIL_H
 
 #include "btree.h"
 
@@ -11,3 +12,5 @@ void insert_char_sequence(cutil_btree *btree, const char* sequence);
 bool confirm_forward_iteration_char_sequence(cutil_btree* btree, const char* expected_sequence);
 bool compare_btrees(cutil_btree *a, cutil_btree *b);
 bool validate_btree(cutil_btree *btree);
+
+#endif

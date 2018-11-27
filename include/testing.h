@@ -1,4 +1,6 @@
-#pragma once
+#ifndef CUTIL_TESTING_H
+#define CUTIL_TESTING_H
+
 #include <stdbool.h>
 
 #include "vector.h"
@@ -51,3 +53,5 @@ int _cutil_testing_assert_ptr_not_null(const char *exppression_str, void* ptr);
 
 #define CUTIL_TESTING_ASSERT_PTR_NOT_NULL(EXP) \
 	if (_cutil_testing_assert_ptr_not_null(#EXP, (EXP))) return;
+
+#endif

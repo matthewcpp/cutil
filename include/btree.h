@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CUTIL_BTREE_H
+#define CUTIL_BTREE_H
 
 #include <stdbool.h>
 
@@ -58,3 +59,5 @@ bool cutil_btree_itr_next(cutil_btree_itr* itr, int* key);
 
 void cutil_btree_itr_uninit(cutil_btree_itr* itr);
 void cutil_btree_itr_destroy(cutil_btree_itr* itr);
+
+#endif

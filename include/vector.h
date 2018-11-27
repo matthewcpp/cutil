@@ -1,4 +1,6 @@
-#pragma once
+#ifndef CUTIL_VECTOR_H
+#define CUTIL_VECTOR_H
+
 #include <stdbool.h>
 
 typedef struct cutil_vector {
@@ -24,3 +26,5 @@ void cutil_vector_clear(cutil_vector* vector);
 void cutil_vector_push(cutil_vector* vector, void* data);
 void cutil_vector_pop(cutil_vector* vector);
 bool cutil_vector_get(cutil_vector* vector, unsigned int index, void* out);
+
+#endif

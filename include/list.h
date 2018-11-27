@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CUTIL_LIST_H
+#define CUTIL_LIST_H
 
 #include <stdbool.h>
 
@@ -59,3 +60,5 @@ bool cutil_list_itr_next(cutil_list_itr* itr, void* data);
 
 bool cutil_list_itr_has_prev(cutil_list_itr* itr);
 bool cutil_list_itr_prev(cutil_list_itr* itr, void* data);
+
+#endif
