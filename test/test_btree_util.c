@@ -90,7 +90,7 @@ bool read_btree_from_file(cutil_btree* btree, const char* test_data_name) {
 	}
 }
 
-_btree_node*read_btree_node(cutil_btree* btree, _btree_node* parent, int* node_counter, const char* data, int* string_pos) {
+_btree_node*read_btree_node(cutil_btree* btree, _btree_node* parent, int* item_counter, const char* data, int* string_pos) {
 	int bytes_read = 0;
 	int item_count = 0;
 	char node_type[2];
@@ -104,7 +104,6 @@ _btree_node*read_btree_node(cutil_btree* btree, _btree_node* parent, int* node_c
 	//process node if it is not NULL and has items
 	if (strcmp(node_type, "N") != 0 && item_count > 0) {
 		_btree_node* node = _btree_node_create(btree->_order);
-		*node_counter += 1;
 		node->parent = parent;
 		node->item_count = item_count;
 
@@ -114,12 +113,13 @@ _btree_node*read_btree_node(cutil_btree* btree, _btree_node* parent, int* node_c
 			sscanf(data + *string_pos, "%i%n", &val, &bytes_read);
 			*string_pos += bytes_read;
 			node->keys[i] = val;
+			*item_counter += 1;
 		}
 
 		//if this node is not a leaf, then read its children recursively
 		if (strcmp(node_type, "L") != 0) {
 			for (unsigned int i = 0; i < node->item_count + 1; ++i) {
-				node->branches[i] = read_btree_node(btree, node, node_counter, data, string_pos);
+				node->branches[i] = read_btree_node(btree, node, item_counter, data, string_pos);
 				if (node->branches[i]) {
 					node->branches[i]->position = i;
 				}
@@ -137,17 +137,17 @@ _btree_node*read_btree_node(cutil_btree* btree, _btree_node* parent, int* node_c
 void read_btree(cutil_btree* btree, const char* data) {
 	int order = 0;
 	int string_pos = 0;
-	int node_counter = 0;
+	int item_counter = 0;
 	sscanf(data, "%i%n", &order, &string_pos);
 
-	_btree_node* new_root = read_btree_node(btree, NULL, &node_counter, data, &string_pos);
+	_btree_node* new_root = read_btree_node(btree, NULL, &item_counter, data, &string_pos);
 	if (new_root) {
 		cutil_btree_uninit(btree);
 
 		new_root->position = 0;
 		btree->_order = order;
 		btree->_root = new_root;
-		btree->_size = node_counter;
+		btree->_size = item_counter;
 
 #ifdef CUTIL_DEBUGGING
 		btree->_debug_generation = 0;

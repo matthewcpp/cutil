@@ -19,7 +19,7 @@ bool _node_full(cutil_btree* btree, _btree_node*  node);
 bool _node_is_root(_btree_node*  node);
 bool _node_is_leaf(_btree_node*  node);
 bool _node_is_interior(_btree_node*  node);
-unsigned int _min_leaf_item_count(cutil_btree* btree);
+unsigned int _btree_node_min_item_count(cutil_btree* btree);
 
 void _btree_node_recursive_delete(_btree_node*  node);
 _btree_node* _btree_find_key(_btree_node*  node, int key);
@@ -29,6 +29,8 @@ _btree_node* _node_left_sibling(_btree_node*  node);
 
 void _set_node_child(_btree_node* parent, _btree_node* child, int index);
 void _push_up_one_level(cutil_btree* btree, _btree_node* parent, _btree_node* left_node, _btree_node* right_node, int key);
+
+void _rebalance_node(cutil_btree* btree, _btree_node* node);
 
 unsigned int _get_pivot_index(cutil_btree* btree) {
 	return (btree->_order - 1) / 2 + ((btree->_order - 1) % 2 != 0);
@@ -395,85 +397,13 @@ _btree_node* _btree_find_key(_btree_node*  node, int key) {
             }
 		}
 
+		// search key is greater than the largest item in this node
 		return _btree_find_key(node->branches[node->item_count], key);
 	}
 }
 
-unsigned int _min_leaf_item_count(cutil_btree* btree) {
+unsigned int _btree_node_min_item_count(cutil_btree* btree) {
 	return ((unsigned int)ceil((double)btree->_order / 2.0)) - 1;
-}
-
-//will slide all keys and branches with index > item pos to the right by 1
-void _slide_keys_left(_btree_node* node, int item_pos) {
-	for (unsigned int i = item_pos; i < node->item_count - 1; ++i) {
-		node->keys[i] = node->keys[i + 1];
-		_set_node_child(node, node->branches[i + 1], i);
-	}
-
-	_set_node_child(node, node->branches[node->item_count], node->item_count -1);
-	node->branches[node->item_count] = NULL;
-}
-
-//will slide all keys with index >= item_pos to the right by count positions
-void _slide_keys_right(_btree_node* node, unsigned int start_index, unsigned int end_index, unsigned int count) {
-	for (unsigned int i = end_index + count; i >= start_index + count; --i) {
-		node->keys[i] = node->keys[i -count];
-	}
-}
-
-/*	Easiest delete case.  The leaf node has more keys than the minimium.  Keys that are greater than the
- *	taget just need to slide over.  no need to worry about branches since this is a leaf node.
-*/
-void _simple_remove_from_leaf(_btree_node* node, unsigned int item_pos) {
-	_slide_keys_left(node, item_pos);
-	node->item_count -= 1;
-
-	//temp
-	node->keys[node->item_count] = 0;
-}
-
-bool _delete_from_leaf_with_borrow_right(_btree_node*  node, int item_pos, unsigned int min_count) {
-	_btree_node* sibling = _node_right_sibling(node);
-
-	if (sibling && sibling->item_count > min_count) {
-		int borrowed_key = sibling->keys[0];
-
-		_slide_keys_left(node, item_pos);
-		_simple_remove_from_leaf(sibling, 0);
-
-		node->keys[node->item_count -1] = node->parent->keys[node->position];
-		node->parent->keys[node->position] = borrowed_key;
-
-		return true;
-	}
-	else {
-		return false;
-	}
-}
-
-bool _delete_from_leaf_with_borrow_left(_btree_node*  node, int item_pos, unsigned int min_count) {
-	_btree_node* sibling = _node_left_sibling(node);
-
-	if (sibling && sibling->item_count > min_count) {
-		//remove the borrowed key from the sibling
-		int borrowed_key = sibling->keys[sibling->item_count-1];
-		_simple_remove_from_leaf(sibling, sibling->item_count - 1);
-
-		//move our siblings parent ky into this new node
-		if (item_pos > 0) {
-			_slide_keys_right(node, 0, item_pos - 1, 1);
-		}
-		
-		node->keys[0] = sibling->parent->keys[sibling->position];
-
-		//borrowed key becomes the new parent key
-		sibling->parent->keys[sibling->position] = borrowed_key;
-
-		return true;
-	}
-	else {
-		return false;
-	}
 }
 
 unsigned int _btree_node_key_position(_btree_node*  node, int key) {
@@ -504,67 +434,132 @@ _btree_node* _node_left_sibling(_btree_node*  node) {
 	}
 }
 
-bool _delete_from_leaf_with_borrow(_btree_node*  node, unsigned int item_pos, unsigned int min_count) {
-	bool deleted = _delete_from_leaf_with_borrow_right(node, item_pos, min_count);
+// this method will merge the supplied node with its right sibling
+_btree_node* _btree_merge_node_with_right_sibling(_btree_node* node) {
+	_btree_node* parent = node->parent;
+	_btree_node* right_sibling = _node_right_sibling(node);
 
-	if (!deleted) {
-		deleted = _delete_from_leaf_with_borrow_left(node, item_pos, min_count);
+	// first we will append the corresponding key from our parent into the new merged node to preserve key ordering integrity
+	// any keys in our right sibling will have a greater value than this key
+	node->keys[node->item_count++] = parent->keys[node->position];
+	parent->item_count -= 1;
+
+	unsigned int insert_pos = node->item_count;
+
+	// append the keys and branches from the right sibling onto the target node
+	for (unsigned int i = 0; i < right_sibling->item_count; i++) {
+		node->keys[insert_pos + i] = right_sibling->keys[i];
+		node->item_count += 1;
 	}
 
-	return deleted;
+	for (unsigned int i = 0; i <= right_sibling->item_count; i++) {
+		_set_node_child(node, right_sibling->branches[i], insert_pos + i);
+	}
+
+	// remove the right sibling from the parent and adjust its existing branches
+	for (unsigned int i = right_sibling->position; i < parent->item_count; i++) {
+		parent->branches[i] = parent->branches[i] + 1;
+		parent->keys[i - 1] = parent->keys[i];
+	}
+
+	free(right_sibling);
+
+	return node;
 }
 
-bool _delete_from_leaf_and_combine(cutil_btree* btree, _btree_node* node, unsigned int item_pos) {
-	//not the final node
-	if (node->position < btree->_order - 1) {
-		_btree_node* right_sibling = _node_right_sibling(node);
+/*	In the case that a node that is being rebalanced does not have enough keys but its left sibling does,
+the greatest value key from the sibling will be borrowed so that a value from the nodes parent can be used to ensure the target has enough keys*/
+void _btree_borrow_from_left_sibling(_btree_node* node, _btree_node* left_sibling) {
+	// first slide the existing keys and branches in the target node over to make room for the incoming key from the parent
+	for (unsigned int i = node->item_count; i >= 1; i--) {
+		node->keys[i] = node->keys[i - 1];
+		node->branches[i + 1] = node->branches[i];
+	}
 
-		//slide all item in the right sibling over to make room for the to-be deleted node
-		_slide_keys_right(right_sibling, 0, node->item_count -1, node->item_count);
+	// move the corresponding key from the parent to the first item of the node's key array
+	node->keys[0] = node->parent->keys[node->position - 1];
+	node->item_count += 1;
 
-		//place all ite items in the to-be deleted node in the right sibling
-		int target_index = 0;
-		for (unsigned int i = 0; i <item_pos; ++i) {
-			right_sibling->keys[target_index++] = node->keys[i];
+	// move the greatest key from the left sibling up to the parent
+	node->parent->keys[left_sibling->position] = left_sibling->keys[left_sibling->item_count - 1];
+
+	//move the associated branch from the borrowed key to our target node
+	_set_node_child(node, left_sibling->branches[left_sibling->item_count], 0);
+	left_sibling->branches[left_sibling->item_count] = NULL;
+	left_sibling->item_count -= 1;
+}
+
+/*	In the case that a node that is being rebalanced does not have enough keys but its right sibling does, 
+	the lowest value key from the sibling will be borrowed so that a value from the nodes parent can be used to ensure the target has enough keys*/
+void _btree_borrow_from_right_sibling(_btree_node* node, _btree_node* right_sibling) {
+	// first take our corresponding key from our parent and add it to the end of our key list and increment our item count
+	node->keys[node->item_count++] = node->parent->keys[node->position];
+
+	// grab the first node from our right sibling and move it up to the parent to replace the key we just borrowed
+	node->parent->keys[node->position] = right_sibling->keys[0];
+	
+	// the branch corresponding to the borrowed key is moved over to our target node
+	_set_node_child(node, right_sibling->branches[0], node->item_count);
+
+	// adjust the remaining keys and branches for the right sibling
+	for (unsigned int i = 1; i < right_sibling->item_count; i++) {
+		right_sibling->keys[i - 1] = right_sibling->keys[i];
+		_set_node_child(right_sibling, right_sibling->branches[i], i - 1);
+	}
+
+	right_sibling->item_count -= 1;
+}
+
+// if we are rebalancing the root and it has no keys, then we need to promote its child to the new root.
+// if the rebalanced node is short on keys then we will need to either borrow or steal one from our neighbor
+// first we check if we can borrow from the left or right, if not, then we will merge
+void _rebalance_node(cutil_btree* btree, _btree_node* node) {
+	unsigned int min_item_count = _btree_node_min_item_count(btree);
+	if (node->item_count >= min_item_count) {
+		return;
+	}
+
+	if (node == btree->_root) {
+		
+		if (node->item_count == 0) {
+			_btree_node* old_root = btree->_root;
+			btree->_root = node->branches[0];
+			btree->_root->parent = NULL;
+
+			free(old_root);
 		}
-
-		for (unsigned int i = item_pos + 1; i < node->item_count; ++i) {
-			right_sibling->keys[target_index++] = node->keys[i];
-		}
-
-		right_sibling->keys[node->item_count - 1] = node->parent->keys[node->position];
-		right_sibling->item_count += node->item_count;
-
-		//remove this node from the parent
-		_simple_remove_from_leaf(node->parent, node->position);
 	}
 	else {
-		//move key from rightmost node down to child
-		_btree_node* left_sibling = _node_left_sibling(node);
-		left_sibling->keys[left_sibling->item_count] = left_sibling->parent->keys[left_sibling->position];
+		if (_node_is_leaf(node)) {
+			_btree_node* right_sibling = _node_right_sibling(node);
+			_btree_node* left_sibling = _node_left_sibling(node);
 
-		//copy keys from final node to left_sibling
-		int target_index = left_sibling->item_count + 1;
-		for (unsigned int i = 0; i < item_pos; ++i) {
-			left_sibling->keys[target_index++] = node->keys[i];
+			if (right_sibling && right_sibling->item_count > min_item_count) {
+				_btree_borrow_from_right_sibling(node, right_sibling);
+			}
+			else if (left_sibling && left_sibling->item_count > min_item_count) {
+				_btree_borrow_from_left_sibling(node, left_sibling);
+			}
+			else if (node->position == 0) {
+				_btree_node* next_node = _btree_merge_node_with_right_sibling(node);
+				_rebalance_node(btree, next_node->parent);
+			}
+			else {
+				_btree_node* next_node = _btree_merge_node_with_right_sibling(_node_left_sibling(node));
+				_rebalance_node(btree, next_node->parent);
+			}
 		}
+	}
+}
 
-		for (unsigned int i = item_pos + 1; i < node->item_count -1; ++i) {
-			left_sibling->keys[target_index++] = node->keys[i];
-		}
-
-		left_sibling->item_count += node->item_count - 1;
-
-		//move greatest key from final node to final key of parent
-		node->parent->keys[left_sibling->position] = node->keys[node->item_count - 1];
-
-		//remove node from the parent
-		node->parent->branches[node->position] = NULL;
+// When deleting from a leaf node, we just need to slide the keys over and repair
+void _delete_from_leaf(cutil_btree* btree, _btree_node* node, unsigned int item_pos) {
+	for (unsigned int i = item_pos + 1; i < node->item_count; i++) {
+		node->keys[i - 1] = node->keys[i];
 	}
 
-	free(node);
-
-	return true;
+	node->item_count -= 1;
+	_rebalance_node(btree, node);
 }
 
 bool cutil_btree_delete(cutil_btree* btree, int key) {
@@ -572,22 +567,12 @@ bool cutil_btree_delete(cutil_btree* btree, int key) {
 	unsigned int item_pos = _btree_node_key_position(node, key);
 
 	if (item_pos != ITEM_NOT_PRESENT) {
+
 		if (_node_is_leaf(node)) {
-			unsigned int min_count = _min_leaf_item_count(btree);
-
-			// this leaf has enough keys to maintain minimum
-			if (node->item_count > min_count) {
-				_simple_remove_from_leaf(node, item_pos);
-			}
-			else { //not enough keys in this node.  try to borrow
-				bool deleted = _delete_from_leaf_with_borrow(node, item_pos, min_count);
-				if (!deleted) {
-					deleted = _delete_from_leaf_and_combine(btree, node, item_pos);
-				}
-
-				return deleted;
-			}
+			_delete_from_leaf(btree, node, item_pos);
 		}
+
+		btree->_size -= 1;
 
 		return true;
 	}
