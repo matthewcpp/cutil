@@ -40,14 +40,14 @@ unsigned int cutil_btree_get_order(cutil_btree* btree) {
 	return btree->_order;
 }
 
-_btree_node* _btree_node_create(unsigned int order) {
+_btree_node* _btree_node_create(cutil_btree* btree) {
 	_btree_node* node = malloc(sizeof(_btree_node));
 
 	node->parent = NULL;
 	node->position = 0;
 	node->item_count = 0;
-	node->keys = calloc(order - 1, sizeof(int));
-	node->branches = calloc(order, sizeof(_btree_node* ));
+	node->keys = calloc(btree->_order - 1, sizeof(int));
+	node->branches = calloc(btree->_order, sizeof(_btree_node* ));
 
 	return node;
 }
@@ -77,7 +77,7 @@ void cutil_btree_init_with_order(cutil_btree* btree, unsigned int order) {
 	btree->_order = order;
 	btree->_size = 0;
 
-	btree->_root = _btree_node_create(btree->_order);
+	btree->_root = _btree_node_create(btree);
 
 #ifdef CUTIL_DEBUGGING
 	btree->_debug_generation = 0;
@@ -255,7 +255,7 @@ void _split_interior_node(cutil_btree* btree, _btree_node* interior_node, _btree
 	unsigned int pivot_index = _get_pivot_index(btree);
 	int pivot_key;
 
-	_btree_node* split_node = _btree_node_create(btree->_order);
+	_btree_node* split_node = _btree_node_create(btree);
 
 	//the newly inserted key appears in the new split node.
 	if (insert_position > pivot_index) {
@@ -273,7 +273,7 @@ void _split_interior_node(cutil_btree* btree, _btree_node* interior_node, _btree
 
 	// We have split the top most level, create a new root node
 	if (_node_is_root(interior_node)) {
-		_btree_node* new_root_node = _btree_node_create(btree->_order);
+		_btree_node* new_root_node = _btree_node_create(btree);
 		btree->_root = new_root_node;
 		new_root_node->item_count = 1;
 		new_root_node->keys[0] = pivot_key;
@@ -321,7 +321,7 @@ void _push_up_one_level(cutil_btree* btree, _btree_node* parent, _btree_node* le
 void _split_leaf_node(cutil_btree* btree, _btree_node*  node, int key, unsigned int insert_position) {
 	//get key that will be pushed up (ceil)
 	unsigned int pivot_index = _get_pivot_index(btree);
-	_btree_node*  new_right_node = _btree_node_create(btree->_order);
+	_btree_node*  new_right_node = _btree_node_create(btree);
 	int pivot_key;
 
 	if (insert_position > pivot_index ) {
@@ -339,7 +339,7 @@ void _split_leaf_node(cutil_btree* btree, _btree_node*  node, int key, unsigned 
 
 	// create a new root node and attach these children
 	if (_node_is_root(node)) {
-		_btree_node*  new_root = _btree_node_create(btree->_order);
+		_btree_node*  new_root = _btree_node_create(btree);
 		new_root->keys[0] = pivot_key;
 		new_root->item_count = 1;
 
@@ -592,7 +592,7 @@ bool cutil_btree_find(cutil_btree* btree, int key) {
 void cutil_btree_clear(cutil_btree* btree) {
 	_btree_node_recursive_delete(btree->_root);
 
-	btree->_root = _btree_node_create(btree->_order);
+	btree->_root = _btree_node_create(btree);
 	btree->_size = 0;
 
 #ifdef CUTIL_DEBUGGING

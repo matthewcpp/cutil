@@ -8,7 +8,7 @@
 #include <limits.h>
 #include <math.h>
 
-extern _btree_node* _btree_node_create();
+extern _btree_node* _btree_node_create(cutil_btree* btree);
 
 void indent(int depth, FILE* file) {
 	for (int i = 0; i < depth; ++i) {
@@ -103,7 +103,7 @@ _btree_node*read_btree_node(cutil_btree* btree, _btree_node* parent, int* item_c
 
 	//process node if it is not NULL and has items
 	if (strcmp(node_type, "N") != 0 && item_count > 0) {
-		_btree_node* node = _btree_node_create(btree->_order);
+		_btree_node* node = _btree_node_create(btree);
 		node->parent = parent;
 		node->item_count = item_count;
 
