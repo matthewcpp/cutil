@@ -23,9 +23,17 @@ void cutil_test_settings_init() {
 
 void cutil_test_settings_destroy() {
 	if (test_settings) {
-		free(test_settings);
-		test_settings = NULL;
-	}
+        if (test_settings->data_directory) {
+            free(test_settings->data_directory);
+        }
+
+        if (test_settings->filter_string) {
+            free(test_settings->filter_string);
+        }
+
+        free(test_settings);
+        test_settings = NULL;
+    }
 }
 
 bool cutil_test_settings_parse(int argc, const char** argv) {
@@ -41,7 +49,7 @@ bool cutil_test_settings_parse(int argc, const char** argv) {
 		else if (strcmp(argv[i], "--cutil-test-data-dir") == 0) {
 			i += 1;
 
-			test_settings->data_directory = (char*)malloc(strlen(argv[i] + 1));
+			test_settings->data_directory = (char*)malloc(strlen(argv[i]) + 1);
 			strcpy(test_settings->data_directory, argv[i]);
 		}
 

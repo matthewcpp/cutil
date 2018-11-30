@@ -462,7 +462,7 @@ _btree_node* _btree_merge_node_with_right_sibling(_btree_node* node) {
 		parent->keys[i - 1] = parent->keys[i];
 	}
 
-	free(right_sibling);
+	_btree_node_destroy(right_sibling);
 
 	return node;
 }
@@ -526,7 +526,7 @@ void _rebalance_node(cutil_btree* btree, _btree_node* node) {
 			btree->_root = node->branches[0];
 			btree->_root->parent = NULL;
 
-			free(old_root);
+			_btree_node_destroy(old_root);
 		}
 	}
 	else {
