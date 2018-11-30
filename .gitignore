@@ -53,3 +53,5 @@ dkms.conf
 
 #CMake Build directory
 build
+cmake-build-*
+.idea/*
