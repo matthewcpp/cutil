@@ -502,7 +502,7 @@ void _btree_borrow_from_right_sibling(_btree_node* node, _btree_node* right_sibl
 	_set_node_child(node, right_sibling->branches[0], node->item_count);
 
 	// adjust the remaining keys and branches for the right sibling
-	for (unsigned int i = 1; i < right_sibling->item_count; i++) {
+	for (unsigned int i = 1; i <= right_sibling->item_count; i++) {
 		right_sibling->keys[i - 1] = right_sibling->keys[i];
 		_set_node_child(right_sibling, right_sibling->branches[i], i - 1);
 	}
@@ -530,36 +530,48 @@ void _rebalance_node(cutil_btree* btree, _btree_node* node) {
 		}
 	}
 	else {
-		if (_node_is_leaf(node)) {
-			_btree_node* right_sibling = _node_right_sibling(node);
-			_btree_node* left_sibling = _node_left_sibling(node);
+		_btree_node* right_sibling = _node_right_sibling(node);
+		_btree_node* left_sibling = _node_left_sibling(node);
 
-			if (right_sibling && right_sibling->item_count > min_item_count) {
-				_btree_borrow_from_right_sibling(node, right_sibling);
-			}
-			else if (left_sibling && left_sibling->item_count > min_item_count) {
-				_btree_borrow_from_left_sibling(node, left_sibling);
-			}
-			else if (node->position == 0) {
-				_btree_node* next_node = _btree_merge_node_with_right_sibling(node);
-				_rebalance_node(btree, next_node->parent);
-			}
-			else {
-				_btree_node* next_node = _btree_merge_node_with_right_sibling(_node_left_sibling(node));
-				_rebalance_node(btree, next_node->parent);
-			}
+		if (right_sibling && right_sibling->item_count > min_item_count) {
+			_btree_borrow_from_right_sibling(node, right_sibling);
+		}
+		else if (left_sibling && left_sibling->item_count > min_item_count) {
+			_btree_borrow_from_left_sibling(node, left_sibling);
+		}
+		else if (node->position == 0) {
+			_btree_node* next_node = _btree_merge_node_with_right_sibling(node);
+			_rebalance_node(btree, next_node->parent);
+		}
+		else {
+			_btree_node* next_node = _btree_merge_node_with_right_sibling(_node_left_sibling(node));
+			_rebalance_node(btree, next_node->parent);
 		}
 	}
 }
 
 // When deleting from a leaf node, we just need to slide the keys over and repair
-void _delete_from_leaf(cutil_btree* btree, _btree_node* node, unsigned int item_pos) {
+void _btree_delete_from_leaf(cutil_btree* btree, _btree_node* node, unsigned int item_pos) {
 	for (unsigned int i = item_pos + 1; i < node->item_count; i++) {
 		node->keys[i - 1] = node->keys[i];
 	}
 
 	node->item_count -= 1;
 	_rebalance_node(btree, node);
+}
+
+void _btree_delete_from_interior(cutil_btree* btree, _btree_node* node, unsigned int item_pos) {
+	// first step is to find the maximum leaf node containing the value we will move up to replace this item
+	_btree_node* max_leaf = node->branches[item_pos];
+	while (!_node_is_leaf(max_leaf)) {
+		max_leaf = max_leaf->branches[max_leaf->item_count];
+	}
+
+	// place the greatest value of maxnode in the deleted item's position
+	node->keys[item_pos] = max_leaf->keys[max_leaf->item_count - 1];
+	max_leaf->item_count -= 1;
+
+	_rebalance_node(btree, max_leaf);
 }
 
 bool cutil_btree_delete(cutil_btree* btree, int key) {
@@ -569,7 +581,10 @@ bool cutil_btree_delete(cutil_btree* btree, int key) {
 	if (item_pos != ITEM_NOT_PRESENT) {
 
 		if (_node_is_leaf(node)) {
-			_delete_from_leaf(btree, node, item_pos);
+			_btree_delete_from_leaf(btree, node, item_pos);
+		}
+		else {
+			_btree_delete_from_interior(btree, node, item_pos);
 		}
 
 		btree->_size -= 1;
@@ -580,7 +595,6 @@ bool cutil_btree_delete(cutil_btree* btree, int key) {
 		return false;
 	}
 }
-
 
 bool cutil_btree_find(cutil_btree* btree, int key) {
 	_btree_node*  node = _btree_find_key(btree->_root, key);
