@@ -288,47 +288,65 @@ void btree_delete_returns_false_deleting_unknown_key() {
 	CUTIL_TESTING_ASSERT_FALSE(cutil_btree_delete(g_btree, (int)'Z'));
 }
 
+#include <stdio.h>
+
 /** utility method for running a delete test.  Loads a tree, removes a key, and validates it aginst the expected result */
-void do_btree_delete_test(const char* test_tree_data, const char* expected_tree_data, int key_to_delete) {
+void do_btree_delete_test(const char* test_tree_data, const char* expected_tree_data, int* keys_to_delete, int key_count) {
 	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, test_tree_data));
 	unsigned int original_tree_size = cutil_btree_size(g_btree);
 
-	CUTIL_TESTING_ASSERT_TRUE(cutil_btree_delete(g_btree, key_to_delete));
-	CUTIL_TESTING_ASSERT_TRUE(validate_btree(g_btree));
-
-	CUTIL_TESTING_ASSERT_FALSE(cutil_btree_find(g_btree, key_to_delete));
-
+	for (int i = 0; i < key_count; i++) {
+		CUTIL_TESTING_ASSERT_TRUE(cutil_btree_delete(g_btree, keys_to_delete[i]));
+		CUTIL_TESTING_ASSERT_FALSE(cutil_btree_find(g_btree, keys_to_delete[i]));
+		CUTIL_TESTING_ASSERT_TRUE(validate_btree(g_btree));
+	}
+	
 	cutil_btree* expected_btree = cutil_btree_create();
 	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(expected_btree, expected_tree_data));
 	CUTIL_TESTING_ASSERT_TRUE(compare_btrees(expected_btree, g_btree));
 
 	unsigned int actual_tree_size = cutil_btree_size(g_btree);
-	CUTIL_TESTING_ASSERT_INT_EQ(actual_tree_size, original_tree_size - 1);
+	CUTIL_TESTING_ASSERT_INT_EQ(actual_tree_size, original_tree_size - key_count);
 
 	cutil_btree_destroy(expected_btree);
 }
 
 /* deletes a key from a leaf node that has extra keys and does not require any rebalancing. */
 void btree_simple_delete_leaf_node() {
-	do_btree_delete_test("btree3_delete_leaf_simple", "btree3_delete_leaf_simple_result", 5);
+	int keys[] = { 5 };
+	do_btree_delete_test("btree3_delete_leaf_simple", "btree3_delete_leaf_simple_result", keys, 1);
 }
 
 /** deletes a leaf from the first branch of the root.  Requires merging the first branch with its right sibling and removal of an invalid root */
 void btree_delete_first_leaf_node_merge_with_parent() {
-	do_btree_delete_test("btree3_delete_simple_merge_and_reblance_root", "btree3_delete_first_leaf_node_merge_with_parent_result", 10);
+	int keys[] = { 10 };
+	do_btree_delete_test("btree3_delete_simple_merge_and_reblance_root", "btree3_delete_first_leaf_node_merge_with_parent_result", keys, 1);
 }
 
 /** deletes a leaf node from the second branch of the root.  Requires merging the from the left node (first branch) and removal of an invalid root*/
 void btree_delete_second_leaf_node_merge_with_parent() {
-	do_btree_delete_test("btree3_delete_simple_merge_and_reblance_root", "btree3_delete_second_leaf_node_merge_with_parent_result", 200);
+	int keys[] = { 200 };
+	do_btree_delete_test("btree3_delete_simple_merge_and_reblance_root", "btree3_delete_second_leaf_node_merge_with_parent_result", keys, 1);
 }
 
-void btree3_leaf_delete_borrow_right() {
-	do_btree_delete_test("btree3_leaf_delete_borrow_right", "btree3_leaf_delete_borrow_right_result", 20);
+void btree_leaf_delete_borrow_right() {
+	int keys[] = { 20 };
+	do_btree_delete_test("btree3_leaf_delete_borrow_right", "btree3_leaf_delete_borrow_right_result", keys, 1);
 }
 
-void btree3_leaf_delete_borrow_left() {
-	do_btree_delete_test("btree3_leaf_delete_borrow_left", "btree3_leaf_delete_borrow_left_result", 50);
+void btree_leaf_delete_borrow_left() {
+	int keys[] = { 50 };
+	do_btree_delete_test("btree3_leaf_delete_borrow_left", "btree3_leaf_delete_borrow_left_result", keys, 1);
+}
+
+void btree_delete_interior1() {
+	int keys[] = { 36 };
+	do_btree_delete_test("btree4_delete_interior", "btree4_delete_interior_result_1", keys, 1);
+}
+
+void btree_delete_interior2() {
+	int keys[] = { 36, 28, 22 };
+	do_btree_delete_test("btree4_delete_interior", "btree4_delete_interior_result_2", keys, 3);
 }
 
 void add_btree_tests() {
@@ -380,8 +398,10 @@ void add_btree_tests() {
 	CUTIL_TESTING_ADD(btree_simple_delete_leaf_node);
 	CUTIL_TESTING_ADD(btree_delete_first_leaf_node_merge_with_parent);
 	CUTIL_TESTING_ADD(btree_delete_second_leaf_node_merge_with_parent);
-	CUTIL_TESTING_ADD(btree3_leaf_delete_borrow_right);
-	CUTIL_TESTING_ADD(btree3_leaf_delete_borrow_left);
+	CUTIL_TESTING_ADD(btree_leaf_delete_borrow_right);
+	CUTIL_TESTING_ADD(btree_leaf_delete_borrow_left);
+	CUTIL_TESTING_ADD(btree_delete_interior1);
+	CUTIL_TESTING_ADD(btree_delete_interior2);
 }
 
 
