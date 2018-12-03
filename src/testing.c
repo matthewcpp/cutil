@@ -241,7 +241,7 @@ void cutil_testing_set_filter(const char* filter_str)
 	test_system->test_filters = _cutil_testing_get_suite_names(filter_str, &test_system->test_filter_count);
 }
 
-bool _cutil_testing_str_find(const char* needle, const char** haystack, int start, int end) {
+bool _cutil_testing_str_find(const char* needle, char** haystack, int start, int end) {
 	int middle = start + ((end - start) / 2);
 	int result = strcmp(needle, haystack[middle]);
 
