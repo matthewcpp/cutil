@@ -1,28 +1,42 @@
 #include "test_suites.h"
 
 #include "testing.h"
+
+#include "trait.h"
 #include "vector.h"
 
 #include <stdlib.h>
 
+cutil_trait* g_vector_trait = NULL;
 cutil_vector* g_vector = NULL;
 
-void vector_before_each(){
-    g_vector = cutil_vector_create(sizeof(int));
+void vector_before_each() {
+	g_vector_trait = cutil_trait_create_int();
+    g_vector = cutil_vector_create(g_vector_trait);
 }
 
-void vector_after_each(){
+void vector_after_each() {
     cutil_vector_destroy(g_vector);
+	free(g_vector_trait);
+
     g_vector = NULL;
+	g_vector_trait = NULL;
 }
 
-void vectorp_before_each(){
-	g_vector = cutil_vector_create(sizeof(int*));
+void vectorp_before_each() {
+	g_vector_trait = malloc(sizeof(cutil_trait));
+	g_vector_trait->size = sizeof(int);
+
+	g_vector = cutil_vector_create(g_vector_trait);
 }
 
 // Initializing Vector sets size to 0
-void vector_init_size_0(){
+void vector_init_size_0() {
     CUTIL_TESTING_ASSERT_INT_EQ(cutil_vector_size(g_vector), 0);
+}
+
+void vector_get_trait() {
+	CUTIL_TESTING_ASSERT_PTR_EQ(cutil_vector_get_trait(g_vector), g_vector_trait);
 }
 
 // pushing an item to an empty vector grows it by one
@@ -163,6 +177,7 @@ void add_vector_tests(){
     cutil_testing_suite_after_each(&vector_after_each);
 
 	CUTIL_TESTING_ADD(vector_init_size_0);
+	CUTIL_TESTING_ADD(vector_get_trait);
 
     CUTIL_TESTING_ADD(vector_push_empty);
     CUTIL_TESTING_ADD(vector_push_multiple);
