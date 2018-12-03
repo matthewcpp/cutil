@@ -22,11 +22,11 @@ int main(int argc, char** argv) {
 	const char* filter_string = cutil_test_get_filter_string();
 
 	if (filter_string) {
-		result = cutil_testing_run_suites(filter_string);
+		cutil_testing_set_filter(filter_string);
 	}
-	else {
-		result = cutil_testing_run_all();
-	}
+
+	result = cutil_testing_run();
+
     
     cutil_testing_destroy();
 	cutil_test_settings_destroy();

@@ -3,8 +3,6 @@
 
 #include <stdbool.h>
 
-#include "vector.h"
-
 typedef void(*cutil_test_function)();
 
 void cutil_testing_init();
@@ -12,8 +10,8 @@ void cutil_testing_init();
 void cutil_testing_suite(const char *name);
 bool cutil_testing_suite_before_each(cutil_test_function func);
 bool cutil_testing_suite_after_each(cutil_test_function func);
-int cutil_testing_run_all();
-int cutil_testing_run_suites(const char* suite_list);
+void cutil_testing_set_filter(const char* filter_str);
+int cutil_testing_run();
 void cutil_testing_destroy();
 
 void _cutil_testing_add(const char *test_name, cutil_test_function test_func);

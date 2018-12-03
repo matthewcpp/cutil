@@ -3,80 +3,32 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
+/*******************************************/
+/* Various utility functions. */
+char *_str_cpy(const char *src) {
+	size_t len = strlen(src) + 1;
+	char *s = malloc(len);
+	if (s == NULL)
+		return NULL;
+	return (char *)memcpy(s, src, len);
+}
+
+int _cutil_testing_string_cmp(const void* a, const void* b) {
+	return strcmp(*(const char**)a, *(const char**)b);
+}
+
+/*******************************************/
+/* _cutil_test_entry describes a single unit test. */
 typedef struct _cutil_test_entry {
 	cutil_test_function test_func;
 	char *test_name;
 	unsigned int test_result;
 	char *test_message;
+
+	struct _cutil_test_entry* next;
 } _cutil_test_entry;
-
-typedef struct _cutil_test_suite {
-	char* name;
-	cutil_test_function before_each;
-	cutil_test_function after_each;
-	cutil_vector _tests;
-} _cutil_test_suite;
-
-typedef struct _cutil_test_system {
-	cutil_vector _suites;
-	_cutil_test_entry *_current_test;
-	_cutil_test_suite *_current_suite;
-} _cutil_test_system;
-
-_cutil_test_system* test_system = NULL;
-
-void _cutil_testing_system_init(void);
-void _cutil_testing_system_destroy(void);
-_cutil_test_suite *_cutil_testing_suite_create(const char *name);
-void _cutil_testing_suite_destroy(_cutil_test_suite *test_suite);
-_cutil_test_entry *_cutil_testing_entry_create(const char *test_name, cutil_test_function test_func);
-void _cutil_testing_entry_destroy(_cutil_test_entry *test_entry);
-char *_str_cpy(const char *src);
-int _cutil_run_test_suites(cutil_vector *test_suites);
-_cutil_test_suite *_cutil_get_test_suite(const char *name);
-
-void _cutil_testing_system_init(void) {
-	cutil_vector_init(&test_system->_suites, sizeof (_cutil_test_suite*));
-	test_system->_current_test = NULL;
-	test_system->_current_suite = NULL;
-}
-
-void _cutil_testing_system_destroy(void) {
-	_cutil_test_suite *suite;
-	for (unsigned int i = 0; i < test_system->_suites._size; i++) {
-		cutil_vector_get(&test_system->_suites, i, &suite);
-        _cutil_testing_suite_destroy(suite);
-		free(suite);
-	}
-
-    cutil_vector_uninit(&test_system->_suites);
-}
-
-_cutil_test_suite *_cutil_testing_suite_create(const char *name) {
-	_cutil_test_suite * suite = malloc(sizeof(_cutil_test_suite));
-	suite->name = _str_cpy(name);
-	cutil_vector_init(&suite->_tests, sizeof(_cutil_test_entry*));
-
-	suite->before_each = NULL;
-	suite->after_each = NULL;
-
-	return suite;
-}
-void _cutil_testing_suite_destroy(_cutil_test_suite *test_suite) {
-	if (test_suite->name) {
-		free(test_suite->name);
-	}
-
-	_cutil_test_entry *test_entry;
-	for (unsigned int i = 0; i < test_suite->_tests._size; i++) {
-		cutil_vector_get(&test_suite->_tests, i, &test_entry);
-        _cutil_testing_entry_destroy(test_entry);
-        free(test_entry);
-	}
-
-    cutil_vector_uninit(&test_suite->_tests);
-}
 
 _cutil_test_entry *_cutil_testing_entry_create(const char *test_name, cutil_test_function test_func) {
 	_cutil_test_entry *test_entry = malloc(sizeof(_cutil_test_entry));
@@ -85,6 +37,7 @@ _cutil_test_entry *_cutil_testing_entry_create(const char *test_name, cutil_test
 	test_entry->test_name = _str_cpy(test_name);
 	test_entry->test_result = 0;
 	test_entry->test_message = NULL;
+	test_entry->next = NULL;
 
 	return test_entry;
 }
@@ -97,7 +50,93 @@ void _cutil_testing_entry_destroy(_cutil_test_entry *test_entry) {
 	if (test_entry->test_message) {
 		free(test_entry->test_message);
 	}
+
+	free(test_entry);
 }
+
+/*******************************************/
+/* _cutil_test_suite describes a collection of related unit tests. */
+typedef struct _cutil_test_suite {
+	char* name;
+	cutil_test_function before_each;
+	cutil_test_function after_each;
+	_cutil_test_entry* _tests;
+
+	struct _cutil_test_suite* next;
+} _cutil_test_suite;
+
+_cutil_test_suite *_cutil_testing_suite_create(const char *name) {
+	_cutil_test_suite * suite = malloc(sizeof(_cutil_test_suite));
+
+	suite->name = _str_cpy(name);
+	suite->_tests = NULL;
+	suite->before_each = NULL;
+	suite->after_each = NULL;
+	suite->next = NULL;
+	return suite;
+}
+void _cutil_testing_suite_destroy(_cutil_test_suite *test_suite) {
+	if (test_suite->name) {
+		free(test_suite->name);
+	}
+
+	_cutil_test_entry *current_test = test_suite->_tests;
+	_cutil_test_entry *free_ptr = NULL;
+
+	while (current_test) {
+		free_ptr = current_test;
+		current_test = current_test->next;
+		_cutil_testing_entry_destroy(free_ptr);
+	}
+
+	free(test_suite);
+}
+
+/*******************************************/
+/* _cutil_test_suite top level object containing a collection of suites. */
+typedef struct _cutil_test_system {
+	_cutil_test_suite *_suites;
+	_cutil_test_entry *_current_test;
+	_cutil_test_suite *_current_suite;
+	
+	char** test_filters;
+	int test_filter_count;
+} _cutil_test_system;
+
+_cutil_test_system* test_system = NULL;
+
+void _cutil_testing_system_init(void) {
+	test_system->_suites = NULL;
+	test_system->_current_test = NULL;
+	test_system->_current_suite = NULL;
+
+	test_system->test_filters = NULL;
+	test_system->test_filter_count = 0;
+}
+
+void _cutil_testing_system_destroy(void) {
+	if (test_system->test_filters) {
+		for (int i = 0; i < test_system->test_filter_count; i++) {
+			free(test_system->test_filters[i]);
+		}
+
+		free(test_system->test_filters);
+	}
+
+	_cutil_test_suite *current_suite = test_system->_suites;
+	_cutil_test_suite *free_ptr = NULL;
+
+	while (current_suite) {
+		free_ptr = current_suite;
+		current_suite = current_suite->next;
+		_cutil_testing_suite_destroy(free_ptr);
+	}
+
+	free(test_system);
+}
+
+/*******************************************/
+/* Implementation for main testing interface. */
 
 void cutil_testing_init() {
 	if (!test_system) {
@@ -109,7 +148,6 @@ void cutil_testing_init() {
 void cutil_testing_destroy() {
 	if (test_system) {
         _cutil_testing_system_destroy();
-		free(test_system);
 		test_system = NULL;
 	}
 }
@@ -117,10 +155,16 @@ void cutil_testing_destroy() {
 void cutil_testing_suite(const char *name) {
     cutil_testing_init();
 
-	_cutil_test_suite * new_suite = _cutil_testing_suite_create(name);
-	cutil_vector_push(&test_system->_suites, &new_suite);
+	_cutil_test_suite* new_suite = _cutil_testing_suite_create(name);
+	if (test_system->_current_suite) {
+		test_system->_current_suite->next = new_suite;
+	}
+	else {
+		test_system->_suites = new_suite;
+	}
 
 	test_system->_current_suite = new_suite;
+	test_system->_current_test = NULL;
 }
 
 void _cutil_testing_add(const char *test_name, cutil_test_function test_func) {
@@ -131,7 +175,14 @@ void _cutil_testing_add(const char *test_name, cutil_test_function test_func) {
 	}
 
 	_cutil_test_entry *test_entry = _cutil_testing_entry_create(test_name, test_func);
-	cutil_vector_push(&test_system->_current_suite->_tests, &test_entry);
+	if (test_system->_current_test) {
+		test_system->_current_test->next = test_entry;
+	}
+	else {
+		test_system->_current_suite->_tests = test_entry;
+	}
+
+	test_system->_current_test = test_entry;
 }
 
 bool cutil_testing_suite_before_each(cutil_test_function func) {
@@ -156,81 +207,94 @@ bool cutil_testing_suite_after_each(cutil_test_function func) {
 	}
 }
 
-int _cutil_min_i(int i1, int i2){
-    return (i1 < i2) ? i1 : i2;
+char** _cutil_testing_get_suite_names(const char* str, int* count) {
+	int token_count = 0;
+	int token_size = 1;
+
+	char** tokens = malloc(sizeof(char*) * token_size);
+	char* search_str = _str_cpy(str);
+
+	char *token = strtok(search_str, ";");
+	while (token) {
+		tokens[token_count] = _str_cpy(token);
+
+		token_count += 1;
+
+		if (token_count == token_size) {
+			token_size *= 2;
+			tokens = realloc(tokens, sizeof(char*) * token_size);
+		}
+
+		token = strtok(NULL, ";");
+	}
+
+	free(search_str);
+
+	qsort(tokens, token_count, sizeof(char*), _cutil_testing_string_cmp);
+
+	*count = token_count;
+	return tokens;
 }
 
-int cutil_testing_run_suites(const char* suite_list) {
-	cutil_vector suites;
-	cutil_vector_init(&suites, sizeof(_cutil_test_suite*));
+void cutil_testing_set_filter(const char* filter_str)
+{
+	test_system->test_filters = _cutil_testing_get_suite_names(filter_str, &test_system->test_filter_count);
+}
 
-	size_t len = strlen(suite_list);
-	size_t start = 0;
-	char suite_name[256];
-	
+bool _cutil_testing_str_find(const char* needle, const char** haystack, int start, int end) {
+	int middle = start + ((end - start) / 2);
+	int result = strcmp(needle, haystack[middle]);
 
-	for (size_t i = 0; i < len; i++) {
-		if (suite_list[i] == ';') {
-			size_t str_size = _cutil_min_i(i - start, 255);
-
-			memset(suite_name, 0, 256);
-			strncpy(suite_name, suite_list + start, str_size);
-
-			start = i + 1;
-
-			_cutil_test_suite *test_suite = _cutil_get_test_suite(suite_name);
-
-			if (test_suite) {
-				cutil_vector_push(&suites, &test_suite);
-			}
+	if (end <= start) {
+		if (result == 0) {
+			return true;
+		}
+		else {
+			return false;
 		}
 	}
 
-	if (start < len) {
-		size_t str_size = _cutil_min_i(len - start, 255);
-
-		memset(suite_name, 0, 256);
-		strncpy(suite_name, suite_list + start, str_size);
-
-		_cutil_test_suite *test_suite = _cutil_get_test_suite(suite_name);
-
-		if (test_suite) {
-			cutil_vector_push(&suites, &test_suite);
-		}
+	if (result > 0) {
+		return _cutil_testing_str_find(needle, haystack, middle + 1, end);
 	}
+	else if (result < 0) {
+		return _cutil_testing_str_find(needle, haystack, start, middle - 1);
+	}
+	else {
+		return true;
+	}
+}
 
-
-	int result = _cutil_run_test_suites(&suites);
-
-	cutil_vector_uninit(&suites);
-
-	return result;
+bool _cutil_testing_should_run_test_suite(_cutil_test_suite * test_suite) {
+	if (test_system->test_filters) {
+		return _cutil_testing_str_find(test_suite->name, test_system->test_filters, 0, test_system->test_filter_count - 1);
+	}
+	else {
+		return true;
+	}
 }
 
 int _cutil_testing_process_suite(_cutil_test_suite *current_suite, int* out_pass_count, int* out_fail_count) {
 	int test_pass_count = 0;
 	int test_fail_count = 0;
-	_cutil_test_entry *current_test;
 
 	printf("Test Suite: %s\n", current_suite->name);
 	printf("-----------------------------------\n");
 
-	for (unsigned int t = 0; t < current_suite->_tests._size; t++) {
-		cutil_vector_get(&current_suite->_tests, t, &current_test);
-		test_system->_current_test = current_test;
-
-		printf("Test: %s\n", current_test->test_name);
+	test_system->_current_test = current_suite->_tests;
+	while (test_system->_current_test) {
+		printf("Test: %s\n", test_system->_current_test->test_name);
 		if (current_suite->before_each) {
 			current_suite->before_each();
 		}
 
-		current_test->test_func();
+		test_system->_current_test->test_func();
 
 		if (current_suite->after_each) {
 			current_suite->after_each();
 		}
 
-		if (current_test->test_result == 0) {
+		if (test_system->_current_test->test_result == 0) {
 			printf("Result: PASSED\n");
 			test_pass_count += 1;
 		}
@@ -238,6 +302,8 @@ int _cutil_testing_process_suite(_cutil_test_suite *current_suite, int* out_pass
 			printf("Result: FAILED\n");
 			test_fail_count += 1;
 		}
+
+		test_system->_current_test = test_system->_current_test->next;
 	}
 
 	*out_pass_count = test_pass_count;
@@ -257,21 +323,24 @@ void _cutil_print_results(int total_pass_count, int total_fail_count) {
 	printf("Tests Failed: %d\n", total_fail_count);
 }
 
-int _cutil_run_test_suites(cutil_vector *test_suites) {
+int cutil_testing_run() {
 	int total_pass_count = 0;
 	int total_fail_count = 0;
-	_cutil_test_suite *current_suite;
 
-	for (unsigned int i = 0; i < test_suites->_size; i++) {
-		cutil_vector_get(test_suites, i, &current_suite);
+	test_system->_current_suite = test_system->_suites;
 
+	while (test_system->_current_suite) {
 		int suite_pass_count = 0;
 		int suite_fail_count = 0;
 
-		_cutil_testing_process_suite(current_suite, &suite_pass_count, &suite_fail_count);
+		if (_cutil_testing_should_run_test_suite(test_system->_current_suite)) {
+			_cutil_testing_process_suite(test_system->_current_suite, &suite_pass_count, &suite_fail_count);
+		}
 
 		total_pass_count += suite_pass_count;
 		total_fail_count += suite_fail_count;
+
+		test_system->_current_suite = test_system->_current_suite->next;
 	}
 
 	_cutil_print_results(total_pass_count, total_fail_count);
@@ -280,24 +349,6 @@ int _cutil_run_test_suites(cutil_vector *test_suites) {
 		return 1;
 	else
 		return 0;
-}
-
-int cutil_testing_run_all() {
-	return _cutil_run_test_suites(&test_system->_suites);
-}
-
-_cutil_test_suite *_cutil_get_test_suite(const char *name) {
-	_cutil_test_suite *test_suite = NULL;
-
-	for (unsigned int i = 0; i < test_system->_suites._size; i++) {
-		cutil_vector_get(&test_system->_suites, i, &test_suite);
-
-		if (strcmp(test_suite->name, name) == 0) {
-			return test_suite;
-		}
-	}
-
-	return NULL;
 }
 
 int _cutil_testing_assert_true(const char *exppression_str, bool result) {
@@ -383,12 +434,4 @@ int _cutil_testing_assert_ptr_not_eq(const char *ptr1_str, void* ptr1, void* ptr
 	}
 
 	return 0;
-}
-
-char *_str_cpy(const char *src) {
-	size_t len = strlen(src) + 1;
-	char *s = malloc(len);
-	if (s == NULL)
-		return NULL;
-	return (char *)memcpy(s, src, len);
 }
