@@ -24,9 +24,7 @@ void vector_after_each() {
 }
 
 void vectorp_before_each() {
-	g_vector_trait = malloc(sizeof(cutil_trait));
-	g_vector_trait->size = sizeof(int);
-
+	g_vector_trait = cutil_trait_create_ptr();
 	g_vector = cutil_vector_create(g_vector_trait);
 }
 

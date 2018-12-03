@@ -38,3 +38,25 @@ cutil_trait* cutil_trait_create_int() {
 
 	return trait;
 }
+
+int cutil_trait_ptr_compare(void* a, void* b, void* user_data) {
+	if (a > b) {
+		return 1;
+	}
+	else if (a < b) {
+		return -1;
+	}
+	else {
+		return 0;
+	}
+}
+
+cutil_trait* cutil_trait_create_ptr() {
+	cutil_trait* trait = (cutil_trait*)malloc(sizeof(cutil_trait));
+	trait->compare_func = cutil_trait_ptr_compare;
+	trait->pre_destroy_func = cutil_trait_default_pre_destroy;
+	trait->copy_func = cutil_trait_default_copy;
+	trait->user_data = trait;
+	trait->size = sizeof(void*);
+	return trait;
+}

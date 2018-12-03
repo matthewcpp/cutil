@@ -22,4 +22,11 @@ The object returned by this method should be freed by the caller;
 */
 cutil_trait* cutil_trait_create_int();
 
+/**
+Creates a new trait describing a generic for the current system.
+The data pointed to the pointer is not freed when the pointer is about to be destroyed.
+The object returned by this method should be freed by the caller;
+*/
+cutil_trait* cutil_trait_create_ptr();
+
 #endif
