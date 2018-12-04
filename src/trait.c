@@ -40,10 +40,15 @@ cutil_trait* cutil_trait_create_int() {
 }
 
 int cutil_trait_ptr_compare(void* a, void* b, void* user_data) {
-	if (a > b) {
+	(void)user_data;
+
+	void* a_ptr = *(void**)a;
+	void* b_ptr = *(void**)b;
+
+	if (a_ptr > b_ptr) {
 		return 1;
 	}
-	else if (a < b) {
+	else if (a_ptr < b_ptr) {
 		return -1;
 	}
 	else {

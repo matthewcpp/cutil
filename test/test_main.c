@@ -17,6 +17,7 @@ int main(int argc, char** argv) {
 	add_list_itr_tests();
 	add_btree_tests();
 	add_btree_itr_tests();
+	add_trait_tests();
 
 	int result = 0;
 	const char* filter_string = cutil_test_get_filter_string();
