@@ -35,7 +35,7 @@ int _cutil_testing_assert_ptr_not_null(const char *exppression_str, void* ptr);
 	if (_cutil_testing_assert_false(#EXP, (EXP))) return;
 
 #define CUTIL_TESTING_ASSERT_INT_EQ(EXP, VAL) \
-	if (_cutil_testing_assert_int_eq(#EXP, VAL, (EXP))) return;
+	if (_cutil_testing_assert_int_eq(#EXP, (int)VAL, (int)(EXP))) return;
 
 #define CUTIL_TESTING_ASSERT_FLOAT_EQ(EXP, VAL) \
 	if (_cutil_testing_assert_float_eq(#EXP, VAL, (EXP))) return;

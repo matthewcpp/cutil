@@ -67,9 +67,9 @@ void vector_pop_non_empty(){
         cutil_vector_push(g_vector, &i);
     }
 
-    unsigned int previous_size = cutil_vector_size(g_vector);
+    size_t previous_size = cutil_vector_size(g_vector);
     cutil_vector_pop(g_vector);
-    CUTIL_TESTING_ASSERT_INT_EQ(cutil_vector_size(g_vector), previous_size - 1);
+	CUTIL_TESTING_ASSERT_INT_EQ(cutil_vector_size(g_vector), previous_size - 1);
 }
 
 // pop and add does not trigger array growth
@@ -77,7 +77,7 @@ void vector_pop_and_add(){
     int i = 66;
     cutil_vector_push(g_vector, &i);
 
-    unsigned int expected_capacity = g_vector->_capacity;
+    size_t expected_capacity = g_vector->_capacity;
     cutil_vector_pop(g_vector);
     cutil_vector_push(g_vector, &i);
 

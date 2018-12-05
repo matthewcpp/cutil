@@ -157,9 +157,9 @@ void read_btree(cutil_btree* btree, const char* data) {
 
 
 void insert_char_sequence(cutil_btree* btree, const char* sequence) {
-	int len = strlen(sequence);
+	size_t len = strlen(sequence);
 
-	for (int i = 0; i < len; i++) {
+	for (size_t i = 0; i < len; i++) {
 		cutil_btree_insert(btree, (int)sequence[i]);
 	}
 }

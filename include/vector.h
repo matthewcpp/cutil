@@ -7,8 +7,8 @@
 
 typedef struct cutil_vector {
 	void* _data;
-	unsigned int _size;
-	unsigned int _capacity;
+	size_t _size;
+	size_t _capacity;
 	cutil_trait* _trait;
 
 #ifdef CUTIL_DEBUGGING
@@ -23,7 +23,7 @@ void cutil_vector_init(cutil_vector* vector, cutil_trait* trait);
 void cutil_vector_uninit(cutil_vector* vector);
 void cutil_vector_destroy(cutil_vector* vector);
 
-unsigned int cutil_vector_size(cutil_vector* vector);
+size_t cutil_vector_size(cutil_vector* vector);
 void cutil_vector_clear(cutil_vector* vector);
 void cutil_vector_push(cutil_vector* vector, void* data);
 void cutil_vector_pop(cutil_vector* vector);
