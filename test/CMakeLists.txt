@@ -10,7 +10,7 @@ set(testing_sources
 add_executable(cutil_test ${testing_sources})
 target_link_libraries(cutil_test cutil_testing)
 
-if ( CMAKE_COMPILER_IS_GNUCC )
+if ( NOT MSVC )
     target_link_libraries(cutil_test m)
 endif()
 
