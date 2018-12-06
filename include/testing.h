@@ -19,6 +19,8 @@ void _cutil_testing_add(const char *test_name, cutil_test_function test_func);
 int _cutil_testing_assert_true(const char *exppression_str, bool result);
 int _cutil_testing_assert_false(const char *exppression_str, bool result);
 int _cutil_testing_assert_int_eq(const char *exppression_str, int expected, int result);
+int _cutil_testing_assert_int_gt(const char *exppression_str, int expected, int result);
+int _cutil_testing_assert_int_lt(const char *exppression_str, int expected, int result);
 int _cutil_testing_assert_float_eq(const char *exppression_str, float expected, float result);
 int _cutil_testing_assert_ptr_eq(const char *exppression_str, void* expected, void* result);
 int _cutil_testing_assert_ptr_not_eq(const char *ptr1_str, void* ptr1, void* ptr2);
@@ -36,6 +38,13 @@ int _cutil_testing_assert_ptr_not_null(const char *exppression_str, void* ptr);
 
 #define CUTIL_TESTING_ASSERT_INT_EQ(EXP, VAL) \
 	if (_cutil_testing_assert_int_eq(#EXP, (int)VAL, (int)(EXP))) return;
+
+#define CUTIL_TESTING_ASSERT_INT_LT(EXP, VAL) \
+	if (_cutil_testing_assert_int_lt(#EXP, (int)VAL, (int)(EXP))) return;
+
+#define CUTIL_TESTING_ASSERT_INT_GT(EXP, VAL) \
+	if (_cutil_testing_assert_int_gt(#EXP, (int)VAL, (int)(EXP))) return;
+
 
 #define CUTIL_TESTING_ASSERT_FLOAT_EQ(EXP, VAL) \
 	if (_cutil_testing_assert_float_eq(#EXP, VAL, (EXP))) return;

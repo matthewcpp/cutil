@@ -384,6 +384,28 @@ int _cutil_testing_assert_int_eq(const char *exppression_str, int expected, int 
 	}
 }
 
+int _cutil_testing_assert_int_lt(const char *exppression_str, int expected, int result) {
+	if (result >= expected) {
+		printf("Assertion: %s < %i. Actual: %i\n", exppression_str, expected, result);
+		test_system->_current_test->test_result = 1;
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
+
+int _cutil_testing_assert_int_gt(const char *exppression_str, int expected, int result) {
+	if (result <= expected) {
+		printf("Assertion: %s > %i. Actual: %i\n", exppression_str, expected, result);
+		test_system->_current_test->test_result = 1;
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
+
 int _cutil_testing_assert_float_eq(const char *exppression_str, float expected, float result) {
 	if (expected != result) {
 		printf("Assertion: %s Expected: %f Actual: %f\n", exppression_str, expected, result);

@@ -20,9 +20,9 @@ void trait_after_each() {
 void trait_int_compare() {
 	int a1 = 1, a2 = 1, b = 2;
 
-	CUTIL_TESTING_ASSERT_INT_EQ(g_trait->compare_func(&a1, &b, g_trait->user_data), -1);
+	CUTIL_TESTING_ASSERT_INT_LT(g_trait->compare_func(&a1, &b, g_trait->user_data), 0);
 	CUTIL_TESTING_ASSERT_INT_EQ(g_trait->compare_func(&a1, &a2, g_trait->user_data), 0);
-	CUTIL_TESTING_ASSERT_INT_EQ(g_trait->compare_func(&b, &a1, g_trait->user_data), 1);
+	CUTIL_TESTING_ASSERT_INT_GT(g_trait->compare_func(&b, &a1, g_trait->user_data), 0);
 }
 
 void trait_int_copy() {
@@ -48,9 +48,9 @@ void trait_ptr_compare() {
 	int* beginning = test;
 	int* end = test + 9;
 
-	CUTIL_TESTING_ASSERT_INT_EQ(g_trait->compare_func(&beginning, &end, g_trait->user_data), -1);
+	CUTIL_TESTING_ASSERT_INT_LT(g_trait->compare_func(&beginning, &end, g_trait->user_data), 0);
 	CUTIL_TESTING_ASSERT_INT_EQ(g_trait->compare_func(&beginning, &beginning, g_trait->user_data), 0);
-	CUTIL_TESTING_ASSERT_INT_EQ(g_trait->compare_func(&end, &beginning, g_trait->user_data), 1);
+	CUTIL_TESTING_ASSERT_INT_GT(g_trait->compare_func(&end, &beginning, g_trait->user_data), 0);
 
 	free(test);
 }
@@ -98,9 +98,9 @@ void trait_cstring_compare() {
 	char* str1 = "hello";
 	char* str2 = "world";
 	
-	CUTIL_TESTING_ASSERT_INT_EQ(g_trait->compare_func(&str1, &str2, g_trait->user_data), -1);
+	CUTIL_TESTING_ASSERT_INT_LT(g_trait->compare_func(&str1, &str2, g_trait->user_data), 0);
 	CUTIL_TESTING_ASSERT_INT_EQ(g_trait->compare_func(&str1, &str1, g_trait->user_data), 0);
-	CUTIL_TESTING_ASSERT_INT_EQ(g_trait->compare_func(&str2, &str1, g_trait->user_data), 1);
+	CUTIL_TESTING_ASSERT_INT_GT(g_trait->compare_func(&str2, &str1, g_trait->user_data), 0);
 }
 
 void add_trait_tests() {
