@@ -4,26 +4,22 @@
 #include <string.h>
 #include <assert.h>
 
+struct cutil_vector{
+	void* _data;
+	size_t _size;
+	size_t _capacity;
+	cutil_trait* _trait;
+};
+
 cutil_vector* cutil_vector_create(cutil_trait* trait){
-    cutil_vector* vector = malloc(sizeof(cutil_vector));
-    cutil_vector_init(vector, trait);
-
-#ifdef CUTIL_DEBUGGING
-    vector->_debug_malloc = true;
-#endif
-
-    return vector;
-}
-
-void cutil_vector_init(cutil_vector* vector, cutil_trait* trait) {
+	cutil_vector* vector = malloc(sizeof(cutil_vector));
+    
 	vector->_trait = trait;
 	vector->_data = NULL;
-    vector->_capacity = 0;
-    vector->_size = 0;
+	vector->_capacity = 0;
+	vector->_size = 0;
 
-#ifdef CUTIL_DEBUGGING
-    vector->_debug_malloc = false;
-#endif
+	return vector;
 }
 
 void cutil_vector_uninit(cutil_vector* vector){
@@ -31,10 +27,6 @@ void cutil_vector_uninit(cutil_vector* vector){
 }
 
 void cutil_vector_destroy(cutil_vector* vector) {
-#ifdef CUTIL_DEBUGGING
-    assert(vector->_debug_malloc);
-#endif
-
     cutil_vector_uninit(vector);
     free(vector);
 }
@@ -98,6 +90,10 @@ bool cutil_vector_get(cutil_vector* vector, unsigned int index, void* out) {
 	}
 }
 
-cutil_trait* cutil_vector_get_trait(cutil_vector* vector) {
+cutil_trait* cutil_vector_trait(cutil_vector* vector) {
 	return vector->_trait;
+}
+
+size_t cutil_vector_capacity(cutil_vector* vector) {
+	return vector->_capacity;
 }

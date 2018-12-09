@@ -33,8 +33,8 @@ void vector_init_size_0() {
     CUTIL_TESTING_ASSERT_INT_EQ(cutil_vector_size(g_vector), 0);
 }
 
-void vector_get_trait() {
-	CUTIL_TESTING_ASSERT_PTR_EQ(cutil_vector_get_trait(g_vector), g_vector_trait);
+void vector_trait() {
+	CUTIL_TESTING_ASSERT_PTR_EQ(cutil_vector_trait(g_vector), g_vector_trait);
 }
 
 // pushing an item to an empty vector grows it by one
@@ -42,7 +42,7 @@ void vector_push_empty(){
     int i = 7;
     cutil_vector_push(g_vector, &i);
 
-    CUTIL_TESTING_ASSERT_INT_EQ(g_vector->_capacity, 1);
+    CUTIL_TESTING_ASSERT_INT_EQ(cutil_vector_capacity(g_vector), 1);
     CUTIL_TESTING_ASSERT_INT_EQ(cutil_vector_size(g_vector), 1);
 }
 
@@ -53,7 +53,7 @@ void vector_push_multiple(){
     }
 
     CUTIL_TESTING_ASSERT_INT_EQ(cutil_vector_size(g_vector), 10);
-    CUTIL_TESTING_ASSERT_INT_EQ(g_vector->_capacity, 16);
+    CUTIL_TESTING_ASSERT_INT_EQ(cutil_vector_capacity(g_vector), 16);
 }
 
 // popping an empty vector does nothing
@@ -77,11 +77,11 @@ void vector_pop_and_add(){
     int i = 66;
     cutil_vector_push(g_vector, &i);
 
-    size_t expected_capacity = g_vector->_capacity;
+	size_t expected_capacity = cutil_vector_capacity(g_vector);
     cutil_vector_pop(g_vector);
     cutil_vector_push(g_vector, &i);
 
-    CUTIL_TESTING_ASSERT_INT_EQ(expected_capacity, g_vector->_capacity);
+    CUTIL_TESTING_ASSERT_INT_EQ(expected_capacity, cutil_vector_capacity(g_vector));
 }
 
 // clearing an empty vector does nothing
@@ -98,7 +98,7 @@ void vector_clear_reset(){
     cutil_vector_clear(g_vector);
 
     CUTIL_TESTING_ASSERT_INT_EQ(cutil_vector_size(g_vector), 0);
-    CUTIL_TESTING_ASSERT_INT_EQ(g_vector->_capacity, 0);
+    CUTIL_TESTING_ASSERT_INT_EQ(cutil_vector_capacity(g_vector), 0);
 }
 
 // get retrieves the correct items for valid indices
@@ -175,7 +175,7 @@ void add_vector_tests(){
     cutil_testing_suite_after_each(&vector_after_each);
 
 	CUTIL_TESTING_ADD(vector_init_size_0);
-	CUTIL_TESTING_ADD(vector_get_trait);
+	CUTIL_TESTING_ADD(vector_trait);
 
     CUTIL_TESTING_ADD(vector_push_empty);
     CUTIL_TESTING_ADD(vector_push_multiple);
