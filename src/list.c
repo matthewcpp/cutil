@@ -14,7 +14,7 @@ typedef struct cutil_list_node {
 struct cutil_list {
 	unsigned int size;
 	cutil_list_node base;
-	unsigned int item_size;
+	cutil_trait* trait;
 };
 
 struct cutil_list_itr {
@@ -22,17 +22,17 @@ struct cutil_list_itr {
 	cutil_list_node* node;
 };
 
-void cutil_list_node_destroy(cutil_list_node* list_node);
-cutil_list_node* cutil_list_node_create(unsigned int item_size);
+void cutil_list_node_destroy(cutil_trait* trait, cutil_list_node* list_node);
+cutil_list_node* cutil_list_node_create(cutil_trait* trait, void* data);
 
-cutil_list* cutil_list_create(unsigned int item_size) {
+cutil_list* cutil_list_create(cutil_trait* trait) {
 	cutil_list* list = malloc(sizeof(cutil_list));
 
 	list->size = 0;
 	list->base.prev = &list->base;
 	list->base.next = &list->base;
 	list->base.data = NULL;
-	list->item_size = item_size;
+	list->trait = trait;
 
 	return list;
 }
@@ -48,7 +48,7 @@ void cutil_list_clear(cutil_list* list) {
 
 		while (node_to_delete != &list->base) {
 			cutil_list_node* next_node = node_to_delete->next;
-            cutil_list_node_destroy(node_to_delete);
+            cutil_list_node_destroy(list->trait, node_to_delete);
 			node_to_delete = next_node;
 		}
 
@@ -62,16 +62,18 @@ unsigned int cutil_list_size(cutil_list* list) {
 	return list->size;
 }
 
-cutil_list_node* cutil_list_node_create(unsigned int item_size) {
+cutil_list_node* cutil_list_node_create(cutil_trait* trait, void* data) {
 	cutil_list_node* new_node = (cutil_list_node*)malloc(sizeof(cutil_list_node));
-	new_node->data = malloc(item_size);
+	new_node->data = malloc(trait->size);
+	trait->copy_func(new_node->data, data, trait->user_data);
 	new_node->prev = NULL;
 	new_node->next = NULL;
 
 	return new_node;
 }
 
-void cutil_list_node_destroy(cutil_list_node* list_node){
+void cutil_list_node_destroy(cutil_trait* trait, cutil_list_node* list_node){
+	trait->pre_destroy_func(list_node->data, trait->user_data);
     free(list_node->data);
     free(list_node);
 }
@@ -85,8 +87,7 @@ void _cutil_list_push_add_first(cutil_list* list, cutil_list_node* new_node) {
 }
 
 void cutil_list_push_front(cutil_list* list, void* data) {
-	cutil_list_node* new_node = cutil_list_node_create(list->item_size);
-	memcpy(new_node->data, data, list->item_size);
+	cutil_list_node* new_node = cutil_list_node_create(list->trait, data);
 
 	cutil_list_node* current_front_node = list->base.next;
 
@@ -107,7 +108,7 @@ void cutil_list_push_front(cutil_list* list, void* data) {
 
 bool cutil_list_front(cutil_list* list, void* data) {
 	if (list->size > 0) {
-		memcpy(data, list->base.next->data, list->item_size);
+		memcpy(data, list->base.next->data, list->trait->size);
 		return true;
 	}
 	else {
@@ -117,7 +118,7 @@ bool cutil_list_front(cutil_list* list, void* data) {
 
 bool cutil_list_back(cutil_list* list, void* data) {
 	if (list->size > 0) {
-		memcpy(data, list->base.prev->data, list->item_size);
+		memcpy(data, list->base.prev->data, list->trait->size);
 		return true;
 	}
 	else {
@@ -139,7 +140,7 @@ bool cutil_list_at(cutil_list* list, size_t index, void* data) {
 	}
 
 	if (count == index) {
-		memcpy(data, node->data, list->item_size);
+		memcpy(data, node->data, list->trait->size);
 		return true;
 	}
 	else {
@@ -148,8 +149,7 @@ bool cutil_list_at(cutil_list* list, size_t index, void* data) {
 }
 
 void cutil_list_push_back(cutil_list* list, void* data) {
-	cutil_list_node* new_node = cutil_list_node_create(list->item_size);
-	memcpy(new_node->data, data, list->item_size);
+	cutil_list_node* new_node = cutil_list_node_create(list->trait, data);
 
 	if (list->size > 0) {
 		cutil_list_node* current_back_node = list->base.prev;
@@ -181,7 +181,7 @@ bool cutil_list_pop_front(cutil_list* list) {
 			list->base.prev = &list->base;
 		}
 
-        cutil_list_node_destroy(node_to_delete);
+        cutil_list_node_destroy(list->trait, node_to_delete);
 		list->size -= 1;
 
 		return true;
@@ -206,7 +206,7 @@ bool cutil_list_pop_back(cutil_list* list) {
 			list->base.prev = &list->base;
 		}
 
-		cutil_list_node_destroy(node_to_delete);
+		cutil_list_node_destroy(list->trait, node_to_delete);
 		list->size -= 1;
 
 		return true;
@@ -238,7 +238,7 @@ bool cutil_list_itr_next(cutil_list_itr* itr, void* data) {
 		itr->node = itr->node->next;
 
 		if (data) {
-			memcpy(data, itr->node->data, itr->list->item_size);
+			memcpy(data, itr->node->data, itr->list->trait->size);
 		}
 
 		return true;
@@ -256,7 +256,7 @@ bool cutil_list_itr_prev(cutil_list_itr* itr, void* data) {
 		itr->node = itr->node->prev;
 
 		if (data) {
-			memcpy(data, itr->node->data, itr->list->item_size);
+			memcpy(data, itr->node->data, itr->list->trait->size);
 		}
 
 		return true;

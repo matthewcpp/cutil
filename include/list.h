@@ -1,13 +1,15 @@
 #ifndef CUTIL_LIST_H
 #define CUTIL_LIST_H
 
+#include "trait.h"
+
 #include <stdbool.h>
 #include <stddef.h>
 
 
 typedef struct cutil_list cutil_list;
 
-cutil_list* cutil_list_create(unsigned int item_size);
+cutil_list* cutil_list_create(cutil_trait* trait);
 void cutil_list_destroy(cutil_list* list);
 
 unsigned int cutil_list_size(cutil_list* list);
