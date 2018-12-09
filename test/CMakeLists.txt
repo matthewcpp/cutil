@@ -10,10 +10,6 @@ set(testing_sources
 add_executable(cutil_test ${testing_sources})
 target_link_libraries(cutil_test cutil_testing)
 
-if ( NOT MSVC )
-    target_link_libraries(cutil_test m)
-endif()
-
 set(test_data_dir ${CMAKE_CURRENT_SOURCE_DIR}/btree_data)
 
 add_test (NAME test_list COMMAND cutil_test "--cutil-test-filter" "list;list_itr" "--cutil-test-data-dir" ${test_data_dir})

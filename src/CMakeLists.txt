@@ -7,6 +7,23 @@ set(cutil_sources
 
 add_library (cutil ${cutil_sources})
 
+if (NOT MSVC)
+set(cutil_public_link_libs m)
+
+if ( CMAKE_COMPILER_IS_GNUCC AND COVERAGE)
+		target_compile_options(cutil PRIVATE --coverage)
+        set(cutil_private_link_libs --coverage)
+endif()
+
+target_link_libraries(cutil 
+    PUBLIC ${cutil_public_link_libs}
+    PRIVATE ${cutil_private_link_libs}
+)
+endif()
+
+
+
+
 set(testing_sources
 	../include/testing.h
     testing.c
@@ -14,10 +31,3 @@ set(testing_sources
 
 add_library (cutil_testing ${testing_sources})
 target_link_libraries(cutil_testing cutil)
-
-if ( CMAKE_COMPILER_IS_GNUCC )
-	if (COVERAGE)
-		target_compile_options(cutil PRIVATE --coverage)
-		target_link_libraries(cutil PRIVATE --coverage)
-	endif()
-endif()

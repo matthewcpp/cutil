@@ -11,8 +11,6 @@ if ( CMAKE_COMPILER_IS_GNUCC )
 	endif()
 endif()
 
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DCUTIL_DEBUGGING")
-
 if ( MSVC )
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 	set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} /W4 /WX")
