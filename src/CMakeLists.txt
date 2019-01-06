@@ -2,7 +2,7 @@ set(cutil_sources
     ../include/trait.h trait.c
 	../include/vector.h vector.c
 	../include/list.h list.c
-	../include/btree.h btree.c
+	../include/btree.h btree_private.h btree.c
 )
 
 add_library (cutil ${cutil_sources})

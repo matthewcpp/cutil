@@ -9,6 +9,7 @@ set(testing_sources
 
 add_executable(cutil_test ${testing_sources})
 target_link_libraries(cutil_test cutil_testing)
+target_include_directories(cutil_test PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../src)
 
 set(test_data_dir ${CMAKE_CURRENT_SOURCE_DIR}/btree_data)
 

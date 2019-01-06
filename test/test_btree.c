@@ -7,24 +7,27 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
-#define DEFAULT_BTREE_ORDER 5
-extern bool validate_btree(cutil_btree* btree);
+#define DEFAULT_ODD_BTREE_ORDER 5
+#define DEFAULT_EVEN_BTREE_ORDER 4
 
 cutil_btree* g_btree = NULL;
 
 
 void btree_before_each() {
-	g_btree = cutil_btree_create(DEFAULT_BTREE_ORDER);
+	g_btree = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_int(), cutil_trait_int());
 }
 
 void btree_after_each() {
 	cutil_btree_destroy(g_btree);
+	cutil_trait_destroy();
+
 	g_btree = NULL;
 }
 
 void btree_even_order_before_each() {
-	g_btree = cutil_btree_create(4);
+	g_btree = cutil_btree_create(DEFAULT_EVEN_BTREE_ORDER, cutil_trait_int(), cutil_trait_int());
 }
 
 void btree_test_size_empty() {
@@ -35,67 +38,88 @@ void btree_test_size_non_empty() {
 	int expected_tree_size = 5;
 
 	for (int i = 0; i < expected_tree_size; ++i) {
-		cutil_btree_insert(g_btree, i);
+		cutil_btree_insert(g_btree, &i, NULL);
         CUTIL_TESTING_ASSERT_INT_EQ(cutil_btree_size(g_btree), i + 1);
 	}
 }
 
-void btree_create_order_sets_correct_value() {
-	cutil_btree* btree = cutil_btree_create(4);
+void btree_invalid_creation_parameters() {
+	cutil_btree* result = cutil_btree_create(-1, cutil_trait_int(), cutil_trait_int());
+	CUTIL_TESTING_ASSERT_PTR_NULL(result);
 
+	result = cutil_btree_create(5, NULL, cutil_trait_int());
+	CUTIL_TESTING_ASSERT_PTR_NULL(result);
+
+	result = cutil_btree_create(5, cutil_trait_int(), NULL);
+	CUTIL_TESTING_ASSERT_PTR_NULL(result);
+}
+
+void btree_create_order_sets_correct_value() {
+	CUTIL_TESTING_ASSERT_INT_EQ(cutil_btree_get_order(g_btree), DEFAULT_ODD_BTREE_ORDER);
+
+	cutil_btree* btree = cutil_btree_create(4, cutil_trait_int(), cutil_trait_int());
 	CUTIL_TESTING_ASSERT_INT_EQ(cutil_btree_get_order(btree), 4);
 
 	cutil_btree_destroy(btree);
 }
 
-void btree_find_returns_true_if_key_in_leaf_node(){
+void btree_contains_returns_true_if_key_in_leaf_node(){
     CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, "btree4_split_interior_left_result"));
-    CUTIL_TESTING_ASSERT_TRUE(cutil_btree_find(g_btree, 34));
+    
+	int value = 34;
+	CUTIL_TESTING_ASSERT_TRUE(cutil_btree_contains(g_btree, &value));
 }
 
-void btree_find_returns_true_if_key_in_interior_node(){
+void btree_contains_returns_true_if_key_in_interior_node(){
     CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, "btree4_split_interior_left_result"));
-    CUTIL_TESTING_ASSERT_TRUE(cutil_btree_find(g_btree, 30));
+    
+	int value = 30;
+	CUTIL_TESTING_ASSERT_TRUE(cutil_btree_contains(g_btree, &value));
 }
 
-void btree_find_returns_true_if_key_in_root_node(){
+void btree_contains_returns_true_if_key_in_root_node(){
     CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, "btree4_split_interior_left_result"));
-    CUTIL_TESTING_ASSERT_TRUE(cutil_btree_find(g_btree, 20));
+    
+	int value = 20;
+	CUTIL_TESTING_ASSERT_TRUE(cutil_btree_contains(g_btree, &value));
 }
 
-void btree_find_returns_false_if_key_not_present(){
+void btree_contains_returns_false_if_key_not_present(){
     for (int i =0; i < 10; ++i){
-        cutil_btree_insert(g_btree, i);
+        cutil_btree_insert(g_btree, &i, NULL);
     }
 
     for (int i =100; i < 110; ++i){
-        CUTIL_TESTING_ASSERT_FALSE(cutil_btree_find(g_btree, i));
+        CUTIL_TESTING_ASSERT_FALSE(cutil_btree_contains(g_btree, &i));
     }
 }
 
 void btree_clear_removes_all_items(){
     for (int i =0; i < 10; ++i){
-        cutil_btree_insert(g_btree, i);
+        cutil_btree_insert(g_btree, &i, NULL);
     }
 
     CUTIL_TESTING_ASSERT_INT_EQ(cutil_btree_size(g_btree), 10);
-    CUTIL_TESTING_ASSERT_TRUE(cutil_btree_find(g_btree, 5));
 
     cutil_btree_clear(g_btree);
 
     CUTIL_TESTING_ASSERT_INT_EQ(cutil_btree_size(g_btree), 0);
-    CUTIL_TESTING_ASSERT_FALSE(cutil_btree_find(g_btree, 5));
+	for (int i = 0; i < 10; ++i) {
+		CUTIL_TESTING_ASSERT_FALSE(cutil_btree_contains(g_btree, &i));
+	}
+    
 }
 
 void btree_split_interior_node_push_up(){
     CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, "btree4_split_interior_push_up"));
     CUTIL_TESTING_ASSERT_TRUE(validate_btree(g_btree));
 
-    cutil_btree_insert(g_btree, 123);
+	int key = 123;
+    cutil_btree_insert(g_btree, &key, NULL);
     CUTIL_TESTING_ASSERT_TRUE(validate_btree(g_btree));
 
-    cutil_btree* expected_btree = cutil_btree_create(DEFAULT_BTREE_ORDER);
-    read_btree_from_file(expected_btree, "btree4_split_interior_push_up_result");
+    cutil_btree* expected_btree = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_int(), cutil_trait_int());
+	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(expected_btree, "btree4_split_interior_push_up_result"));
 
     CUTIL_TESTING_ASSERT_TRUE(cutil_btree_equals(expected_btree, g_btree));
     cutil_btree_destroy(expected_btree);
@@ -105,8 +129,8 @@ void btree_split_interior_node_push_up(){
 void btree_test_split_leaf_node_right() {
 	insert_char_sequence(g_btree,"ABCDE");
 
-	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_BTREE_ORDER);
-	read_btree_from_file(expected_btree, "btree5_split_leaf_new_root_result");
+	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_int(), cutil_trait_int());
+	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(expected_btree, "btree5_split_leaf_new_root_result"));
 
 	CUTIL_TESTING_ASSERT_TRUE(cutil_btree_equals(expected_btree, g_btree));
 	cutil_btree_destroy(expected_btree);
@@ -116,8 +140,8 @@ void btree_test_split_leaf_node_right() {
 void btree_test_split_leaf_node_left() {
 	insert_char_sequence(g_btree, "ACDEB");
 
-	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_BTREE_ORDER);
-	read_btree_from_file(expected_btree, "btree5_split_leaf_new_root_result");
+	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_int(), cutil_trait_int());
+	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(expected_btree, "btree5_split_leaf_new_root_result"));
 
 	CUTIL_TESTING_ASSERT_TRUE(cutil_btree_equals(expected_btree, g_btree));
 	cutil_btree_destroy(expected_btree);
@@ -127,8 +151,8 @@ void btree_test_split_leaf_node_left() {
 void btree_test_split_leaf_node_middle() {
 	insert_char_sequence(g_btree, "ABDEC");
 
-	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_BTREE_ORDER);
-	read_btree_from_file(expected_btree, "btree5_split_leaf_new_root_result");
+	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_int(), cutil_trait_int());
+	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(expected_btree, "btree5_split_leaf_new_root_result"));
 
 	CUTIL_TESTING_ASSERT_TRUE(cutil_btree_equals(expected_btree, g_btree));
 	cutil_btree_destroy(expected_btree);
@@ -139,10 +163,11 @@ void btree_test_split_leaf_node_middle() {
 void btree_test_split_right_new_root() {
 	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, "btree5_split_interior"));
 
-	cutil_btree_insert(g_btree, 50);
+	int key = 50;
+	cutil_btree_insert(g_btree, &key, NULL);
 	CUTIL_TESTING_ASSERT_TRUE(validate_btree(g_btree));
 
-	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_BTREE_ORDER);
+	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_int(), cutil_trait_int());
 	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(expected_btree, "btree5_split_interior_right_result"));
 	CUTIL_TESTING_ASSERT_TRUE(cutil_btree_equals(expected_btree, g_btree));
 
@@ -155,10 +180,11 @@ void btree_test_split_right_new_root() {
 void btree_test_split_middle_new_root() {
 	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, "btree5_split_interior"));
 
-	cutil_btree_insert(g_btree, 25);
+	int key = 25;
+	cutil_btree_insert(g_btree, &key, NULL);
 	CUTIL_TESTING_ASSERT_TRUE(validate_btree(g_btree));
 
-	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_BTREE_ORDER);
+	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_int(), cutil_trait_int());
 	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(expected_btree, "btree5_split_interior_middle_result"));
 	CUTIL_TESTING_ASSERT_TRUE(cutil_btree_equals(expected_btree, g_btree));
 
@@ -170,10 +196,11 @@ void btree_test_split_middle_new_root() {
 void btree_test_split_left_new_root() {
 	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, "btree5_split_interior"));
 
-	cutil_btree_insert(g_btree, 1);
+	int key = 1;
+	cutil_btree_insert(g_btree, &key, NULL);
 	CUTIL_TESTING_ASSERT_TRUE(validate_btree(g_btree));
 
-	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_BTREE_ORDER);
+	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_int(), cutil_trait_int());
 	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(expected_btree, "btree5_split_interior_left_result"));
 	CUTIL_TESTING_ASSERT_TRUE(cutil_btree_equals(expected_btree, g_btree));
 	
@@ -183,11 +210,13 @@ void btree_test_split_left_new_root() {
 /*	inserts items into the tree with even number order that requires a leaf node to be split to the left of the node pivot */
 void btree_even_test_split_leaf_node_left() {
 	insert_char_sequence(g_btree, "ADF");
-	cutil_btree_insert(g_btree, (int)'B');
+
+	int key = (int)'B';
+	cutil_btree_insert(g_btree, &key, NULL);
 
 	CUTIL_TESTING_ASSERT_TRUE(validate_btree(g_btree));
-	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_BTREE_ORDER);
-	read_btree_from_file(expected_btree, "btree4_split_leaf_new_root_result");
+	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_int(), cutil_trait_int());
+	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(expected_btree, "btree4_split_leaf_new_root_result"));
 
 	CUTIL_TESTING_ASSERT_TRUE(cutil_btree_equals(expected_btree, g_btree));
 	cutil_btree_destroy(expected_btree);
@@ -196,11 +225,13 @@ void btree_even_test_split_leaf_node_left() {
 /*	inserts items into the tree with even number order that requires a leaf node to be split at the node pivot */
 void btree_even_test_split_leaf_node_middle() {
 	insert_char_sequence(g_btree, "ABF");
-	cutil_btree_insert(g_btree, (int)'D');
+
+	int key = (int)'D';
+	cutil_btree_insert(g_btree, &key, NULL);
 
 	CUTIL_TESTING_ASSERT_TRUE(validate_btree(g_btree));
-	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_BTREE_ORDER);
-	read_btree_from_file(expected_btree, "btree4_split_leaf_new_root_result");
+	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_int(), cutil_trait_int());
+	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(expected_btree, "btree4_split_leaf_new_root_result"));
 
 	CUTIL_TESTING_ASSERT_TRUE(cutil_btree_equals(expected_btree, g_btree));
 	cutil_btree_destroy(expected_btree);
@@ -209,11 +240,13 @@ void btree_even_test_split_leaf_node_middle() {
 /*	inserts items into the tree with even number order that requires a leaf node to be split to the right of the node pivot */
 void btree_even_test_split_leaf_node_right() {
 	insert_char_sequence(g_btree, "ABD");
-	cutil_btree_insert(g_btree, (int)'F');
+
+	int key = (int)'F';
+	cutil_btree_insert(g_btree, &key, NULL);
 
 	CUTIL_TESTING_ASSERT_TRUE(validate_btree(g_btree));
-	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_BTREE_ORDER);
-	read_btree_from_file(expected_btree, "btree4_split_leaf_new_root_result");
+	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_int(), cutil_trait_int());
+	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(expected_btree, "btree4_split_leaf_new_root_result"));
 
 	CUTIL_TESTING_ASSERT_TRUE(cutil_btree_equals(expected_btree, g_btree));
 	cutil_btree_destroy(expected_btree);
@@ -224,10 +257,11 @@ creates a new root node */
 void btree_even_test_split_left_new_root() {
 	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, "btree4_split_interior"));
 
-	cutil_btree_insert(g_btree, 1);
+	int key = 1;
+	cutil_btree_insert(g_btree, &key, NULL);
 	CUTIL_TESTING_ASSERT_TRUE(validate_btree(g_btree));
 
-	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_BTREE_ORDER);
+	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_int(), cutil_trait_int());
 	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(expected_btree, "btree4_split_interior_left_result"));
 	CUTIL_TESTING_ASSERT_TRUE(cutil_btree_equals(expected_btree, g_btree));
 
@@ -239,10 +273,11 @@ creates a new root node */
 void btree_even_test_split_middle_new_root() {
 	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, "btree4_split_interior"));
 
-	cutil_btree_insert(g_btree, 21);
+	int key = 21;
+	cutil_btree_insert(g_btree, &key, NULL);
 	CUTIL_TESTING_ASSERT_TRUE(validate_btree(g_btree));
 
-	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_BTREE_ORDER);
+	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_int(), cutil_trait_int());
 	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(expected_btree, "btree4_split_interior_middle_result"));
 	CUTIL_TESTING_ASSERT_TRUE(cutil_btree_equals(expected_btree, g_btree));
 
@@ -254,10 +289,11 @@ creates a new root node */
 void btree_even_test_split_right_new_root() {
 	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, "btree4_split_interior"));
 
-	cutil_btree_insert(g_btree, 38);
+	int key = 38;
+	cutil_btree_insert(g_btree, &key, NULL);
 	CUTIL_TESTING_ASSERT_TRUE(validate_btree(g_btree));
 
-	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_BTREE_ORDER);
+	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_int(), cutil_trait_int());
 	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(expected_btree, "btree4_split_interior_right_result"));
 	CUTIL_TESTING_ASSERT_TRUE(cutil_btree_equals(expected_btree, g_btree));
 
@@ -266,30 +302,38 @@ void btree_even_test_split_right_new_root() {
 
 void btree_delete_decrements_size_when_removing_item() {
 	insert_char_sequence(g_btree, "ABF");
-	unsigned int starting_size = cutil_btree_size(g_btree);
-	cutil_btree_delete(g_btree, (int)'A');
+	size_t starting_size = cutil_btree_size(g_btree);
 
-	unsigned int actual_size = cutil_btree_size(g_btree);
+	int value = (int)'A';
+	cutil_btree_delete(g_btree, &value);
+
+	size_t actual_size = cutil_btree_size(g_btree);
 	CUTIL_TESTING_ASSERT_INT_EQ(actual_size, starting_size - 1);
 }
 
 void btree_delete_does_not_decrement_size_when_removing_invalid_item() {
 	insert_char_sequence(g_btree, "ABF");
-	unsigned int starting_size = cutil_btree_size(g_btree);
-	cutil_btree_delete(g_btree, (int)'P');
+	size_t starting_size = cutil_btree_size(g_btree);
 
-	unsigned int actual_size = cutil_btree_size(g_btree);
+	int value = (int)'P';
+	cutil_btree_delete(g_btree, &value);
+
+	size_t actual_size = cutil_btree_size(g_btree);
 	CUTIL_TESTING_ASSERT_INT_EQ(actual_size, starting_size);
 }
 
 void btree_delete_returns_true_deleting_key_that_is_present() {
 	insert_char_sequence(g_btree, "ABF");
-	CUTIL_TESTING_ASSERT_TRUE(cutil_btree_delete(g_btree, (int)'A'));
+
+	int value = (int)'A';
+	CUTIL_TESTING_ASSERT_TRUE(cutil_btree_delete(g_btree, &value));
 }
 
 void btree_delete_returns_false_deleting_unknown_key() {
 	insert_char_sequence(g_btree, "ABF");
-	CUTIL_TESTING_ASSERT_FALSE(cutil_btree_delete(g_btree, (int)'Z'));
+
+	int value = (int)'Z';
+	CUTIL_TESTING_ASSERT_FALSE(cutil_btree_delete(g_btree, &value));
 }
 
 #include <stdio.h>
@@ -297,19 +341,19 @@ void btree_delete_returns_false_deleting_unknown_key() {
 /** utility method for running a delete test.  Loads a tree, removes a key, and validates it aginst the expected result */
 void do_btree_delete_test(const char* test_tree_data, const char* expected_tree_data, int* keys_to_delete, int key_count) {
 	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(g_btree, test_tree_data));
-	unsigned int original_tree_size = cutil_btree_size(g_btree);
+	size_t original_tree_size = cutil_btree_size(g_btree);
 
 	for (int i = 0; i < key_count; i++) {
-		CUTIL_TESTING_ASSERT_TRUE(cutil_btree_delete(g_btree, keys_to_delete[i]));
-		CUTIL_TESTING_ASSERT_FALSE(cutil_btree_find(g_btree, keys_to_delete[i]));
+		CUTIL_TESTING_ASSERT_TRUE(cutil_btree_delete(g_btree, keys_to_delete + i));
+		CUTIL_TESTING_ASSERT_FALSE(cutil_btree_contains(g_btree, keys_to_delete + i));
 		CUTIL_TESTING_ASSERT_TRUE(validate_btree(g_btree));
 	}
 	
-	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_BTREE_ORDER);
+	cutil_btree* expected_btree = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_int(), cutil_trait_int());
 	CUTIL_TESTING_ASSERT_TRUE(read_btree_from_file(expected_btree, expected_tree_data));
 	CUTIL_TESTING_ASSERT_TRUE(cutil_btree_equals(expected_btree, g_btree));
 
-	unsigned int actual_tree_size = cutil_btree_size(g_btree);
+	size_t actual_tree_size = cutil_btree_size(g_btree);
 	CUTIL_TESTING_ASSERT_INT_EQ(actual_tree_size, original_tree_size - key_count);
 
 	cutil_btree_destroy(expected_btree);
@@ -353,11 +397,103 @@ void btree_delete_interior2() {
 	do_btree_delete_test("btree4_delete_interior", "btree4_delete_interior_result_2", keys, 3);
 }
 
+void btree_trait_after_each() {
+	cutil_trait_destroy();
+	g_btree = NULL;
+}
+
+void btree_trait_pod() {
+	g_btree = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_int(), cutil_trait_int());
+	int item_count = 15;
+
+	for (int i = item_count - 1; i >= 0; i--) {
+		CUTIL_TESTING_ASSERT_TRUE(cutil_btree_insert(g_btree, &i, NULL));
+		CUTIL_TESTING_EXPECT_TRUE(cutil_btree_contains(g_btree, &i));
+	}
+
+	for (int i = item_count - 1; i >= 0; i--) {
+		CUTIL_TESTING_ASSERT_TRUE(cutil_btree_delete(g_btree, &i));
+	}
+
+	CUTIL_TESTING_ASSERT_INT_EQ(0, cutil_btree_size(g_btree));
+}
+
+void btree_trait_cstring() {
+	g_btree = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_cstring(), cutil_trait_cstring());
+
+	int item_count = 15;
+
+	for (int i = item_count - 1; i >= 0; i--) {
+		char* insert_str = malloc(32);
+		snprintf(insert_str, 32, "test string %i", i);
+
+		bool insert_result = cutil_btree_insert(g_btree, &insert_str, NULL);
+		bool contains_result = cutil_btree_contains(g_btree, &insert_str);
+		free(insert_str);
+
+		CUTIL_TESTING_ASSERT_TRUE(insert_result);
+		CUTIL_TESTING_ASSERT_TRUE(contains_result);
+	}
+
+	dump_btree(g_btree, "C:/temp/btree.txt");
+
+	CUTIL_TESTING_ASSERT_INT_EQ(item_count, cutil_btree_size(g_btree));
+
+	for (int i = item_count - 1; i >= 0; i--) {
+		char* insert_str = malloc(32);
+		snprintf(insert_str, 32, "test string %i", i);
+
+		bool delete_result = cutil_btree_delete(g_btree, &insert_str);
+		dump_btree(g_btree, "C:/temp/btree.txt");
+		free(insert_str);
+
+		CUTIL_TESTING_ASSERT_TRUE(delete_result);
+	}
+
+	CUTIL_TESTING_ASSERT_INT_EQ(0, cutil_btree_size(g_btree));
+
+	cutil_btree_destroy(g_btree);
+}
+
+
+
+void btree_trait_ptr() {
+	g_btree = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_ptr(), cutil_trait_ptr());
+
+	int item_count = 15;
+	int** test_ptrs = calloc(item_count, sizeof(int*));
+
+	for (int i = item_count -1; i >= 0; i--) {
+		int* test_ptr = malloc(sizeof(int));
+		*test_ptr = i;
+		test_ptrs[i] = test_ptr;
+
+		CUTIL_TESTING_EXPECT_TRUE(cutil_btree_insert(g_btree, &test_ptr, NULL));
+		CUTIL_TESTING_EXPECT_TRUE(cutil_btree_contains(g_btree, &test_ptr));
+	}
+
+	for (int i = item_count - 1; i >= 0; i--) {
+		int* test_ptr = test_ptrs[i];
+		CUTIL_TESTING_EXPECT_TRUE(cutil_btree_delete(g_btree, &test_ptr));
+	}
+
+	// test cleanup
+	for (int i = item_count - 1; i >= 0; i--) {
+		free(test_ptrs[i]);
+	}
+
+	CUTIL_TESTING_ASSERT_INT_EQ(0, cutil_btree_size(g_btree));
+
+	free(test_ptrs);
+}
+
+
 void add_btree_tests() {
 	cutil_testing_suite("btree");
 	cutil_testing_suite_before_each(&btree_before_each);
 	cutil_testing_suite_after_each(&btree_after_each);
 
+	CUTIL_TESTING_ADD(btree_invalid_creation_parameters);
 	CUTIL_TESTING_ADD(btree_create_order_sets_correct_value);
 
 	CUTIL_TESTING_ADD(btree_test_size_empty);
@@ -365,29 +501,29 @@ void add_btree_tests() {
 
     CUTIL_TESTING_ADD(btree_clear_removes_all_items);
 
-    CUTIL_TESTING_ADD(btree_find_returns_true_if_key_in_leaf_node);
-    CUTIL_TESTING_ADD(btree_find_returns_true_if_key_in_interior_node);
-    CUTIL_TESTING_ADD(btree_find_returns_true_if_key_in_root_node);
-    CUTIL_TESTING_ADD(btree_find_returns_false_if_key_not_present);
-
+    CUTIL_TESTING_ADD(btree_contains_returns_true_if_key_in_leaf_node);
+    CUTIL_TESTING_ADD(btree_contains_returns_true_if_key_in_interior_node);
+    CUTIL_TESTING_ADD(btree_contains_returns_true_if_key_in_root_node);
+    CUTIL_TESTING_ADD(btree_contains_returns_false_if_key_not_present);
+	
     CUTIL_TESTING_ADD(btree_split_interior_node_push_up);
 
 	CUTIL_TESTING_ADD(btree_test_split_leaf_node_right);
 	CUTIL_TESTING_ADD(btree_test_split_leaf_node_left);
 	CUTIL_TESTING_ADD(btree_test_split_leaf_node_middle);
-
+	
 	CUTIL_TESTING_ADD(btree_test_split_right_new_root);
 	CUTIL_TESTING_ADD(btree_test_split_middle_new_root);
 	CUTIL_TESTING_ADD(btree_test_split_left_new_root);
-
+	
 	cutil_testing_suite("btree_even_order");
 	cutil_testing_suite_before_each(&btree_even_order_before_each);
 	cutil_testing_suite_after_each(&btree_after_each);
-
+	
 	CUTIL_TESTING_ADD(btree_even_test_split_leaf_node_left);
 	CUTIL_TESTING_ADD(btree_even_test_split_leaf_node_middle);
 	CUTIL_TESTING_ADD(btree_even_test_split_leaf_node_right);
-
+	
 	CUTIL_TESTING_ADD(btree_even_test_split_left_new_root);
 	CUTIL_TESTING_ADD(btree_even_test_split_right_new_root);
 	CUTIL_TESTING_ADD(btree_even_test_split_middle_new_root);
@@ -406,6 +542,11 @@ void add_btree_tests() {
 	CUTIL_TESTING_ADD(btree_leaf_delete_borrow_left);
 	CUTIL_TESTING_ADD(btree_delete_interior1);
 	CUTIL_TESTING_ADD(btree_delete_interior2);
+	
+
+	cutil_testing_suite("btree_traits");
+	cutil_testing_suite_after_each(&btree_trait_after_each);
+	CUTIL_TESTING_ADD(btree_trait_pod);
+	CUTIL_TESTING_ADD(btree_trait_cstring);
+	CUTIL_TESTING_ADD(btree_trait_ptr);
 }
-
-
