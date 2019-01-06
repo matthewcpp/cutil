@@ -65,7 +65,14 @@ unsigned int cutil_list_size(cutil_list* list) {
 cutil_list_node* cutil_list_node_create(cutil_trait* trait, void* data) {
 	cutil_list_node* new_node = (cutil_list_node*)malloc(sizeof(cutil_list_node));
 	new_node->data = malloc(trait->size);
-	trait->copy_func(new_node->data, data, trait->user_data);
+	
+	if (trait->copy_func) {
+		trait->copy_func(new_node->data, data, trait->user_data);
+	}
+	else {
+		memcpy(new_node->data, data, trait->size);
+	}
+
 	new_node->prev = NULL;
 	new_node->next = NULL;
 
@@ -73,7 +80,10 @@ cutil_list_node* cutil_list_node_create(cutil_trait* trait, void* data) {
 }
 
 void cutil_list_node_destroy(cutil_trait* trait, cutil_list_node* list_node){
-	trait->pre_destroy_func(list_node->data, trait->user_data);
+	if (trait->pre_destroy_func) {
+		trait->pre_destroy_func(list_node->data, trait->user_data);
+	}
+	
     free(list_node->data);
     free(list_node);
 }
