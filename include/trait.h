@@ -36,4 +36,15 @@ The object returned by this method should be freed by the caller;
 */
 cutil_trait* cutil_trait_create_cstring();
 
+cutil_trait* cutil_trait_int();
+cutil_trait* cutil_trait_ptr();
+cutil_trait* cutil_trait_cstring();
+
+/**
+Releases all resources used by the built in trait functions.
+User created traits will not be destroyed by this function.
+After calling this method all traits that were created using the cutil_trait_xxx functions will be invalid.
+*/
+void cutil_trait_destroy();
+
 #endif
