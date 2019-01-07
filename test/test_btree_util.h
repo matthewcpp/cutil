@@ -8,5 +8,8 @@
 bool read_btree_from_file(cutil_btree* btree, const char* test_data_name);
 void insert_char_sequence(cutil_btree *btree, const char* sequence);
 bool confirm_forward_iteration_char_sequence(cutil_btree* btree, const char* expected_sequence);
+void dump_btree(cutil_btree* btree, const char* path);
+
+bool validate_btree(cutil_btree* btree);
 
 #endif

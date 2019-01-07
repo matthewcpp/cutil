@@ -25,15 +25,6 @@ void trait_int_compare() {
 	CUTIL_TESTING_ASSERT_INT_GT(g_trait->compare_func(&b, &a1, g_trait->user_data), 0);
 }
 
-void trait_int_copy() {
-	int a = 5566;
-	int b = 0;
-
-	g_trait->copy_func(&b, &a, g_trait->user_data);
-
-	CUTIL_TESTING_ASSERT_INT_EQ(a, b);
-}
-
 void trait_int_size() {
 	CUTIL_TESTING_ASSERT_INT_EQ(g_trait->size, sizeof(int));
 }
@@ -55,20 +46,6 @@ void trait_ptr_compare() {
 	free(test);
 }
 
-void trait_ptr_copy() {
-	int* test = malloc(sizeof(int));
-	*test = 55;
-
-	int* expected = NULL;
-	g_trait->copy_func(&expected, &test, g_trait->user_data);
-
-	CUTIL_TESTING_ASSERT_INT_EQ(*test, *expected);
-	CUTIL_TESTING_ASSERT_PTR_EQ(test, expected);
-
-	// TODO: fix me.  if test fails, this will leak.
-	free(test);
-}
-
 void trait_ptr_size() {
 	CUTIL_TESTING_ASSERT_INT_EQ(g_trait->size, sizeof(void*));
 }
@@ -83,15 +60,13 @@ void trait_cstring_size() {
 
 void trait_cstring_copy() {
 	char* expected_string = "hello world!";
-	char* actual_string = NULL;
+	char* str_ptr = NULL;
+	g_trait->copy_func(&str_ptr, &expected_string, g_trait->user_data);
 
-	g_trait->copy_func(&actual_string, &expected_string, g_trait->user_data);
+	CUTIL_TESTING_EXPECT_PTR_NOT_NULL(str_ptr);
+	CUTIL_TESTING_EXPECT_INT_EQ(strcmp(expected_string, str_ptr), 0);
 
-	CUTIL_TESTING_ASSERT_PTR_NOT_NULL(actual_string);
-	CUTIL_TESTING_ASSERT_INT_EQ(strcmp(expected_string, actual_string), 0);
-
-	// TODO: fix me.  if test fails, this will leak.
-	free(actual_string);
+	free(str_ptr);
 }
 
 void trait_cstring_compare() {
@@ -103,13 +78,37 @@ void trait_cstring_compare() {
 	CUTIL_TESTING_ASSERT_INT_GT(g_trait->compare_func(&str2, &str1, g_trait->user_data), 0);
 }
 
+void default_trait_int() {
+	cutil_trait* int_trait1 = cutil_trait_int();
+	cutil_trait* int_trait2 = cutil_trait_int();
+
+	CUTIL_TESTING_ASSERT_PTR_EQ(int_trait1, int_trait2);
+}
+
+void default_trait_ptr() {
+	cutil_trait* ptr_trait1 = cutil_trait_ptr();
+	cutil_trait* ptr_trait2 = cutil_trait_ptr();
+
+	CUTIL_TESTING_ASSERT_PTR_EQ(ptr_trait1, ptr_trait2);
+}
+
+void default_trait_cstring() {
+	cutil_trait* cstring_trait1 = cutil_trait_cstring();
+	cutil_trait* cstring_trait2 = cutil_trait_cstring();
+
+	CUTIL_TESTING_ASSERT_PTR_EQ(cstring_trait1, cstring_trait2);
+}
+
+void default_trait_after_each() {
+	cutil_trait_destroy();
+}
+
 void add_trait_tests() {
 	cutil_testing_suite("trait_int");
 	cutil_testing_suite_before_each(&trait_int_before_each);
 	cutil_testing_suite_after_each(&trait_after_each);
 
 	CUTIL_TESTING_ADD(trait_int_compare);
-	CUTIL_TESTING_ADD(trait_int_copy);
 	CUTIL_TESTING_ADD(trait_int_size);
 
 	cutil_testing_suite("trait_ptr");
@@ -117,7 +116,6 @@ void add_trait_tests() {
 	cutil_testing_suite_after_each(&trait_after_each);
 
 	CUTIL_TESTING_ADD(trait_ptr_compare);
-	CUTIL_TESTING_ADD(trait_ptr_copy);
 	CUTIL_TESTING_ADD(trait_ptr_size);
 
 	cutil_testing_suite("trait_cstring");
@@ -128,4 +126,10 @@ void add_trait_tests() {
 	CUTIL_TESTING_ADD(trait_cstring_copy);
 	CUTIL_TESTING_ADD(trait_cstring_size);
 	// TODO: Test cstring delete
+
+	cutil_testing_suite("default_traits");
+	CUTIL_TESTING_ADD(default_trait_int);
+	CUTIL_TESTING_ADD(default_trait_ptr);
+	CUTIL_TESTING_ADD(default_trait_cstring);
+	cutil_testing_suite_after_each(&default_trait_after_each);
 }

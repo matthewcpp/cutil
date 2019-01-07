@@ -65,7 +65,15 @@ void cutil_vector_push(cutil_vector* vector, void* data) {
 	_grow_vector(vector);
 
 	size_t byte_offset = vector->_size * vector->_trait->size;
-	vector->_trait->copy_func((char*)vector->_data + (byte_offset), data, vector->_trait->user_data);
+	char* location = ((char*)vector->_data) + byte_offset;
+
+	if (vector->_trait->copy_func) {
+		vector->_trait->copy_func(location, data, vector->_trait->user_data);
+	}
+	else {
+		memcpy(location, data, vector->_trait->size);
+	}
+	
 
 	vector->_size += 1;
 }
@@ -73,7 +81,11 @@ void cutil_vector_push(cutil_vector* vector, void* data) {
 void cutil_vector_pop(cutil_vector* vector) {
 	if (vector->_size > 0) {
 		void* object = (char*)vector->_data + ((vector->_size - 1) * vector->_trait->size);
-		vector->_trait->pre_destroy_func(object, vector->_trait->user_data);
+
+		if (vector->_trait->pre_destroy_func) {
+			vector->_trait->pre_destroy_func(object, vector->_trait->user_data);
+		}
+		
 		vector->_size -= 1;
 	}
 }

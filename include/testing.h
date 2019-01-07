@@ -30,11 +30,20 @@ int _cutil_testing_assert_ptr_not_null(const char *exppression_str, void* ptr);
 #define CUTIL_TESTING_ADD(FUNC) \
 	_cutil_testing_add(#FUNC, &FUNC);
 
+#define CUTIL_TESTING_EXPECT_TRUE(EXP) \
+	_cutil_testing_assert_true(#EXP, (EXP));
+
 #define CUTIL_TESTING_ASSERT_TRUE(EXP) \
 	if (_cutil_testing_assert_true(#EXP, (EXP))) return;
 
+#define CUTIL_TESTING_EXPECT_FALSE(EXP) \
+	_cutil_testing_assert_false(#EXP, (EXP));
+
 #define CUTIL_TESTING_ASSERT_FALSE(EXP) \
 	if (_cutil_testing_assert_false(#EXP, (EXP))) return;
+
+#define CUTIL_TESTING_EXPECT_INT_EQ(EXP, VAL) \
+	_cutil_testing_assert_int_eq(#EXP, (int)VAL, (int)(EXP));
 
 #define CUTIL_TESTING_ASSERT_INT_EQ(EXP, VAL) \
 	if (_cutil_testing_assert_int_eq(#EXP, (int)VAL, (int)(EXP))) return;
@@ -55,8 +64,14 @@ int _cutil_testing_assert_ptr_not_null(const char *exppression_str, void* ptr);
 #define CUTIL_TESTING_ASSERT_PTR_NOT_EQ(PTR1, PTR2) \
 	if (_cutil_testing_assert_ptr_not_eq(#PTR1, (PTR1), (PTR2))) return;
 
+#define CUTIL_TESTING_EXPECT_PTR_NULL(EXP) \
+	_cutil_testing_assert_ptr_null(#EXP, (EXP))
+
 #define CUTIL_TESTING_ASSERT_PTR_NULL(EXP) \
 	if (_cutil_testing_assert_ptr_null(#EXP, (EXP))) return;
+
+#define CUTIL_TESTING_EXPECT_PTR_NOT_NULL(EXP) \
+	_cutil_testing_assert_ptr_not_null(#EXP, (EXP))
 
 #define CUTIL_TESTING_ASSERT_PTR_NOT_NULL(EXP) \
 	if (_cutil_testing_assert_ptr_not_null(#EXP, (EXP))) return;
