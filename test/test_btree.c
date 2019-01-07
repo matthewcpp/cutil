@@ -427,7 +427,7 @@ void btree_trait_cstring() {
 
 	for (int i = item_count - 1; i >= 0; i--) {
 		char* insert_str = malloc(32);
-		snprintf(insert_str, 32, "test string %i", i);
+		cutil_snprintf_func(insert_str, 32, "test string %i", i);
 
 		bool insert_result = cutil_btree_insert(g_btree, &insert_str, NULL);
 		bool contains_result = cutil_btree_contains(g_btree, &insert_str);
@@ -441,7 +441,7 @@ void btree_trait_cstring() {
 
 	for (int i = item_count - 1; i >= 0; i--) {
 		char* insert_str = malloc(32);
-		snprintf(insert_str, 32, "test string %i", i);
+		cutil_snprintf_func(insert_str, 32, "test string %i", i);
 
 		bool delete_result = cutil_btree_delete(g_btree, &insert_str);
 		free(insert_str);
