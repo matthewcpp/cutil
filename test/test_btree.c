@@ -416,6 +416,8 @@ void btree_trait_pod() {
 	}
 
 	CUTIL_TESTING_ASSERT_INT_EQ(0, cutil_btree_size(g_btree));
+
+	cutil_btree_destroy(g_btree);
 }
 
 void btree_trait_cstring() {
@@ -435,8 +437,6 @@ void btree_trait_cstring() {
 		CUTIL_TESTING_ASSERT_TRUE(contains_result);
 	}
 
-	dump_btree(g_btree, "C:/temp/btree.txt");
-
 	CUTIL_TESTING_ASSERT_INT_EQ(item_count, cutil_btree_size(g_btree));
 
 	for (int i = item_count - 1; i >= 0; i--) {
@@ -444,7 +444,6 @@ void btree_trait_cstring() {
 		snprintf(insert_str, 32, "test string %i", i);
 
 		bool delete_result = cutil_btree_delete(g_btree, &insert_str);
-		dump_btree(g_btree, "C:/temp/btree.txt");
 		free(insert_str);
 
 		CUTIL_TESTING_ASSERT_TRUE(delete_result);
@@ -485,6 +484,8 @@ void btree_trait_ptr() {
 	CUTIL_TESTING_ASSERT_INT_EQ(0, cutil_btree_size(g_btree));
 
 	free(test_ptrs);
+
+	cutil_btree_destroy(g_btree);
 }
 
 

@@ -85,7 +85,7 @@ void cutil_btree_destroy(cutil_btree* btree) {
 void _btree_node_recursive_delete(cutil_btree* btree, _btree_node* node) {
 	cutil_trait* trait = btree->key_trait;
 	if (trait->pre_destroy_func) {
-		for (size_t i = 0; i < node->item_count; i++) {
+		for (int i = 0; i < node->item_count; i++) {
 			trait->pre_destroy_func(_node_get_key(node, trait, i), trait->user_data);
 		}
 	}
@@ -95,6 +95,8 @@ void _btree_node_recursive_delete(cutil_btree* btree, _btree_node* node) {
 			_btree_node_recursive_delete(btree, node->branches[i]);
 		}
 	}
+
+    _node_destroy(node);
 }
 
 /*
@@ -406,14 +408,14 @@ _btree_node* _btree_find_node_for_key(cutil_btree* btree, _btree_node* node, voi
 	}
 	else {
 		// find the correct branch to traverse down
-		for (size_t i = 0; i < node->item_count; i++) {
+		for (int i = 0; i < node->item_count; i++) {
 			void* item_key = _node_get_key(node, btree->key_trait, i);
 			int key_comp = btree->key_trait->compare_func(key, item_key, btree->key_trait->user_data);
 			
 			if (key_comp < 0) {
 				return _btree_find_node_for_key(btree, node->branches[i], key);
 			}
-            else if (key_comp == 0){
+			else if (key_comp == 0){
                 return node;
             }
 		}
@@ -573,11 +575,6 @@ void _rebalance_node(cutil_btree* btree, _btree_node* node) {
 
 // When deleting from a leaf node, we just need to slide the keys over and repair
 void _btree_delete_from_leaf(cutil_btree* btree, _btree_node* node, unsigned int item_pos) {
-	if (btree->key_trait->pre_destroy_func) {
-		void* key = _node_get_key(node, btree->key_trait, item_pos);
-		btree->key_trait->pre_destroy_func(key, btree->key_trait->user_data);
-	}
-
 	for (int i = item_pos + 1; i < node->item_count; i++) {
 		_node_copy_item(btree, node, i - 1, node, i);
 	}
@@ -603,6 +600,11 @@ void _btree_delete_from_interior(cutil_btree* btree, _btree_node* node, unsigned
 bool cutil_btree_delete(cutil_btree* btree, void* key) {
 	_btree_node*  node = _btree_find_node_for_key(btree, btree->root, key);
 	unsigned int item_pos = _node_key_position(btree, node, key);
+
+    if (btree->key_trait->pre_destroy_func) {
+        void* item_key = _node_get_key(node, btree->key_trait, item_pos);
+        btree->key_trait->pre_destroy_func(item_key, btree->key_trait->user_data);
+    }
 
 	if (item_pos != ITEM_NOT_PRESENT) {
 
