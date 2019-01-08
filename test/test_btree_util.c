@@ -18,7 +18,7 @@ bool read_btree_from_file(cutil_btree* btree, const char* test_data_name) {
 	}
 
 	const char* test_data_dir = cutil_test_get_data_directory();
-	int path_size = snprintf(NULL, 0, "%s/%s.txt", test_data_dir, test_data_name);
+	int path_size = cutil_snprintf_func(NULL, 0, "%s/%s.txt", test_data_dir, test_data_name);
 	char*  path_str = malloc(path_size + 1);
 	sprintf(path_str, "%s/%s.txt", test_data_dir, test_data_name);
 
