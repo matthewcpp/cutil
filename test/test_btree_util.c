@@ -122,7 +122,7 @@ void insert_char_sequence(cutil_btree* btree, const char* sequence) {
 
 	for (size_t i = 0; i < len; i++) {
 		int key = (int)sequence[i];
-		cutil_btree_insert(btree, &key, NULL);
+		cutil_btree_insert(btree, &key, &key);
 	}
 }
 
