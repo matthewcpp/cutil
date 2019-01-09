@@ -116,29 +116,29 @@ void cutil_list_push_front(cutil_list* list, void* data) {
 	list->size += 1;
 }
 
-bool cutil_list_front(cutil_list* list, void* data) {
+int cutil_list_front(cutil_list* list, void* data) {
 	if (list->size > 0) {
 		memcpy(data, list->base.next->data, list->trait->size);
-		return true;
+		return 1;
 	}
 	else {
-		return false;
+		return 0;
 	}
 }
 
-bool cutil_list_back(cutil_list* list, void* data) {
+int cutil_list_back(cutil_list* list, void* data) {
 	if (list->size > 0) {
 		memcpy(data, list->base.prev->data, list->trait->size);
-		return true;
+		return 1;
 	}
 	else {
-		return false;
+		return 0;
 	}
 }
 
-bool cutil_list_at(cutil_list* list, size_t index, void* data) {
+int cutil_list_at(cutil_list* list, size_t index, void* data) {
 	if (index >= list->size) {
-		return false;
+		return 0;
 	}
 
 	cutil_list_node* node = list->base.next;
@@ -151,10 +151,10 @@ bool cutil_list_at(cutil_list* list, size_t index, void* data) {
 
 	if (count == index) {
 		memcpy(data, node->data, list->trait->size);
-		return true;
+		return 1;
 	}
 	else {
-		return false;
+		return 0;
 	}
 }
 
@@ -176,7 +176,7 @@ void cutil_list_push_back(cutil_list* list, void* data) {
 	list->size += 1;
 }
 
-bool cutil_list_pop_front(cutil_list* list) {
+int cutil_list_pop_front(cutil_list* list) {
 	if (list->size > 0) {
 		cutil_list_node* node_to_delete = list->base.next;
 		cutil_list_node* new_front = node_to_delete->next;
@@ -194,14 +194,14 @@ bool cutil_list_pop_front(cutil_list* list) {
         cutil_list_node_destroy(list->trait, node_to_delete);
 		list->size -= 1;
 
-		return true;
+		return 1;
 	}
 	else {
-		return false;
+		return 0;
 	}
 }
 
-bool cutil_list_pop_back(cutil_list* list) {
+int cutil_list_pop_back(cutil_list* list) {
 	if (list->size > 0) {
 		cutil_list_node* node_to_delete = list->base.prev;
 		cutil_list_node* new_back = node_to_delete->prev;
@@ -219,10 +219,10 @@ bool cutil_list_pop_back(cutil_list* list) {
 		cutil_list_node_destroy(list->trait, node_to_delete);
 		list->size -= 1;
 
-		return true;
+		return 1;
 	}
 	else {
-		return false;
+		return 0;
 	}
 }
 
@@ -239,11 +239,11 @@ void cutil_list_itr_destroy(cutil_list_itr* itr) {
     free(itr);
 }
 
-bool cutil_list_itr_has_next(cutil_list_itr* itr) {
+int cutil_list_itr_has_next(cutil_list_itr* itr) {
 	return (itr->node->next->data != NULL);
 }
 
-bool cutil_list_itr_next(cutil_list_itr* itr, void* data) {
+int cutil_list_itr_next(cutil_list_itr* itr, void* data) {
 	if (cutil_list_itr_has_next(itr)) {
 		itr->node = itr->node->next;
 
@@ -251,17 +251,17 @@ bool cutil_list_itr_next(cutil_list_itr* itr, void* data) {
 			memcpy(data, itr->node->data, itr->list->trait->size);
 		}
 
-		return true;
+		return 1;
 	}
 
-	return false;
+	return 0;
 }
 
-bool cutil_list_itr_has_prev(cutil_list_itr* itr) {
+int cutil_list_itr_has_prev(cutil_list_itr* itr) {
 	return (itr->node->prev->data != NULL);
 }
 
-bool cutil_list_itr_prev(cutil_list_itr* itr, void* data) {
+int cutil_list_itr_prev(cutil_list_itr* itr, void* data) {
 	if (cutil_list_itr_has_prev(itr)) {
 		itr->node = itr->node->prev;
 
@@ -269,8 +269,8 @@ bool cutil_list_itr_prev(cutil_list_itr* itr, void* data) {
 			memcpy(data, itr->node->data, itr->list->trait->size);
 		}
 
-		return true;
+		return 1;
 	}
 
-	return false;
+	return 0;
 }

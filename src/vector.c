@@ -90,15 +90,15 @@ void cutil_vector_pop(cutil_vector* vector) {
 	}
 }
 
-bool cutil_vector_get(cutil_vector* vector, unsigned int index, void* out) {
+int cutil_vector_get(cutil_vector* vector, unsigned int index, void* out) {
 	if (index < vector->_size) {
 		size_t byte_offset = index * vector->_trait->size;
 		memcpy(out, (char*)vector->_data + byte_offset, vector->_trait->size);
 
-		return true;
+		return 1;
 	}
 	else {
-		return false;
+		return 0;
 	}
 }
 

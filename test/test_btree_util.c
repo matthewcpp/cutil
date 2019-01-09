@@ -12,9 +12,9 @@
 _btree_node* read_btree_node(cutil_btree* btree, _btree_node* parent, int* item_counter, const char* data, int* string_pos);
 void read_btree(cutil_btree* btree, const char* data);
 
-bool read_btree_from_file(cutil_btree* btree, const char* test_data_name) {
+int read_btree_from_file(cutil_btree* btree, const char* test_data_name) {
 	if (!btree) {
-		return false;
+		return 0;
 	}
 
 	const char* test_data_dir = cutil_test_get_data_directory();
@@ -39,10 +39,10 @@ bool read_btree_from_file(cutil_btree* btree, const char* test_data_name) {
 		read_btree(btree, file_data);
 
 		free(file_data);
-		return true;
+		return 1;
 	}
 	else {
-		return false;
+		return 0;
 	}
 }
 
@@ -108,12 +108,12 @@ _btree_node* read_btree_node(cutil_btree* btree, _btree_node* parent, int* item_
 }
 
 //TODO: Implement me
-bool validate_btree(cutil_btree* btree) {
+int validate_btree(cutil_btree* btree) {
 	if (btree) {
-		return true;
+		return 1;
 	}
 	else {
-		return false;
+		return 0;
 	}
 }
 
@@ -126,20 +126,21 @@ void insert_char_sequence(cutil_btree* btree, const char* sequence) {
 	}
 }
 
-bool confirm_forward_iteration_char_sequence(cutil_btree* btree, const char* expected_sequence) {
+int confirm_forward_iteration_char_sequence(cutil_btree* btree, const char* expected_sequence) {
 	cutil_btree_itr*  itr = cutil_btree_itr_create(btree);
 	int val = 0;
 	int count = 0;
-	bool ok = true;
+	int ok = 1;
 
 	while (cutil_btree_itr_next(itr, &val)) {
 		if (expected_sequence[count++] != val) {
-			ok = false;
+			ok = 0;
 			break;
 		}
 	}
 
 	cutil_btree_itr_destroy(itr);
+
 	return ok;
 }
 

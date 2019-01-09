@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdbool.h>
 
 /*******************************************/
 /* Various utility functions. */
@@ -185,25 +184,25 @@ void _cutil_testing_add(const char *test_name, cutil_test_function test_func) {
 	test_system->_current_test = test_entry;
 }
 
-bool cutil_testing_suite_before_each(cutil_test_function func) {
+int cutil_testing_suite_before_each(cutil_test_function func) {
 	if (test_system->_current_suite) {
 		test_system->_current_suite->before_each = func;
 
-		return true;
+		return 1;
 	}
 	else {
-		return false;
+		return 0;
 	}
 }
 
-bool cutil_testing_suite_after_each(cutil_test_function func) {
+int cutil_testing_suite_after_each(cutil_test_function func) {
 	if (test_system->_current_suite) {
 		test_system->_current_suite->after_each = func;
 
-		return true;
+		return 1;
 	}
 	else {
-		return false;
+		return 0;
 	}
 }
 
@@ -241,16 +240,16 @@ void cutil_testing_set_filter(const char* filter_str)
 	test_system->test_filters = _cutil_testing_get_suite_names(filter_str, &test_system->test_filter_count);
 }
 
-bool _cutil_testing_str_find(const char* needle, char** haystack, int start, int end) {
+int _cutil_testing_str_find(const char* needle, char** haystack, int start, int end) {
 	int middle = start + ((end - start) / 2);
 	int result = strcmp(needle, haystack[middle]);
 
 	if (end <= start) {
 		if (result == 0) {
-			return true;
+			return 1;
 		}
 		else {
-			return false;
+			return 0;
 		}
 	}
 
@@ -261,16 +260,16 @@ bool _cutil_testing_str_find(const char* needle, char** haystack, int start, int
 		return _cutil_testing_str_find(needle, haystack, start, middle - 1);
 	}
 	else {
-		return true;
+		return 1;
 	}
 }
 
-bool _cutil_testing_should_run_test_suite(_cutil_test_suite * test_suite) {
+int _cutil_testing_should_run_test_suite(_cutil_test_suite * test_suite) {
 	if (test_system->test_filters) {
 		return _cutil_testing_str_find(test_suite->name, test_system->test_filters, 0, test_system->test_filter_count - 1);
 	}
 	else {
-		return true;
+		return 1;
 	}
 }
 
@@ -351,7 +350,7 @@ int cutil_testing_run() {
 		return 0;
 }
 
-int _cutil_testing_assert_true(const char *exppression_str, bool result) {
+int _cutil_testing_assert_true(const char *exppression_str, int result) {
 	if (!result) {
 		printf("Assertion: Expected: %s to be true\n", exppression_str);
 		test_system->_current_test->test_result = 1;
@@ -362,7 +361,7 @@ int _cutil_testing_assert_true(const char *exppression_str, bool result) {
 	}
 }
 
-int _cutil_testing_assert_false(const char *exppression_str, bool result) {
+int _cutil_testing_assert_false(const char *exppression_str, int result) {
 	if (result) {
 		printf("Assertion: Expected: %s to be false\n", exppression_str);
 		test_system->_current_test->test_result = 1;

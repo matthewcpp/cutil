@@ -13,10 +13,10 @@
 #define ITEM_NOT_PRESENT INT_MAX
 #define ITR_POS_UNINIT INT_MAX
 
-bool _node_full(cutil_btree* btree, _btree_node* node);
-bool _node_is_root(_btree_node* node);
-bool _node_is_leaf(_btree_node* node);
-bool _node_is_interior(_btree_node* node);
+int _node_full(cutil_btree* btree, _btree_node* node);
+int _node_is_root(_btree_node* node);
+int _node_is_leaf(_btree_node* node);
+int _node_is_interior(_btree_node* node);
 int _btree_node_min_item_count(cutil_btree* btree);
 
 void _node_clear_empty_branch_ptrs(cutil_btree* btree, _btree_node* node);
@@ -370,14 +370,14 @@ void _copy_with_trait(void* dest, void* src, cutil_trait* trait) {
 }
 
 
-bool cutil_btree_insert(cutil_btree* btree, void* key, void* value) {
+int cutil_btree_insert(cutil_btree* btree, void* key, void* value) {
 	(void)value; // TODO: use me
 
 	_btree_node*  node = _btree_find_node_for_key(btree, btree->root, key);
 	unsigned int insert_position = _node_get_insertion_position(btree, node, key);
 
 	if (insert_position == ITEM_ALREADY_INSERTED) {
-		return false;
+		return 0;
 	}
 	if (_node_full(btree, node)) {
 		void* copied_key = malloc(sizeof(btree->key_trait->size));
@@ -399,7 +399,7 @@ bool cutil_btree_insert(cutil_btree* btree, void* key, void* value) {
 	}
 
 	btree->size += 1;
-	return true;
+	return 1;
 }
 
 _btree_node* _btree_find_node_for_key(cutil_btree* btree, _btree_node* node, void* key) {
@@ -451,7 +451,7 @@ _btree_node* _node_left_sibling(_btree_node*  node) {
 		return node->parent->branches[node->position - 1];
 	}
 	else {
-		return false;
+		return NULL;
 	}
 }
 
@@ -597,7 +597,7 @@ void _btree_delete_from_interior(cutil_btree* btree, _btree_node* node, unsigned
 	_rebalance_node(btree, max_leaf);
 }
 
-bool cutil_btree_delete(cutil_btree* btree, void* key) {
+int cutil_btree_delete(cutil_btree* btree, void* key) {
 	_btree_node*  node = _btree_find_node_for_key(btree, btree->root, key);
 	unsigned int item_pos = _node_key_position(btree, node, key);
 
@@ -617,14 +617,14 @@ bool cutil_btree_delete(cutil_btree* btree, void* key) {
 
 		btree->size -= 1;
 
-		return true;
+		return 1;
 	}
 	else {
-		return false;
+		return 0;
 	}
 }
 
-bool cutil_btree_contains(cutil_btree* btree, void* key) {
+int cutil_btree_contains(cutil_btree* btree, void* key) {
 	_btree_node*  node = _btree_find_node_for_key(btree, btree->root, key);
 	unsigned int insert_position = _node_get_insertion_position(btree, node, key);
 
@@ -642,11 +642,11 @@ size_t cutil_btree_size(cutil_btree* btree) {
 	return btree->size;
 }
 
-bool _node_is_leaf(_btree_node*  node) {
+int _node_is_leaf(_btree_node*  node) {
 	return node->branches[0] == NULL;
 }
 
-bool _node_is_interior(_btree_node*  node) {
+int _node_is_interior(_btree_node*  node) {
 	return !_node_is_root(node) && !_node_is_leaf(node);
 }
 
@@ -686,11 +686,11 @@ unsigned int _node_key_position(cutil_btree* btree, _btree_node*  node, void* ke
 	return ITEM_NOT_PRESENT;
 }
 
-bool _node_full(cutil_btree* btree, _btree_node*  node) {
+int _node_full(cutil_btree* btree, _btree_node*  node) {
 	return node->item_count == btree->order-1;
 }
 
-bool _node_is_root(_btree_node*  node) {
+int _node_is_root(_btree_node*  node) {
 	return node->parent == NULL;
 }
 
@@ -734,7 +734,7 @@ _btree_node*  _itr_find_next_leaf_node(_btree_node* node) {
 	return leaf;
 }
 
-bool cutil_btree_itr_has_next(cutil_btree_itr* itr) {
+int cutil_btree_itr_has_next(cutil_btree_itr* itr) {
 	if (itr->node_pos == ITR_POS_UNINIT) {
 		_find_starting_node_pos(itr);
 	}
@@ -749,7 +749,7 @@ void _itr_set_next_parent_node(cutil_btree_itr* itr) {
 	} while ((itr->node != NULL) && (itr->node_pos >= itr->node->item_count));
 }
 
-bool cutil_btree_itr_next(cutil_btree_itr* itr, int* key) {
+int cutil_btree_itr_next(cutil_btree_itr* itr, int* key) {
 	if (itr->node_pos == ITR_POS_UNINIT) {
 		_find_starting_node_pos(itr);
 	}
@@ -779,16 +779,16 @@ bool cutil_btree_itr_next(cutil_btree_itr* itr, int* key) {
 
 		itr->node_pos += 1;
 
-		return true;
+		return 1;
 	}
 	else {
-		return false;
+		return 0;
 	}
 }
 
-bool _compare_btree_nodes(cutil_btree* tree_a, _btree_node* a, cutil_btree* tree_b, _btree_node* b) {
+int _compare_btree_nodes(cutil_btree* tree_a, _btree_node* a, cutil_btree* tree_b, _btree_node* b) {
 	if (a->item_count != b->item_count) {
-		return false;
+		return 0;
 	}
 	else {
 		for (int i = 0; i < a->item_count; i++) {
@@ -796,13 +796,13 @@ bool _compare_btree_nodes(cutil_btree* tree_a, _btree_node* a, cutil_btree* tree
 			void* key_b = _node_get_key(b, tree_b->key_trait, i);
 
 			if (tree_a->key_trait->compare_func(key_a, key_b, tree_a->key_trait->user_data) != 0) {
-				return false;
+				return 0;
 			}
 		}
 
 		_btree_node* branch_a;
 		_btree_node* branch_b;
-		bool ok = true;
+		int ok = 1;
 
 		for (int i = 0; i < a->item_count + 1; i++) {
 			branch_a = a->branches[i];
@@ -812,10 +812,10 @@ bool _compare_btree_nodes(cutil_btree* tree_a, _btree_node* a, cutil_btree* tree
 				continue;
 			}
 			else if (branch_a == NULL && branch_b != NULL) {
-				return false;
+				return 0;
 			}
 			else if (branch_a != NULL && branch_b == NULL) {
-				return false;
+				return 0;
 			}
 			else {
 				ok = _compare_btree_nodes(tree_a, branch_a, tree_b, branch_b);
@@ -829,21 +829,21 @@ bool _compare_btree_nodes(cutil_btree* tree_a, _btree_node* a, cutil_btree* tree
 	}
 }
 
-bool cutil_btree_equals(cutil_btree* a, cutil_btree* b) {
+int cutil_btree_equals(cutil_btree* a, cutil_btree* b) {
 	if (a->order != b->order) {
-		return false;
+		return 0;
 	}
 
 	if (a->key_trait != b->key_trait) {
-		return false;
+		return 0;
 	}
 
 	if (a->value_trait != b->value_trait) {
-		return false;
+		return 0;
 	}
 
 	if (a->size != b->size) {
-		return false;
+		return 0;
 	}
 	
 	return _compare_btree_nodes(a, a->root, b, b->root);
