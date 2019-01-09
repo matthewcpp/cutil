@@ -78,7 +78,7 @@ void list_data_push_multiple_back() {
 	int actual_value;
 	for (int i = 0; i < 5; i++) {
 		int expected_value = i * 10;
-		bool result = cutil_list_at(g_list, i, &actual_value);
+		int result = cutil_list_at(g_list, i, &actual_value);
 
 		CUTIL_TESTING_ASSERT_TRUE(result);
 		CUTIL_TESTING_ASSERT_INT_EQ(expected_value, actual_value);
@@ -95,7 +95,7 @@ void list_data_push_multiple_front() {
 	int actual_value;
 	for (int i = 4; i >= 0; i--) {
 		int expected_value = (4 - i) * 10;
-		bool result = cutil_list_at(g_list, i, &actual_value);
+		int result = cutil_list_at(g_list, i, &actual_value);
 
 		CUTIL_TESTING_ASSERT_TRUE(result);
 		CUTIL_TESTING_ASSERT_INT_EQ(expected_value, actual_value);
@@ -131,7 +131,7 @@ void list_multiple_pop_front_removes_item() {
 	CUTIL_TESTING_ASSERT_INT_EQ(cutil_list_size(g_list), list_size - 1);
 	
 	int actual_value = 0;
-	bool result = cutil_list_at(g_list, 0, &actual_value);
+	int result = cutil_list_at(g_list, 0, &actual_value);
 
 	CUTIL_TESTING_ASSERT_TRUE(result);
 	CUTIL_TESTING_ASSERT_INT_EQ(actual_value, 1);
@@ -175,7 +175,7 @@ void list_push_get_front_pointer() {
 	cutil_list_push_front(g_list, &iptr);
 
 	int* frontptr;
-	bool get_front_result = cutil_list_front(g_list, &frontptr);
+	int get_front_result = cutil_list_front(g_list, &frontptr);
 
 	CUTIL_TESTING_ASSERT_TRUE(get_front_result);
 	CUTIL_TESTING_ASSERT_PTR_EQ(frontptr, iptr);
@@ -190,7 +190,7 @@ void push_get_back_pointer() {
 	cutil_list_push_back(g_list, &iptr);
 
 	int* backptr = NULL;
-	bool get_back_result = cutil_list_back(g_list, &backptr);
+	int get_back_result = cutil_list_back(g_list, &backptr);
 
 	CUTIL_TESTING_ASSERT_TRUE(get_back_result);
 	CUTIL_TESTING_ASSERT_PTR_EQ(backptr, iptr);
@@ -204,7 +204,7 @@ void push_get_front_data() {
 	int front_val;
 
 	cutil_list_push_front(g_list, &ival);
-	bool get_front_result = cutil_list_front(g_list, &front_val);
+	int get_front_result = cutil_list_front(g_list, &front_val);
 
 	CUTIL_TESTING_ASSERT_TRUE(get_front_result);
 	CUTIL_TESTING_ASSERT_INT_EQ(front_val, ival);
@@ -213,7 +213,7 @@ void push_get_front_data() {
 // Getting the front item of an empty list returns false
 void list_get_front_data_empty() {
 	int front_val = 0;
-	bool get_front_result = cutil_list_front(g_list, (void*)&front_val);
+	int get_front_result = cutil_list_front(g_list, (void*)&front_val);
 
 	CUTIL_TESTING_ASSERT_FALSE(get_front_result);
 }
@@ -224,7 +224,7 @@ void push_get_back_data() {
 	int back_val;
 
 	cutil_list_push_back(g_list, &ival);
-	bool get_back_result = cutil_list_back(g_list, (void*)&back_val);
+	int get_back_result = cutil_list_back(g_list, (void*)&back_val);
 
 	CUTIL_TESTING_ASSERT_TRUE(get_back_result);
 	CUTIL_TESTING_ASSERT_INT_EQ(back_val, ival);
@@ -233,7 +233,7 @@ void push_get_back_data() {
 // Getting the front item of an empty list returns false
 void list_get_back_data_empty() {
 	int front_val = 0;
-	bool get_back_result = cutil_list_back(g_list, (void*)&front_val);
+	int get_back_result = cutil_list_back(g_list, (void*)&front_val);
 
 	CUTIL_TESTING_ASSERT_FALSE(get_back_result);
 }

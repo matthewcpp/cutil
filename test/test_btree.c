@@ -6,7 +6,6 @@
 #include "test_btree_util.h"
 
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
 
 #define DEFAULT_ODD_BTREE_ORDER 5
@@ -429,8 +428,8 @@ void btree_trait_cstring() {
 		char* insert_str = malloc(32);
 		cutil_snprintf_func(insert_str, 32, "test string %i", i);
 
-		bool insert_result = cutil_btree_insert(g_btree, &insert_str, NULL);
-		bool contains_result = cutil_btree_contains(g_btree, &insert_str);
+		int insert_result = cutil_btree_insert(g_btree, &insert_str, NULL);
+		int contains_result = cutil_btree_contains(g_btree, &insert_str);
 		free(insert_str);
 
 		CUTIL_TESTING_ASSERT_TRUE(insert_result);
@@ -443,7 +442,7 @@ void btree_trait_cstring() {
 		char* insert_str = malloc(32);
 		cutil_snprintf_func(insert_str, 32, "test string %i", i);
 
-		bool delete_result = cutil_btree_delete(g_btree, &insert_str);
+		int delete_result = cutil_btree_delete(g_btree, &insert_str);
 		free(insert_str);
 
 		CUTIL_TESTING_ASSERT_TRUE(delete_result);

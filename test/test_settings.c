@@ -36,7 +36,7 @@ void cutil_test_settings_destroy() {
     }
 }
 
-bool cutil_test_settings_parse(int argc, const char** argv) {
+int cutil_test_settings_parse(int argc, const char** argv) {
 	int i = 1;
 
 	while (i < argc) {
@@ -59,13 +59,13 @@ bool cutil_test_settings_parse(int argc, const char** argv) {
 	return cutil_test_validate_settings();
 }
 
-bool cutil_test_validate_settings() {
+int cutil_test_validate_settings() {
 	if (!test_settings->data_directory) {
 		printf("You must specify a data directory using --cutil-test-data-dir");
-		return false;
+		return 0;
 	}
 
-	return true;
+	return 1;
 }
 
 const char* cutil_test_get_filter_string() {

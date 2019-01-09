@@ -109,7 +109,7 @@ void vector_get_valid() {
 
     int actual_value = -1;
     for (int i = 0; i < 10; i++){
-        bool get_result = cutil_vector_get(g_vector, i, &actual_value);
+        int get_result = cutil_vector_get(g_vector, i, &actual_value);
 
         CUTIL_TESTING_ASSERT_TRUE(get_result);
         CUTIL_TESTING_ASSERT_INT_EQ(actual_value, i);
@@ -120,7 +120,7 @@ void vector_get_valid() {
 void vector_get_empty() {
     int actual_value = -1;
 
-    bool get_result = cutil_vector_get(g_vector, 0, &actual_value);
+    int get_result = cutil_vector_get(g_vector, 0, &actual_value);
     CUTIL_TESTING_ASSERT_FALSE(get_result);
 }
 
@@ -132,7 +132,7 @@ void vector_get_invalid() {
 
     int actual_value = -1;
 
-    bool get_result = cutil_vector_get(g_vector, 111, &actual_value);
+    int get_result = cutil_vector_get(g_vector, 111, &actual_value);
     CUTIL_TESTING_ASSERT_FALSE(get_result);
 }
 
@@ -146,7 +146,7 @@ void vector_pop_get() {
     cutil_vector_pop(g_vector);
     cutil_vector_push(g_vector, &int_val2);
 
-    bool get_result = cutil_vector_get(g_vector, 0, &actual_val);
+    int get_result = cutil_vector_get(g_vector, 0, &actual_val);
     CUTIL_TESTING_ASSERT_TRUE(get_result);
     CUTIL_TESTING_ASSERT_INT_EQ(actual_val, int_val2);
 }

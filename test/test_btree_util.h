@@ -3,8 +3,6 @@
 
 #include "btree.h"
 
-#include <stdbool.h>
-
 /* 
 Note: snprintf is not available in MSVC prior to Visual Studio 2015.
 In this case we will use the Microsoft extension of the function.
@@ -17,11 +15,11 @@ Although the behavior of this method is not exactly the same as the standardized
 #endif
 
 
-bool read_btree_from_file(cutil_btree* btree, const char* test_data_name);
+int read_btree_from_file(cutil_btree* btree, const char* test_data_name);
 void insert_char_sequence(cutil_btree *btree, const char* sequence);
-bool confirm_forward_iteration_char_sequence(cutil_btree* btree, const char* expected_sequence);
+int confirm_forward_iteration_char_sequence(cutil_btree* btree, const char* expected_sequence);
 void dump_btree(cutil_btree* btree, const char* path);
 
-bool validate_btree(cutil_btree* btree);
+int validate_btree(cutil_btree* btree);
 
 #endif
