@@ -260,9 +260,12 @@ void _split_interior_node(cutil_btree* btree, _btree_node* interior_node, _btree
 	// We have split the top most level, create a new root node
 	if (_node_is_root(interior_node)) {
 		_btree_node* new_root_node = _node_create(btree);
+
 		btree->root = new_root_node;
 		new_root_node->item_count = 1;
+
 		memcpy(new_root_node->keys, pivot_key, btree->key_trait->size);
+		memcpy(new_root_node->values, pivot_value, btree->value_trait->size);
 
 		_set_node_child(new_root_node, interior_node, 0);
 		_set_node_child(new_root_node, split_node, 1);
@@ -299,9 +302,9 @@ void _push_up_one_level(cutil_btree* btree, _btree_node* parent, _btree_node* le
 			_set_node_child(parent, parent->branches[i - 1], i);
 		}
 
-		// TODO: copy values too
 		memcpy(_node_get_key(parent, btree->key_trait, insertion_point), key, btree->key_trait->size);
-		
+		memcpy(_node_get_value(parent, btree->value_trait, insertion_point), value, btree->value_trait->size);
+
 		_set_node_child(parent, left_node, insertion_point);
 		_set_node_child(parent, right_node, insertion_point + 1);
 
@@ -367,10 +370,10 @@ void _node_copy_item(cutil_btree* btree, _btree_node* dest_node, size_t dest_ind
 
 	memcpy(dest_ptr, src_ptr, btree->key_trait->size);
 
-	dest_ptr = _node_get_value(dest_node, btree->key_trait, dest_index);
-	src_ptr = _node_get_value(src_node, btree->key_trait, src_index);
+	dest_ptr = _node_get_value(dest_node, btree->value_trait, dest_index);
+	src_ptr = _node_get_value(src_node, btree->value_trait, src_index);
 
-	memcpy(dest_ptr, src_ptr, btree->key_trait->size);
+	memcpy(dest_ptr, src_ptr, btree->value_trait->size);
 }
 
 /*
@@ -424,6 +427,21 @@ int cutil_btree_insert(cutil_btree* btree, void* key, void* value) {
 
 	btree->size += 1;
 	return 1;
+}
+
+int cutil_btree_get(cutil_btree* btree, void* key, void* value) {
+	_btree_node*  node = _btree_find_node_for_key(btree, btree->root, key);
+	int position = _node_key_position(btree, node, key);
+
+	if (position == ITEM_NOT_PRESENT) {
+		return 0;
+	}
+	else {
+		void* value_ptr = _node_get_value(node, btree->value_trait, position);
+		memcpy(value, value_ptr, btree->value_trait->size);
+
+		return 1;
+	}
 }
 
 _btree_node* _btree_find_node_for_key(cutil_btree* btree, _btree_node* node, void* key) {

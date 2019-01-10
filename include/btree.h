@@ -16,6 +16,7 @@ unsigned int cutil_btree_get_order(cutil_btree* btree);
 int cutil_btree_equals(cutil_btree *a, cutil_btree *b);
 
 int cutil_btree_insert(cutil_btree* btree, void* key, void* value);
+int cutil_btree_get(cutil_btree* btree, void* key, void* value);
 int cutil_btree_contains(cutil_btree* btree, void* key);
 void cutil_btree_clear(cutil_btree* btree);
 size_t cutil_btree_size(cutil_btree* btree);
