@@ -494,14 +494,14 @@ void btree_trait_ptr() {
 void btree_test_get_pod() {
 	g_btree = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_int(), cutil_trait_int());
 
-	int item_size = 10;
-	for (int i = 1; i <= item_size; i++) {
+	int item_count = 10;
+	for (int i = 1; i <= item_count; i++) {
 		int expected_value = i * 10;
 		int result = cutil_btree_insert(g_btree, &i, &expected_value);
 		CUTIL_TESTING_ASSERT_TRUE(result)
     }
 
-	for (int i = 1; i <= item_size; i++) {
+	for (int i = 1; i <= item_count; i++) {
 		int expected_value = i * 10;
 		int actual_value = 0;
 		int result = cutil_btree_get(g_btree, &i, &actual_value);
@@ -510,6 +510,66 @@ void btree_test_get_pod() {
 	}
 }
 
+
+void bree_test_get_ptr() {
+	g_btree = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_ptr(), cutil_trait_ptr());
+
+	int item_count = 10;
+	int** test_ptrs = calloc(item_count, sizeof(int*));
+
+	for (int i = 0; i < item_count; i++) {
+		int* int_ptr = malloc(sizeof(int));
+		*int_ptr = i * 10;
+
+		test_ptrs[i] = int_ptr;
+
+		cutil_btree_insert(g_btree, &i, &int_ptr);
+	}
+
+	for (int i = 0; i < item_count; i++) {
+		int* expected_ptr = NULL;
+		cutil_btree_get(g_btree, &i, &expected_ptr);
+
+		CUTIL_TESTING_EXPECT_PTR_EQ(expected_ptr, test_ptrs[i]);
+	}
+
+	// test cleanup
+	for (int i = 0; i < item_count; i++) {
+		free(test_ptrs[i]);
+	}
+
+	free(test_ptrs);
+}
+
+void btree_test_cstring() {
+	g_btree = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_cstring(), cutil_trait_cstring());
+
+	int item_count = 10;
+
+	char key_str[32];
+	char value_str[32];
+	char actual_str[32];
+
+	char* key_ptr = &key_str[0];
+	char* value_ptr = &value_str[0];
+	char* actual_ptr = &actual_str[0];
+
+	for (int i = 0; i < item_count; i++) {
+		cutil_snprintf_func(key_str, 32, "key %i", i);
+		cutil_snprintf_func(value_str, 32, "value %i", i);
+
+		cutil_btree_insert(g_btree, &key_ptr, &value_ptr);
+	}
+
+	for (int i = 0; i < item_count; i++) {
+		cutil_snprintf_func(key_str, 32, "key %i", i);
+		cutil_snprintf_func(value_str, 32, "value %i", i);
+
+		cutil_btree_get(g_btree, &key_ptr, &actual_ptr);
+
+		CUTIL_TESTING_ASSERT_INT_EQ(strcmp(value_ptr, actual_ptr), 0);
+	}
+}
 
 void add_btree_tests() {
 	cutil_testing_suite("btree");
@@ -554,6 +614,8 @@ void add_btree_tests() {
 	cutil_testing_suite("btree_get");
 	cutil_testing_suite_after_each(&btree_after_each);
 	CUTIL_TESTING_ADD(btree_test_get_pod);
+	CUTIL_TESTING_ADD(bree_test_get_ptr);
+	CUTIL_TESTING_ADD(btree_test_cstring);
 
 	cutil_testing_suite("btree_delete");
 	cutil_testing_suite_before_each(&btree_before_each);
