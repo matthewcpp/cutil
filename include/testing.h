@@ -59,8 +59,14 @@ int _cutil_testing_assert_ptr_not_null(const char *exppression_str, void* ptr);
 #define CUTIL_TESTING_ASSERT_PTR_EQ(EXP, VAL) \
 	if (_cutil_testing_assert_ptr_eq(#EXP, VAL, (EXP))) return;
 
+#define CUTIL_TESTING_EXPECT_PTR_EQ(EXP, VAL) \
+	_cutil_testing_assert_ptr_eq(#EXP, VAL, (EXP));
+
 #define CUTIL_TESTING_ASSERT_PTR_NOT_EQ(PTR1, PTR2) \
 	if (_cutil_testing_assert_ptr_not_eq(#PTR1, (PTR1), (PTR2))) return;
+
+#define CUTIL_TESTING_EXPECT_PTR_NOT_EQ(PTR1, PTR2) \
+	_cutil_testing_assert_ptr_not_eq(#PTR1, (PTR1), (PTR2));
 
 #define CUTIL_TESTING_EXPECT_PTR_NULL(EXP) \
 	_cutil_testing_assert_ptr_null(#EXP, (EXP))
