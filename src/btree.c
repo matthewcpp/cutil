@@ -90,6 +90,13 @@ void _btree_node_recursive_delete(cutil_btree* btree, _btree_node* node) {
 		}
 	}
 
+	trait = btree->value_trait;
+	if (trait->pre_destroy_func) {
+		for (int i = 0; i < node->item_count; i++) {
+			trait->pre_destroy_func(_node_get_value(node, trait, i), trait->user_data);
+		}
+	}
+
 	if (!_node_is_leaf(node)) {
 		for (int i = 0; i <= node->item_count; i++) {
 			_btree_node_recursive_delete(btree, node->branches[i]);
@@ -648,6 +655,11 @@ int cutil_btree_delete(cutil_btree* btree, void* key) {
         btree->key_trait->pre_destroy_func(item_key, btree->key_trait->user_data);
     }
 
+	if (btree->value_trait->pre_destroy_func) {
+		void* item_key = _node_get_value(node, btree->value_trait, item_pos);
+		btree->value_trait->pre_destroy_func(item_key, btree->value_trait->user_data);
+	}
+
 	if (item_pos != ITEM_NOT_PRESENT) {
 
 		if (_node_is_leaf(node)) {
@@ -715,7 +727,7 @@ unsigned int _node_get_insertion_position(cutil_btree* btree, _btree_node* node,
 	return insert_pos;
 }
 
-unsigned int _node_key_position(cutil_btree* btree, _btree_node*  node, void* key) {
+unsigned int _node_key_position(cutil_btree* btree, _btree_node* node, void* key) {
 	for (int i = 0; i < node->item_count; i++) {
 		void* item_key = _node_get_key(node, btree->key_trait, i);
 		int key_comp = btree->key_trait->compare_func(key, item_key, btree->key_trait->user_data);
