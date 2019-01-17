@@ -4,9 +4,10 @@
 #include <string.h>
 
 int cutil_trait_int_compare(void* a, void* b, void* user_data) {
-	(void)user_data;
 	int int_a = *(int*)a;
 	int int_b = *(int*)b;
+
+	(void)user_data;
 
 	if (int_a > int_b) {
 		return 1;
@@ -31,10 +32,10 @@ cutil_trait* cutil_trait_create_int() {
 }
 
 int cutil_trait_ptr_compare(void* a, void* b, void* user_data) {
-	(void)user_data;
-
 	void* a_ptr = *(void**)a;
 	void* b_ptr = *(void**)b;
+
+	(void)user_data;
 
 	if (a_ptr > b_ptr) {
 		return 1;
@@ -58,30 +59,31 @@ cutil_trait* cutil_trait_create_ptr() {
 }
 
 int cutil_trait_cstring_compare(void* a, void* b, void* user_data) {
-	(void)user_data;
-
 	char* a_ptr = *((char**)a);
 	char* b_ptr = *((char**)b);
+
+	(void)user_data;
 
 	return strcmp(a_ptr, b_ptr);
 }
 
 void cutil_trait_cstring_copy(void* dest, void* src, void* user_data) {
-	(void)user_data;
-
 	char* src_ptr = *((char**)src);
 
 	size_t buffer_size = strlen(src_ptr) + 1;
 	char* str_copy = malloc(buffer_size);
 	strncpy(str_copy, src_ptr, buffer_size);
 
+	(void)user_data;
+
 	memcpy(dest, &str_copy, sizeof(char*));
 }
 
 void cutil_trait_cstring_pre_destroy(void* item, void* user_data) {
+	char* item_ptr = *((char**)item);
+
 	(void)user_data;
 
-	char* item_ptr = *((char**)item);
 	free(item_ptr);
 }
 
@@ -92,6 +94,7 @@ cutil_trait* cutil_trait_create_cstring() {
 	trait->copy_func = cutil_trait_cstring_copy;
 	trait->user_data = NULL;
 	trait->size = sizeof(char*);
+
 	return trait;
 }
 

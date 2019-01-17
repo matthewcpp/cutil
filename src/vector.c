@@ -62,10 +62,13 @@ void _grow_vector(cutil_vector* vector) {
 }
 
 void cutil_vector_push(cutil_vector* vector, void* data) {
+	size_t byte_offset = 0;
+	char* location = NULL;
 	_grow_vector(vector);
 
-	size_t byte_offset = vector->_size * vector->_trait->size;
-	char* location = ((char*)vector->_data) + byte_offset;
+
+	byte_offset = vector->_size * vector->_trait->size;
+	location = ((char*)vector->_data) + byte_offset;
 
 	if (vector->_trait->copy_func) {
 		vector->_trait->copy_func(location, data, vector->_trait->user_data);

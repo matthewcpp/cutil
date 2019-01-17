@@ -51,7 +51,10 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-#CMake Build directory
+# CMake Build directory
 build
 cmake-build-*
 .idea/*
+
+# Mac Files
+*.DS_Store

@@ -101,7 +101,7 @@ void cutil_list_push_front(cutil_list* list, void* data) {
 
 	cutil_list_node* current_front_node = list->base.next;
 
-	// at least one item already in list
+	/* at least one item already in list */
 	if (list->size > 0) {
 		new_node->next = current_front_node;
 		new_node->prev = &list->base;
@@ -109,7 +109,7 @@ void cutil_list_push_front(cutil_list* list, void* data) {
 		list->base.next = new_node;
 		current_front_node->prev = new_node;
 	}
-	else { //first item added to the list
+	else { /* first item added to the list */
 		_cutil_list_push_add_first(list, new_node);
 	}
 
@@ -137,12 +137,12 @@ int cutil_list_back(cutil_list* list, void* data) {
 }
 
 int cutil_list_at(cutil_list* list, size_t index, void* data) {
+	cutil_list_node* node = list->base.next;
+	size_t count = 0;
+
 	if (index >= list->size) {
 		return 0;
 	}
-
-	cutil_list_node* node = list->base.next;
-	size_t count = 0;
 
 	while (count < index) {
 		node = node->next;
@@ -181,12 +181,12 @@ int cutil_list_pop_front(cutil_list* list) {
 		cutil_list_node* node_to_delete = list->base.next;
 		cutil_list_node* new_front = node_to_delete->next;
 
-		// additional node in the list, make it the new "first" node
+		/* additional node in the list, make it the new "first" node */
 		if (new_front != &list->base) {
 			list->base.next = new_front;
 			new_front->prev = &list->base;
 		}
-		else { //no items left in the list
+		else { /* no items left in the list */
 			list->base.next = &list->base;
 			list->base.prev = &list->base;
 		}
@@ -206,12 +206,12 @@ int cutil_list_pop_back(cutil_list* list) {
 		cutil_list_node* node_to_delete = list->base.prev;
 		cutil_list_node* new_back = node_to_delete->prev;
 
-		//addtional node in the list, bake it the new "back" node
+		/* addtional node in the list, bake it the new "back" node */
 		if (new_back != &list->base) {
 			new_back->next = &list->base;
 			list->base.prev = new_back;
 		}
-		else {//no items left in the list
+		else { /* no items left in the list */
 			list->base.next = &list->base;
 			list->base.prev = &list->base;
 		}

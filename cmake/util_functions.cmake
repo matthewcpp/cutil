@@ -1,5 +1,5 @@
 function(set_compiler_options target)
-    set_property(TARGET ${target} PROPERTY C_STANDARD 99)
+    set_property(TARGET ${target} PROPERTY C_STANDARD 90)
     set_property(TARGET ${target} PROPERTY C_STANDARD_REQUIRED ON)
     
     if ( MSVC )

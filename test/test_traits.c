@@ -125,7 +125,7 @@ void add_trait_tests() {
 	CUTIL_TESTING_ADD(trait_cstring_compare);
 	CUTIL_TESTING_ADD(trait_cstring_copy);
 	CUTIL_TESTING_ADD(trait_cstring_size);
-	// TODO: Test cstring delete
+	/* TODO: Test cstring delete */
 
 	cutil_testing_suite("default_traits");
 	CUTIL_TESTING_ADD(default_trait_int);
