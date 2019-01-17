@@ -75,12 +75,12 @@ _cutil_test_suite *_cutil_testing_suite_create(const char *name) {
 	return suite;
 }
 void _cutil_testing_suite_destroy(_cutil_test_suite *test_suite) {
+	_cutil_test_entry *current_test = test_suite->_tests;
+	_cutil_test_entry *free_ptr = NULL;
+
 	if (test_suite->name) {
 		free(test_suite->name);
 	}
-
-	_cutil_test_entry *current_test = test_suite->_tests;
-	_cutil_test_entry *free_ptr = NULL;
 
 	while (current_test) {
 		free_ptr = current_test;
@@ -114,16 +114,17 @@ void _cutil_testing_system_init(void) {
 }
 
 void _cutil_testing_system_destroy(void) {
+	_cutil_test_suite *current_suite = test_system->_suites;
+	_cutil_test_suite *free_ptr = NULL;
+
 	if (test_system->test_filters) {
-		for (int i = 0; i < test_system->test_filter_count; i++) {
+		int i;
+		for (i = 0; i < test_system->test_filter_count; i++) {
 			free(test_system->test_filters[i]);
 		}
 
 		free(test_system->test_filters);
 	}
-
-	_cutil_test_suite *current_suite = test_system->_suites;
-	_cutil_test_suite *free_ptr = NULL;
 
 	while (current_suite) {
 		free_ptr = current_suite;
@@ -152,9 +153,11 @@ void cutil_testing_destroy() {
 }
 
 void cutil_testing_suite(const char *name) {
-    cutil_testing_init();
+	_cutil_test_suite* new_suite;
 
-	_cutil_test_suite* new_suite = _cutil_testing_suite_create(name);
+	cutil_testing_init();
+
+	new_suite = _cutil_testing_suite_create(name);
 	if (test_system->_current_suite) {
 		test_system->_current_suite->next = new_suite;
 	}
@@ -167,13 +170,14 @@ void cutil_testing_suite(const char *name) {
 }
 
 void _cutil_testing_add(const char *test_name, cutil_test_function test_func) {
+	_cutil_test_entry* test_entry;
     cutil_testing_init();
 
 	if (!test_system->_current_suite) {
 		cutil_testing_suite("Default");
 	}
 
-	_cutil_test_entry *test_entry = _cutil_testing_entry_create(test_name, test_func);
+	test_entry = _cutil_testing_entry_create(test_name, test_func);
 	if (test_system->_current_test) {
 		test_system->_current_test->next = test_entry;
 	}

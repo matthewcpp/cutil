@@ -63,16 +63,17 @@ void _node_destroy(_btree_node* node) {
 }
 
 cutil_btree* cutil_btree_create(int order, cutil_trait* key_trait, cutil_trait* value_trait) {
-	if (order < 3 || key_trait == NULL || value_trait == NULL) {
-		return NULL;
-	}
+	cutil_btree* btree = NULL;
 
-	cutil_btree* btree = malloc(sizeof(cutil_btree));
-	btree->order = order;
-	btree->size = 0;
-	btree->key_trait = key_trait;
-	btree->value_trait = value_trait;
-	btree->root = _node_create(btree);
+	if (order >= 3 && key_trait != NULL && value_trait != NULL) {
+		btree = malloc(sizeof(cutil_btree));
+
+		btree->order = order;
+		btree->size = 0;
+		btree->key_trait = key_trait;
+		btree->value_trait = value_trait;
+		btree->root = _node_create(btree);
+	}
 
 	return btree;
 }
@@ -84,26 +85,28 @@ void cutil_btree_destroy(cutil_btree* btree) {
 
 void _btree_node_recursive_delete(cutil_btree* btree, _btree_node* node) {
 	cutil_trait* trait = btree->key_trait;
+	int i;
+
 	if (trait->pre_destroy_func) {
-		for (int i = 0; i < node->item_count; i++) {
+		for (i = 0; i < node->item_count; i++) {
 			trait->pre_destroy_func(_node_get_key(node, trait, i), trait->user_data);
 		}
 	}
 
 	trait = btree->value_trait;
 	if (trait->pre_destroy_func) {
-		for (int i = 0; i < node->item_count; i++) {
+		for (i = 0; i < node->item_count; i++) {
 			trait->pre_destroy_func(_node_get_value(node, trait, i), trait->user_data);
 		}
 	}
 
 	if (!_node_is_leaf(node)) {
-		for (int i = 0; i <= node->item_count; i++) {
+		for (i = 0; i <= node->item_count; i++) {
 			_btree_node_recursive_delete(btree, node->branches[i]);
 		}
 	}
 
-    _node_destroy(node);
+	_node_destroy(node);
 }
 
 /*
@@ -114,32 +117,32 @@ void _split_node_right(cutil_btree* btree, _btree_node* interior_node, _btree_no
 	int pivot_index = _get_pivot_index(btree);
 	int split_node_start = pivot_index + 1;
 	int split_node_key_index = insert_position - split_node_start;
+	int i;
 
-	// copy items from source node > pivot index and < insertion position
+	/* copy items from source node > pivot index and < insertion position */
 	int item_count = insert_position - split_node_start;
 	if (item_count > 0) {
-		for (int i = 0; i < item_count; ++i) {
+		for (i = 0; i < item_count; ++i) {
 			_node_copy_item(btree, split_node, i, interior_node, split_node_start + i);
 		}
 
-		for (int i = 0; i < item_count; ++i) {
+		for (i = 0; i < item_count; ++i) {
 			_set_node_child(split_node, interior_node->branches[split_node_start + i], i);
 		}
 	}
 
-	// insert the new item in the new split node
+	/* insert the new item in the new split node */
 	memcpy(_node_get_key(split_node, btree->key_trait, split_node_key_index), key, btree->key_trait->size);
 	memcpy(_node_get_value(split_node, btree->value_trait, split_node_key_index), value, btree->value_trait->size);
 
-	// copy items after the new item's position
+	/* copy items after the new item's position */
 	item_count = (int)interior_node->item_count - insert_position;
 	if (item_count > 0) {
-		for (int i = 0; i < item_count; ++i) {
-			//split_node->keys[split_node_key_index + 1 + i] = interior_node->keys[insert_position + i];
+		for (i = 0; i < item_count; ++i) {
 			_node_copy_item(btree, split_node, split_node_key_index + 1 + i, interior_node, insert_position + i);
 		}
 
-		for (int i = 0; i < item_count + 1; ++i) {
+		for (i = 0; i < item_count + 1; ++i) {
 			_set_node_child(split_node, interior_node->branches[insert_position + i], split_node_key_index + 1 + i);
 		}
 	}
@@ -164,11 +167,11 @@ void _split_interior_right(cutil_btree* btree, _btree_node* interior_node, _btre
 This method splits a leaf node at the insertion position by simply copying the items after that position to the new split node.
 */
 void _split_node_middle(cutil_btree* btree, _btree_node* interior_node, _btree_node* split_node, int insertion_position) {
+	int insertion_pos = 0;
+	int i;
 	(void)btree;
 
-	int insertion_pos = 0;
-
-	for (int i = insertion_position; i < interior_node->item_count; i++) {
+	for (i = insertion_position; i < interior_node->item_count; i++) {
 		_node_copy_item(btree, split_node, insertion_pos++, interior_node, i);
 		split_node->item_count += 1;
 	}
@@ -177,50 +180,53 @@ void _split_node_middle(cutil_btree* btree, _btree_node* interior_node, _btree_n
 }
 
 void _split_interior_middle(cutil_btree* btree, _btree_node* interior_node, _btree_node* split_node, _btree_node* left_node, _btree_node* right_node, int insert_position) {
-	//copy the items from the right part of the interior node into the split node
 	int item_count = interior_node->item_count - insert_position;
-	for (int i = 0; i < item_count; ++i) {
+	int i;
+
+	/* copy the items from the right part of the interior node into the split node */
+	for (i = 0; i < item_count; ++i) {
 		_node_copy_item(btree, split_node, i, interior_node, insert_position + i);
 		_set_node_child(split_node, interior_node->branches[insert_position + 1 + i], i + 1);
 		split_node->item_count += 1;
 	}
 
-	//set the left and right nodes
+	/* set the left and right nodes */
 	_set_node_child(interior_node, left_node, insert_position);
 	_set_node_child(split_node, right_node, 0);
 
 	interior_node->item_count -= split_node->item_count;
 
-	//clear no longer used branches from interior node
+	/* clear no longer used branches from interior node */
 	_node_clear_empty_branch_ptrs(btree, interior_node);
 }
 
 void _split_node_left(cutil_btree* btree, _btree_node* interior_node, _btree_node* split_node, void* key, void* value, int insert_position) {
 	unsigned int pivot_index = _get_pivot_index(btree);
+	int i;
 
-	//copy items after the pivot position to the split node
+	/* copy items after the pivot position to the split node */
 	int item_count = interior_node->item_count - pivot_index;
-	for (int i = 0; i < item_count; ++i) {
+	for (i = 0; i < item_count; ++i) {
 		_node_copy_item(btree, split_node, i, interior_node, pivot_index + i);
 		split_node->item_count += 1;
 	}
 
-	for (int i = 1; i <= item_count; ++i) {
+	for (i = 1; i <= item_count; ++i) {
 		_set_node_child(split_node, interior_node->branches[pivot_index + i], i);
 	}
 
 	_set_node_child(split_node, interior_node->branches[pivot_index], 0);
 
-	//make room in the interior node for the new key
-	for (int i = pivot_index - 1; i >= insert_position; --i) {
+	/* make room in the interior node for the new key */
+	for (i = pivot_index - 1; i >= insert_position; --i) {
 		_node_copy_item(btree, interior_node, i + 1, interior_node, i);
 	}
 
-	for (int i = pivot_index; i > insert_position + 1; --i) {
+	for (i = pivot_index; i > insert_position + 1; --i) {
 		_set_node_child(interior_node, interior_node->branches[i - 1], i);
 	}
 
-	//add in the new key and its children to the interior node
+	/* add in the new key and its children to the interior node*/
 	memcpy(_node_get_key(interior_node, btree->key_trait, insert_position), key, btree->key_trait->size);
 	memcpy(_node_get_value(interior_node, btree->value_trait, insert_position), value, btree->value_trait->size);
 
@@ -244,7 +250,7 @@ void _split_interior_node(cutil_btree* btree, _btree_node* interior_node, _btree
 
 	_btree_node* split_node = _node_create(btree);
 
-	//the newly inserted key appears in the new split node.
+	/* the newly inserted key appears in the new split node. */
 	if (insert_position > pivot_index) {
 		memcpy(pivot_key, _node_get_key(interior_node, btree->key_trait, pivot_index), btree->key_trait->size);
 		memcpy(pivot_value, _node_get_value(interior_node, btree->value_trait, pivot_index), btree->value_trait->size);
@@ -264,7 +270,7 @@ void _split_interior_node(cutil_btree* btree, _btree_node* interior_node, _btree
 		_split_interior_middle(btree, interior_node, split_node, left_node, right_node, insert_position);
 	}
 
-	// We have split the top most level, create a new root node
+	/* We have split the top most level, create a new root node */
 	if (_node_is_root(interior_node)) {
 		_btree_node* new_root_node = _node_create(btree);
 
@@ -277,9 +283,9 @@ void _split_interior_node(cutil_btree* btree, _btree_node* interior_node, _btree
 		_set_node_child(new_root_node, interior_node, 0);
 		_set_node_child(new_root_node, split_node, 1);
 	}
-    else{
-        _push_up_one_level(btree, interior_node->parent, interior_node, split_node, pivot_key, pivot_value);
-    }
+	else{
+		_push_up_one_level(btree, interior_node->parent, interior_node, split_node, pivot_key, pivot_value);
+	}
 
 	free(pivot_key);
 	free(pivot_value);
@@ -295,17 +301,17 @@ void _set_node_child(_btree_node* parent, _btree_node* child, int index) {
 }
 
 void _push_up_one_level(cutil_btree* btree, _btree_node* parent, _btree_node* left_node, _btree_node* right_node, void* key, void* value) {
-	unsigned int insertion_point = _node_get_insertion_position(btree, parent, key);
+	unsigned int i, insertion_point = _node_get_insertion_position(btree, parent, key);
 
 	if (_node_full(btree, parent)) {
 		_split_interior_node(btree, parent, left_node, right_node, key, value);
 	}
-	else { //adjust keys and branches to make room for new items
-		for (unsigned int i = parent->item_count; i > insertion_point; i--) {
+	else { /* adjust keys and branches to make room for new items */
+		for (i = parent->item_count; i > insertion_point; i--) {
 			_node_copy_item(btree, parent, i, parent, i - 1);
 		}
 
-		for (unsigned int i = parent->item_count + 1; i > insertion_point; i--) {
+		for (i = parent->item_count + 1; i > insertion_point; i--) {
 			_set_node_child(parent, parent->branches[i - 1], i);
 		}
 
@@ -319,16 +325,15 @@ void _push_up_one_level(cutil_btree* btree, _btree_node* parent, _btree_node* le
 	}
 }
 
-/* 
-Called when the target node for insertion cannot accommodate a new new item.  
+/*
+Called when the target node for insertion cannot accommodate a new new item.
 The node can be split in three ways, depending on the relationship between the insertion position and pivot index of the node.
 */
 void _split_leaf_node(cutil_btree* btree, _btree_node* node, void* key, void* value, unsigned int insert_position) {
-	//get key that will be pushed up (ceil)
+	/* get key that will be pushed up (ceil) */
 	unsigned int pivot_index = _get_pivot_index(btree);
 	_btree_node* new_right_node = _node_create(btree);
 
-	//TODO: copy pivot value
 	void* pivot_key = malloc(btree->key_trait->size);
 	void* pivot_value = malloc(btree->value_trait->size);
 
@@ -348,7 +353,7 @@ void _split_leaf_node(cutil_btree* btree, _btree_node* node, void* key, void* va
 		_split_node_middle(btree, node, new_right_node, insert_position);
 	}
 
-	// create a new root node and attach these children
+	/* create a new root node and attach these children */
 	if (_node_is_root(node)) {
 		_btree_node*  new_root = _node_create(btree);
 
@@ -400,7 +405,7 @@ void _copy_with_trait(void* dest, void* src, cutil_trait* trait) {
 
 int cutil_btree_insert(cutil_btree* btree, void* key, void* value) {
 	_btree_node*  node = _btree_find_node_for_key(btree, btree->root, key);
-	unsigned int insert_position = _node_get_insertion_position(btree, node, key);
+	unsigned int i, insert_position = _node_get_insertion_position(btree, node, key);
 
 	if (insert_position == ITEM_ALREADY_INSERTED) {
 		return 0;
@@ -418,17 +423,19 @@ int cutil_btree_insert(cutil_btree* btree, void* key, void* value) {
 		free(copied_value);
 	}
 	else {
-		// make room for new key in leaf node
-		for (unsigned int i = node->item_count; i > insert_position; i--) {
+		void* new_key, *new_value;
+
+		/* make room for new key in leaf node */
+		for (i = node->item_count; i > insert_position; i--) {
 			_node_copy_item(btree, node, i, node, i - 1);
 		}
 
-		void* new_key = _node_get_key(node, btree->key_trait, insert_position);
-		void* new_value = _node_get_value(node, btree->value_trait, insert_position);
+		new_key = _node_get_key(node, btree->key_trait, insert_position);
+		new_value = _node_get_value(node, btree->value_trait, insert_position);
 
 		_copy_with_trait(new_key, key, btree->key_trait);
 		_copy_with_trait(new_value, value, btree->value_trait);
-		
+
 		node->item_count += 1;
 	}
 
@@ -456,20 +463,21 @@ _btree_node* _btree_find_node_for_key(cutil_btree* btree, _btree_node* node, voi
 		return node;
 	}
 	else {
-		// find the correct branch to traverse down
-		for (int i = 0; i < node->item_count; i++) {
+		/* find the correct branch to traverse down */
+		int i;
+		for (i = 0; i < node->item_count; i++) {
 			void* item_key = _node_get_key(node, btree->key_trait, i);
 			int key_comp = btree->key_trait->compare_func(key, item_key, btree->key_trait->user_data);
-			
+
 			if (key_comp < 0) {
 				return _btree_find_node_for_key(btree, node->branches[i], key);
 			}
 			else if (key_comp == 0){
-                return node;
-            }
+				return node;
+			}
 		}
 
-		// search key is greater than the largest item in this node
+		/* search key is greater than the largest item in this node */
 		return _btree_find_node_for_key(btree, node->branches[node->item_count], key);
 	}
 }
@@ -504,78 +512,82 @@ _btree_node* _node_left_sibling(_btree_node*  node) {
 	}
 }
 
-// this method will merge the supplied node with its right sibling
+/* this method will merge the supplied node with its right sibling */
 _btree_node* _btree_merge_node_with_right_sibling(cutil_btree* btree, _btree_node* node) {
 	_btree_node* parent = node->parent;
 	_btree_node* right_sibling = _node_right_sibling(node);
+	unsigned int insert_pos;
+	int i;
 
-	// first we will append the corresponding key from our parent into the new merged node to preserve key ordering integrity
-	// any keys in our right sibling will have a greater value than this key
+	/*	first we will append the corresponding key from our parent into the new merged node to preserve key ordering integrity
+		any keys in our right sibling will have a greater value than this key */
 	_node_copy_item(btree, node, node->item_count++, parent, node->position);
 
-	unsigned int insert_pos = node->item_count;
+	insert_pos = node->item_count;
 
-	// append the keys and branches from the right sibling onto the target node
-	for (int i = 0; i < right_sibling->item_count; i++) {
+	/* append the keys and branches from the right sibling onto the target node*/
+	for (i = 0; i < right_sibling->item_count; i++) {
 		_node_copy_item(btree, node, insert_pos + i, right_sibling, i);
 		node->item_count += 1;
 	}
 
-	for (int i = 0; i <= right_sibling->item_count; i++) {
+	for (i = 0; i <= right_sibling->item_count; i++) {
 		_set_node_child(node, right_sibling->branches[i], insert_pos + i);
 	}
 
-	// remove the right sibling from the parent and adjust its existing branches
-	for (int i = right_sibling->position; i < parent->item_count; i++) {
-		//parent->branches[i] = parent->branches[i] + 1;
+	/* remove the right sibling from the parent and adjust its existing branches */
+	for (i = right_sibling->position; i < parent->item_count; i++) {
 		_node_copy_item(btree, parent, i - 1, parent, i);
 		_set_node_child(parent, parent->branches[i + 1], i);
 	}
 
-	// This update the count for the item that was moved out of parent to `node` above
+	/* This update the count for the item that was moved out of parent to `node` above */
 	parent->item_count -= 1;
 
 	_node_destroy(right_sibling);
-	
+
 	return node;
 }
 
 /*	In the case that a node that is being rebalanced does not have enough keys but its left sibling does,
 the greatest value key from the sibling will be borrowed so that a value from the nodes parent can be used to ensure the target has enough keys*/
 void _btree_borrow_from_left_sibling(cutil_btree* btree, _btree_node* node, _btree_node* left_sibling) {
-	// first slide the existing keys and branches in the target node over to make room for the incoming key from the parent
-	for (unsigned int i = node->item_count; i >= 1; i--) {
+	/* first slide the existing keys and branches in the target node over to make room for the incoming key from the parent */
+	unsigned int i;
+	for (i = node->item_count; i >= 1; i--) {
 		_node_copy_item(btree, node, i, node, i - 1);
 		node->branches[i + 1] = node->branches[i];
 	}
 
-	// move the corresponding key from the parent to the first item of the node's key array
-	_node_copy_item(btree, node, 0, node->parent, node->position - 1); 
+	/* move the corresponding key from the parent to the first item of the node's key array */
+	_node_copy_item(btree, node, 0, node->parent, node->position - 1);
 	node->item_count += 1;
 
-	// move the greatest key from the left sibling up to the parent
+	/* move the greatest key from the left sibling up to the parent */
 	_node_copy_item(btree, node->parent, left_sibling->position, left_sibling, left_sibling->item_count - 1);
 
-	//move the associated branch from the borrowed key to our target node
+	/* move the associated branch from the borrowed key to our target node */
 	_set_node_child(node, left_sibling->branches[left_sibling->item_count], 0);
 	left_sibling->branches[left_sibling->item_count] = NULL;
 	left_sibling->item_count -= 1;
 }
 
-/*	In the case that a node that is being rebalanced does not have enough keys but its right sibling does, 
+/*	In the case that a node that is being rebalanced does not have enough keys but its right sibling does,
 	the lowest value key from the sibling will be borrowed so that a value from the nodes parent can be used to ensure the target has enough keys*/
 void _btree_borrow_from_right_sibling(cutil_btree* btree, _btree_node* node, _btree_node* right_sibling) {
-	// first take our corresponding key from our parent and add it to the end of our key list and increment our item count
+	int i;
+
+	/* first take our corresponding key from our parent and add it to the end of our key list and increment our item count */
 	_node_copy_item(btree, node, node->item_count++, node->parent, node->position);
 
-	// grab the first node from our right sibling and move it up to the parent to replace the key we just borrowed
+	/* grab the first node from our right sibling and move it up to the parent to replace the key we just borrowed */
 	_node_copy_item(btree, node->parent, node->position, right_sibling, 0);
-	
-	// the branch corresponding to the borrowed key is moved over to our target node
+
+	/* the branch corresponding to the borrowed key is moved over to our target node */
 	_set_node_child(node, right_sibling->branches[0], node->item_count);
 
-	// adjust the remaining keys and branches for the right sibling
-	for (int i = 1; i <= right_sibling->item_count; i++) {
+	/* adjust the remaining keys and branches for the right sibling */
+	for (i = 1; i <= right_sibling->item_count; i++) {
 		_node_copy_item(btree, right_sibling, i - 1, right_sibling, i);
 		_set_node_child(right_sibling, right_sibling->branches[i], i - 1);
 	}
@@ -583,9 +595,10 @@ void _btree_borrow_from_right_sibling(cutil_btree* btree, _btree_node* node, _bt
 	right_sibling->item_count -= 1;
 }
 
-// if we are rebalancing the root and it has no keys, then we need to promote its child to the new root.
-// if the rebalanced node is short on keys then we will need to either borrow or steal one from our neighbor
-// first we check if we can borrow from the left or right, if not, then we will merge
+/*
+if we are rebalancing the root and it has no keys, then we need to promote its child to the new root.
+if the rebalanced node is short on keys then we will need to either borrow or steal one from our neighbor
+first we check if we can borrow from the left or right, if not, then we will merge */
 void _rebalance_node(cutil_btree* btree, _btree_node* node) {
 	int min_item_count = _btree_node_min_item_count(btree);
 	if (node->item_count >= min_item_count) {
@@ -622,9 +635,10 @@ void _rebalance_node(cutil_btree* btree, _btree_node* node) {
 	}
 }
 
-// When deleting from a leaf node, we just need to slide the keys over and repair
+/* When deleting from a leaf node, we just need to slide the keys over and repair */
 void _btree_delete_from_leaf(cutil_btree* btree, _btree_node* node, unsigned int item_pos) {
-	for (int i = item_pos + 1; i < node->item_count; i++) {
+	int i;
+	for (i = item_pos + 1; i < node->item_count; i++) {
 		_node_copy_item(btree, node, i - 1, node, i);
 	}
 
@@ -633,13 +647,13 @@ void _btree_delete_from_leaf(cutil_btree* btree, _btree_node* node, unsigned int
 }
 
 void _btree_delete_from_interior(cutil_btree* btree, _btree_node* node, unsigned int item_pos) {
-	// first step is to find the maximum leaf node containing the value we will move up to replace this item
+	/* first step is to find the maximum leaf node containing the value we will move up to replace this item */
 	_btree_node* max_leaf = node->branches[item_pos];
 	while (!_node_is_leaf(max_leaf)) {
 		max_leaf = max_leaf->branches[max_leaf->item_count];
 	}
 
-	// place the greatest value of maxnode in the deleted item's position
+	/* place the greatest value of maxnode in the deleted item's position */
 	_node_copy_item(btree, node, item_pos, max_leaf, max_leaf->item_count - 1);
 	max_leaf->item_count -= 1;
 
@@ -650,10 +664,10 @@ int cutil_btree_delete(cutil_btree* btree, void* key) {
 	_btree_node*  node = _btree_find_node_for_key(btree, btree->root, key);
 	unsigned int item_pos = _node_key_position(btree, node, key);
 
-    if (btree->key_trait->pre_destroy_func) {
-        void* item_key = _node_get_key(node, btree->key_trait, item_pos);
-        btree->key_trait->pre_destroy_func(item_key, btree->key_trait->user_data);
-    }
+	if (btree->key_trait->pre_destroy_func) {
+		void* item_key = _node_get_key(node, btree->key_trait, item_pos);
+		btree->key_trait->pre_destroy_func(item_key, btree->key_trait->user_data);
+	}
 
 	if (btree->value_trait->pre_destroy_func) {
 		void* item_key = _node_get_value(node, btree->value_trait, item_pos);
@@ -661,7 +675,6 @@ int cutil_btree_delete(cutil_btree* btree, void* key) {
 	}
 
 	if (item_pos != ITEM_NOT_PRESENT) {
-
 		if (_node_is_leaf(node)) {
 			_btree_delete_from_leaf(btree, node, item_pos);
 		}
@@ -679,7 +692,7 @@ int cutil_btree_delete(cutil_btree* btree, void* key) {
 }
 
 int cutil_btree_contains(cutil_btree* btree, void* key) {
-	_btree_node*  node = _btree_find_node_for_key(btree, btree->root, key);
+	_btree_node* node = _btree_find_node_for_key(btree, btree->root, key);
 	unsigned int insert_position = _node_get_insertion_position(btree, node, key);
 
 	return insert_position == ITEM_ALREADY_INSERTED;
@@ -705,9 +718,9 @@ int _node_is_interior(_btree_node*  node) {
 }
 
 unsigned int _node_get_insertion_position(cutil_btree* btree, _btree_node* node, void* key) {
-	int insert_pos = 0;
+	int i, insert_pos = 0;
 
-	for (int i = 0; i < node->item_count; i++) {
+	for (i = 0; i < node->item_count; i++) {
 		void* item_key = _node_get_key(node, btree->key_trait, i);
 		int key_comp = btree->key_trait->compare_func(key, item_key, btree->key_trait->user_data);
 
@@ -728,7 +741,8 @@ unsigned int _node_get_insertion_position(cutil_btree* btree, _btree_node* node,
 }
 
 unsigned int _node_key_position(cutil_btree* btree, _btree_node* node, void* key) {
-	for (int i = 0; i < node->item_count; i++) {
+	int i;
+	for (i = 0; i < node->item_count; i++) {
 		void* item_key = _node_get_key(node, btree->key_trait, i);
 		int key_comp = btree->key_trait->compare_func(key, item_key, btree->key_trait->user_data);
 
@@ -748,7 +762,6 @@ int _node_is_root(_btree_node*  node) {
 	return node->parent == NULL;
 }
 
-///-------------------------
 _btree_node*  _itr_find_next_leaf_node(_btree_node* node);
 void _itr_set_next_parent_node(cutil_btree_itr* itr);
 
@@ -809,26 +822,25 @@ int cutil_btree_itr_next(cutil_btree_itr* itr, int* key) {
 	}
 
 	if (_node_is_leaf(itr->node)) {
-		// all items in leaf node explored, return to parent
+		/* all items in leaf node explored, return to parent */
 		if (itr->node_pos >= (int)itr->node->item_count) {
 			_itr_set_next_parent_node(itr);
 		}
 	}
 	else {
-		//explore the next branch in this tree
+		/* explore the next branch in this tree */
 		if (itr->node->branches[itr->node_pos]) {
 			itr->node = _itr_find_next_leaf_node(itr->node->branches[itr->node_pos]);
 			itr->node_pos = 0;
 		}
-		else { //no branches left, head up
+		else { /* no branches left, head up */
 			_itr_set_next_parent_node(itr);
 		}
 	}
 
 	if (itr->node) {
 		if (key) {
-			//TODO: evaluate me
-			;//*key = itr->node->keys[itr->node_pos];
+			/* TODO: evaluate me */
 		}
 
 		itr->node_pos += 1;
@@ -845,7 +857,9 @@ int _compare_btree_nodes(cutil_btree* tree_a, _btree_node* a, cutil_btree* tree_
 		return 0;
 	}
 	else {
-		for (int i = 0; i < a->item_count; i++) {
+		_btree_node* branch_a, *branch_b;
+		int i, ok = 1;
+		for (i = 0; i < a->item_count; i++) {
 			void* key_a = _node_get_key(a, tree_a->key_trait, i);
 			void* key_b = _node_get_key(b, tree_b->key_trait, i);
 
@@ -854,11 +868,7 @@ int _compare_btree_nodes(cutil_btree* tree_a, _btree_node* a, cutil_btree* tree_
 			}
 		}
 
-		_btree_node* branch_a;
-		_btree_node* branch_b;
-		int ok = 1;
-
-		for (int i = 0; i < a->item_count + 1; i++) {
+		for (i = 0; i < a->item_count + 1; i++) {
 			branch_a = a->branches[i];
 			branch_b = b->branches[i];
 
@@ -899,7 +909,7 @@ int cutil_btree_equals(cutil_btree* a, cutil_btree* b) {
 	if (a->size != b->size) {
 		return 0;
 	}
-	
+
 	return _compare_btree_nodes(a, a->root, b, b->root);
 }
 

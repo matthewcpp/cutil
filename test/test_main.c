@@ -4,6 +4,9 @@
 #include "test_settings.h"
 
 int main(int argc, char** argv) {
+	int result = 0;
+	const char* filter_string;
+
 	cutil_test_settings_init();
 	if (!cutil_test_settings_parse(argc, (const char**)argv)) {
 		cutil_test_settings_destroy();
@@ -19,8 +22,7 @@ int main(int argc, char** argv) {
 	add_btree_itr_tests();
 	add_trait_tests();
 
-	int result = 0;
-	const char* filter_string = cutil_test_get_filter_string();
+	filter_string = cutil_test_get_filter_string();
 
 	if (filter_string) {
 		cutil_testing_set_filter(filter_string);
