@@ -119,10 +119,173 @@ _btree_node* read_btree_node(cutil_btree* btree, _btree_node* parent, int* item_
 	}
 }
 
-/* TODO: Implement me */
+void* get_max_key_from_subtree(cutil_btree* btree, _btree_node* node) {
+    if (_node_is_leaf(node)) {
+        return _node_get_key(node, btree->key_trait, node->item_count - 1);
+    }
+    else {
+        return get_max_key_from_subtree(btree, node->branches[node->item_count]);
+    }
+}
+
+
+void* get_min_key_from_subtree(cutil_btree* btree, _btree_node* node) {
+    if (_node_is_leaf(node)) {
+        return _node_get_key(node, btree->key_trait, 0);
+    }
+    else {
+        return get_max_key_from_subtree(btree, node->branches[0]);
+    }
+}
+
+/* Gets the minimum key a leaf node may have.
+ * This is usually the key in the parent node corresponding to the previous position of this node
+ * In the case that this is the minimal leaf node then there is no min value.
+ * */
+void* get_min_value_for_leaf(cutil_btree* btree, _btree_node* node) {
+    if (_node_is_root(node)) {
+        return NULL;
+    }
+    else if (node->position == 0) {
+        return get_min_value_for_leaf(btree, node->parent);
+    }
+    else {
+        return _node_get_key(node->parent, btree->key_trait, node->position - 1);
+    }
+}
+
+/* Gets the max key a leaf node may have.  This is usually the key in the parent corresponding to this node's position.
+ * If this is the maximal leaf node then there is no max value.
+ */
+void* get_max_value_for_leaf(cutil_btree* btree, _btree_node* node) {
+    if (_node_is_root(node)) {
+        return NULL;
+    }
+    else if (node->position == node->item_count) {
+        return get_max_value_for_leaf(btree, node->parent);
+    }
+    else {
+        return _node_get_key(node, btree->key_trait, node->position);
+    }
+}
+
+/* Ensures that the keys of a node are within the appropriate ranges, and stored in ascending order */
+int validate_btree_node_keys(cutil_btree* btree, _btree_node* node) {
+    int i;
+
+    void* min_key, *max_key;
+
+    if (_node_is_leaf(node)) {
+        min_key = get_min_value_for_leaf(btree, node);
+        max_key = get_max_value_for_leaf(btree, node);
+    }
+    else {
+        min_key = get_max_key_from_subtree(btree, node->branches[0]);
+        max_key = get_min_key_from_subtree(btree, node->branches[node->item_count]);
+    }
+
+
+	if (min_key) {
+        for (i = 0; i < node->item_count; i++) {
+            void* key = _node_get_key(node, btree->key_trait, i);
+
+            if (btree->key_trait->compare_func(key, min_key, btree->key_trait->user_data) < 1) {
+                return 0;
+            }
+        }
+	}
+
+    if (max_key) {
+        for (i = 0; i < node->item_count; i++) {
+            void* key = _node_get_key(node, btree->key_trait, i);
+
+            if (btree->key_trait->compare_func(key, max_key, btree->key_trait->user_data) > 1) {
+                return 0;
+            }
+        }
+    }
+
+	if (!_node_is_leaf(node)) {
+        for(i = 0; i < node->item_count; i++) {
+            if (i) {
+                void* prev_key = _node_get_key(node, btree->key_trait, i - 1);
+                void* current_key = _node_get_key(node, btree->key_trait, i);
+
+                if (btree->key_trait->compare_func(prev_key, current_key, btree->key_trait->user_data) != -1){
+                    return 0;
+                }
+            }
+
+            if (!validate_btree_node_keys(btree, node->branches[i])) {
+                return 0;
+            }
+        }
+	}
+
+	return 1;
+}
+
+
+int validate_btree_node_structure(cutil_btree* btree, _btree_node* node) {
+	/* Every node has at least m children */
+    if (node->item_count >= btree->order) {
+        return 0;
+    }
+
+    /* every interior node has at least ceil(m/2) child nodes */
+    if (_node_is_interior(node)) {
+		if (node->item_count < _btree_node_min_item_count(btree)) {
+			return 0;
+		}
+    }
+
+    /* The root has at least 2 children if it is not a leaf node */
+    if (_node_is_root(node) && !_node_is_leaf(node)) {
+    	if (node->branches[0] == NULL || node->branches[1] == NULL) {
+    		return 0;
+    	}
+    }
+
+    return 1;
+}
+
+/* This function finds the depth of the minimum leaf node.  All leaf nodes in the tree should have this depth. */
+int determine_leaf_depth(_btree_node* node, int depth) {
+	if (_node_is_leaf(node)) {
+		return depth;
+	}
+	else {
+		return determine_leaf_depth(node->branches[0], depth + 1);
+	}
+}
+
+/*  All Leaf nodes in the btree should be at the same depth.  This function walks the tree and ensures that
+ *  Each Leaf node's depth is equal to the target.
+ */
+int validate_leaf_depths(_btree_node* node, int current_depth, int target_depth) {
+	if (_node_is_leaf(node)) {
+		return current_depth == target_depth;
+	}
+	else {
+		int i;
+		for (i = 0; i <= node->item_count; i++) {
+			if (!validate_leaf_depths(node->branches[i], current_depth + 1, target_depth)) {
+			    return 0;
+			}
+		}
+
+		return 1;
+	}
+}
+
 int validate_btree(cutil_btree* btree) {
 	if (btree) {
-		return 1;
+		int leaf_depth = determine_leaf_depth(btree->root, 0);
+		int ok = validate_btree_node_keys(btree, btree->root);
+		ok &= validate_btree_node_structure(btree, btree->root);
+		ok &= validate_leaf_depths(btree->root, 0, leaf_depth);
+
+		return ok;
 	}
 	else {
 		return 0;
