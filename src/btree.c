@@ -13,12 +13,6 @@
 #define ITEM_NOT_PRESENT INT_MAX
 #define ITR_POS_UNINIT INT_MAX
 
-int _node_full(cutil_btree* btree, _btree_node* node);
-int _node_is_root(_btree_node* node);
-int _node_is_leaf(_btree_node* node);
-int _node_is_interior(_btree_node* node);
-int _btree_node_min_item_count(cutil_btree* btree);
-
 void _node_clear_empty_branch_ptrs(cutil_btree* btree, _btree_node* node);
 
 void _btree_node_recursive_delete(cutil_btree* btree, _btree_node* node);
@@ -482,6 +476,7 @@ _btree_node* _btree_find_node_for_key(cutil_btree* btree, _btree_node* node, voi
 	}
 }
 
+/* TODO: use integer ceiling */
 int _btree_node_min_item_count(cutil_btree* btree) {
 	return ((unsigned int)ceil((double)btree->order / 2.0)) - 1;
 }

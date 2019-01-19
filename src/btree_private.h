@@ -14,6 +14,12 @@ typedef struct _btree_node {
 	struct _btree_node** branches;
 } _btree_node;
 
+int _btree_node_min_item_count(cutil_btree* btree);
+int _node_full(cutil_btree* btree, _btree_node* node);
+int _node_is_root(_btree_node* node);
+int _node_is_leaf(_btree_node* node);
+int _node_is_interior(_btree_node* node);
+
 /*
 Creates a new btree node.  Initializes the keys, values, and branches arrays to be the correct size based on the btree order and traits.
 */
