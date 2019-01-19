@@ -9,6 +9,14 @@ clone_folder: 'c:\development\cutil'
 environment:
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      cmake_generator: '"Visual Studio 10 2010"'
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      cmake_generator: '"Visual Studio 10 2010 Win64"'
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      cmake_generator: '"Visual Studio 11 2012"'
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      cmake_generator: '"Visual Studio 11 2012 Win64"'
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       cmake_generator: '"Visual Studio 12 2013"'
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       cmake_generator: '"Visual Studio 12 2013 Win64"'
