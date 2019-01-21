@@ -30,6 +30,25 @@ unsigned int _get_pivot_index(cutil_btree* btree) {
 	return (btree->order - 1) / 2 + ((btree->order - 1) % 2 != 0);
 }
 
+/*
+Searches through existing keys in the node and returns the index the supplied key should be inserted at.
+returns ITEM_ALREADY_INSERTED if they key already exists in the node.
+*/
+unsigned int _node_get_insertion_position(cutil_btree* btree, _btree_node*  node, void* key);
+
+/*
+Searches through existing keys in the node and returns the index of the existing key comparing equal to the supplied key.
+Returns ITEM_NOT_PRESENT if no key in the node compares equal.
+*/
+unsigned int _node_key_position(cutil_btree* btree, _btree_node*  node, void* key);
+
+/*
+Copies an item from one node to another.
+The dest_node and src_node parameter may point to the same node
+*/
+void _node_copy_item(cutil_btree* btree, _btree_node* dest_node, size_t dest_index, _btree_node* src_node, size_t src);
+
+
 unsigned int cutil_btree_get_order(cutil_btree* btree) {
 	return btree->order;
 }

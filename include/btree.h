@@ -12,7 +12,6 @@ void cutil_btree_destroy(cutil_btree* btree);
 
 unsigned int cutil_btree_get_order(cutil_btree* btree);
 
-/* TODO: Tests */
 int cutil_btree_equals(cutil_btree *a, cutil_btree *b);
 
 int cutil_btree_insert(cutil_btree* btree, void* key, void* value);

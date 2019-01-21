@@ -599,9 +599,35 @@ void btree_test_get_cstring() {
 		CUTIL_TESTING_ASSERT_INT_EQ(strcmp(value_ptr, actual_ptr), 0);
 	}
 }
+void btree_test_equals_traits() {
+	cutil_btree* btree1 = cutil_btree_create(DEFAULT_EVEN_BTREE_ORDER, cutil_trait_int(), cutil_trait_int());
+	cutil_btree* btree2 = cutil_btree_create(DEFAULT_EVEN_BTREE_ORDER, cutil_trait_cstring(), cutil_trait_int());
+
+	// key trait
+	CUTIL_TESTING_EXPECT_FALSE(cutil_btree_equals(btree1, btree2));
+	cutil_btree_destroy(btree2);
+
+	// value trait
+	btree2 = cutil_btree_create(DEFAULT_EVEN_BTREE_ORDER, cutil_trait_int(), cutil_trait_cstring());
+	CUTIL_TESTING_EXPECT_FALSE(cutil_btree_equals(btree1, btree2));
+	cutil_btree_destroy(btree2);
+
+	cutil_btree_destroy(btree1);
+}
+
+void btree_test_equals_empty() {
+	cutil_btree* btree1 = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_int(), cutil_trait_int());
+	cutil_btree* btree2 = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_int(), cutil_trait_int());
+
+	// empty trees should be equal
+	CUTIL_TESTING_EXPECT_TRUE(cutil_btree_equals(btree1, btree2));
+
+	cutil_btree_destroy(btree1);
+	cutil_btree_destroy(btree2);
+}
 
 void add_btree_tests() {
-	cutil_testing_suite("btree");
+	cutil_testing_suite("btree_insert_odd_order");
 	cutil_testing_suite_before_each(&btree_before_each);
 	cutil_testing_suite_after_each(&btree_after_each);
 
@@ -628,7 +654,7 @@ void add_btree_tests() {
 	CUTIL_TESTING_ADD(btree_test_split_middle_new_root);
 	CUTIL_TESTING_ADD(btree_test_split_left_new_root);
 
-	cutil_testing_suite("btree_even_order");
+	cutil_testing_suite("btree_insert_even_order");
 	cutil_testing_suite_before_each(&btree_even_order_before_each);
 	cutil_testing_suite_after_each(&btree_after_each);
 
@@ -645,6 +671,10 @@ void add_btree_tests() {
 	CUTIL_TESTING_ADD(btree_test_get_pod);
 	CUTIL_TESTING_ADD(bree_test_get_ptr);
 	CUTIL_TESTING_ADD(btree_test_get_cstring);
+
+	cutil_testing_suite("btree_equals");
+	CUTIL_TESTING_ADD(btree_test_equals_traits);
+	CUTIL_TESTING_ADD(btree_test_equals_empty);
 
 	cutil_testing_suite("btree_delete");
 	cutil_testing_suite_before_each(&btree_before_each);
