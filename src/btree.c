@@ -11,7 +11,6 @@
 
 #define ITEM_ALREADY_INSERTED INT_MAX
 #define ITEM_NOT_PRESENT INT_MAX
-#define ITR_POS_UNINIT INT_MAX
 
 void _node_clear_empty_branch_ptrs(cutil_btree* btree, _btree_node* node);
 
@@ -51,6 +50,14 @@ void _node_copy_item(cutil_btree* btree, _btree_node* dest_node, size_t dest_ind
 
 unsigned int cutil_btree_get_order(cutil_btree* btree) {
 	return btree->order;
+}
+
+cutil_trait* cutil_btree_get_key_trait(cutil_btree* btree){
+    return btree->key_trait;
+}
+
+cutil_trait* cutil_btree_get_value_trait(cutil_btree* btree){
+    return btree->value_trait;
 }
 
 _btree_node* _node_create(cutil_btree* btree) {
@@ -774,96 +781,6 @@ int _node_full(cutil_btree* btree, _btree_node*  node) {
 
 int _node_is_root(_btree_node*  node) {
 	return node->parent == NULL;
-}
-
-_btree_node*  _itr_find_next_leaf_node(_btree_node* node);
-void _itr_set_next_parent_node(cutil_btree_itr* itr);
-
-
-cutil_btree_itr* cutil_btree_itr_create(cutil_btree* btree) {
-	cutil_btree_itr* itr = malloc(sizeof(cutil_btree_itr));
-	cutil_btree_itr_init(itr, btree);
-
-	return itr;
-}
-
-void cutil_btree_itr_init(cutil_btree_itr* itr, cutil_btree* btree) {
-	itr->node = NULL;
-	itr->btree = btree;
-	itr->node_pos = ITR_POS_UNINIT;
-}
-
-void cutil_btree_itr_destroy(cutil_btree_itr* itr) {
-	free(itr);
-}
-
-void _find_starting_node_pos(cutil_btree_itr* itr) {
-	if (cutil_btree_size(itr->btree) > 0) {
-		itr->node = _itr_find_next_leaf_node(itr->btree->root);
-	}
-
-	itr->node_pos = 0;
-}
-
-_btree_node*  _itr_find_next_leaf_node(_btree_node* node) {
-	_btree_node* leaf = node;
-
-	while (leaf->branches[0]) {
-		leaf = leaf->branches[0];
-	}
-
-	return leaf;
-}
-
-int cutil_btree_itr_has_next(cutil_btree_itr* itr) {
-	if (itr->node_pos == ITR_POS_UNINIT) {
-		_find_starting_node_pos(itr);
-	}
-
-	return itr->node != NULL;
-}
-
-void _itr_set_next_parent_node(cutil_btree_itr* itr) {
-	do {
-		itr->node_pos = itr->node->position;
-		itr->node = itr->node->parent;
-	} while ((itr->node != NULL) && (itr->node_pos >= itr->node->item_count));
-}
-
-int cutil_btree_itr_next(cutil_btree_itr* itr, int* key) {
-	if (itr->node_pos == ITR_POS_UNINIT) {
-		_find_starting_node_pos(itr);
-	}
-
-	if (_node_is_leaf(itr->node)) {
-		/* all items in leaf node explored, return to parent */
-		if (itr->node_pos >= (int)itr->node->item_count) {
-			_itr_set_next_parent_node(itr);
-		}
-	}
-	else {
-		/* explore the next branch in this tree */
-		if (itr->node->branches[itr->node_pos]) {
-			itr->node = _itr_find_next_leaf_node(itr->node->branches[itr->node_pos]);
-			itr->node_pos = 0;
-		}
-		else { /* no branches left, head up */
-			_itr_set_next_parent_node(itr);
-		}
-	}
-
-	if (itr->node) {
-		if (key) {
-			/* TODO: evaluate me */
-		}
-
-		itr->node_pos += 1;
-
-		return 1;
-	}
-	else {
-		return 0;
-	}
 }
 
 int _compare_btree_nodes(cutil_btree* tree_a, _btree_node* a, cutil_btree* tree_b, _btree_node* b) {
