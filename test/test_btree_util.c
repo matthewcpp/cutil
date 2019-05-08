@@ -316,7 +316,7 @@ int insert_char_sequence(cutil_btree* btree, const char* sequence, cutil_btree_v
 }
 
 int forward_itr_char_sequence(cutil_btree* btree, const char* expected_sequence, int* error_index) {
-    int sequence_length = strlen(expected_sequence);
+    size_t sequence_length = strlen(expected_sequence);
 	cutil_btree_itr*  itr = cutil_btree_itr_create(btree);
 	int key = 0;
 	int ok = 1;

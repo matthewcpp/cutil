@@ -25,12 +25,26 @@ void btree_itr_after_each() {
 	cutil_trait_destroy();
 }
 
+void test_btree_itr_forward_empty()
+{
+	int visitied_nodes = 0;
+
+	g_btree = cutil_btree_create(5, cutil_trait_int(), cutil_trait_int());
+	g_btree_itr = cutil_btree_itr_create(g_btree);
+
+	while (cutil_btree_itr_next(g_btree_itr)) {
+		visitied_nodes = 1;
+	}
+
+	CUTIL_TESTING_ASSERT_FALSE(visitied_nodes);
+}
+
 /* ensures that the forward iterator visits nodes in the expected order */
 int insert_seq_mult_10(int key) {
 	return key * 10;
 }
 
-void btree_itr_forward_pod() {
+void test_btree_itr_forward_pod() {
 	const char* insert_sequence = "QWERTYUIOPASDFGHJKLZXCVBNM";
 	const char* expected_sequence = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	int expected_sequence_length = strlen(expected_sequence);
@@ -57,7 +71,7 @@ void btree_itr_forward_pod() {
 	}
 }
 
-void btree_itr_forward_cstring() {
+void test_btree_itr_forward_cstring() {
     char** test_keys = malloc(26 * sizeof(char*));
     char** test_values = malloc(26 * sizeof(char*));
     char c;
@@ -99,10 +113,44 @@ void btree_itr_forward_cstring() {
     free(test_values);
 }
 
+void test_btree_itr_forward_ptr() {
+	int i = 0, value_count = 10;
+	int* values = malloc(sizeof(int) * value_count);
+	for (i = 0; i < value_count; i++) {
+		values[i] = i * 10;
+	}
+
+	g_btree = cutil_btree_create(5, cutil_trait_int(), cutil_trait_ptr());
+
+	for (i = 0; i < value_count; i++) {
+		int* value = values + i;
+		CUTIL_TESTING_EXPECT_TRUE(cutil_btree_insert(g_btree, &i, &value));
+	}
+
+	g_btree_itr = cutil_btree_itr_create(g_btree);
+
+	i = 0;
+	while (cutil_btree_itr_next(g_btree_itr)) {
+		int key;
+		int* value;
+
+		CUTIL_TESTING_EXPECT_TRUE(cutil_btree_itr_get_key(g_btree_itr, &key));
+		CUTIL_TESTING_EXPECT_TRUE(cutil_btree_itr_get_value(g_btree_itr, &value));
+		CUTIL_TESTING_EXPECT_INT_EQ(key, i);
+		CUTIL_TESTING_EXPECT_INT_EQ(*value, values[i]);
+
+		i += 1;
+	}
+
+	free(values);
+}
+
 void add_btree_itr_tests() {
 	cutil_testing_suite("btree_itr");
 	cutil_testing_suite_after_each(&btree_itr_after_each);
 
-	CUTIL_TESTING_ADD(btree_itr_forward_pod);
-    CUTIL_TESTING_ADD(btree_itr_forward_cstring);
+	CUTIL_TESTING_ADD(test_btree_itr_forward_empty)
+	CUTIL_TESTING_ADD(test_btree_itr_forward_pod);
+    CUTIL_TESTING_ADD(test_btree_itr_forward_cstring);
+	CUTIL_TESTING_ADD(test_btree_itr_forward_ptr);
 }
