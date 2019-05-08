@@ -603,11 +603,11 @@ void btree_test_equals_traits() {
 	cutil_btree* btree1 = cutil_btree_create(DEFAULT_EVEN_BTREE_ORDER, cutil_trait_int(), cutil_trait_int());
 	cutil_btree* btree2 = cutil_btree_create(DEFAULT_EVEN_BTREE_ORDER, cutil_trait_cstring(), cutil_trait_int());
 
-	// key trait
+	/* key trait */
 	CUTIL_TESTING_EXPECT_FALSE(cutil_btree_equals(btree1, btree2));
 	cutil_btree_destroy(btree2);
 
-	// value trait
+	/* value trait */
 	btree2 = cutil_btree_create(DEFAULT_EVEN_BTREE_ORDER, cutil_trait_int(), cutil_trait_cstring());
 	CUTIL_TESTING_EXPECT_FALSE(cutil_btree_equals(btree1, btree2));
 	cutil_btree_destroy(btree2);
@@ -619,7 +619,7 @@ void btree_test_equals_empty() {
 	cutil_btree* btree1 = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_int(), cutil_trait_int());
 	cutil_btree* btree2 = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_int(), cutil_trait_int());
 
-	// empty trees should be equal
+	/* empty trees should be equal */
 	CUTIL_TESTING_EXPECT_TRUE(cutil_btree_equals(btree1, btree2));
 
 	cutil_btree_destroy(btree1);

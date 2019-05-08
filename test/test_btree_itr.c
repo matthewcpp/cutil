@@ -47,7 +47,7 @@ int insert_seq_mult_10(int key) {
 void test_btree_itr_forward_pod() {
 	const char* insert_sequence = "QWERTYUIOPASDFGHJKLZXCVBNM";
 	const char* expected_sequence = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-	int expected_sequence_length = strlen(expected_sequence);
+	size_t expected_sequence_length = strlen(expected_sequence);
 	int i = 0;
 
 	g_btree = cutil_btree_create(5, cutil_trait_int(), cutil_trait_int());
