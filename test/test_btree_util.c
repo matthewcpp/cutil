@@ -292,26 +292,51 @@ int validate_btree(cutil_btree* btree) {
 	}
 }
 
-void insert_char_sequence(cutil_btree* btree, const char* sequence) {
-	size_t i, len = strlen(sequence);
+int insert_char_sequence(cutil_btree* btree, const char* sequence, cutil_btree_value_xform_func xform_func) {
+	size_t i, len;
+
+	if (cutil_btree_get_key_trait(btree) != cutil_trait_int() || cutil_btree_get_value_trait(btree) != cutil_trait_int()) {
+	    return 0;
+	}
+
+    len = strlen(sequence);
 
 	for (i = 0; i < len; i++) {
 		int key = (int)sequence[i];
-		cutil_btree_insert(btree, &key, &key);
+		int value = key;
+
+		if (xform_func) {
+		    value = xform_func(value);
+		}
+
+		cutil_btree_insert(btree, &key, &value);
 	}
+
+	return 1;
 }
 
-int confirm_forward_iteration_char_sequence(cutil_btree* btree, const char* expected_sequence) {
+int forward_itr_char_sequence(cutil_btree* btree, const char* expected_sequence, int* error_index) {
+    size_t sequence_length = strlen(expected_sequence);
 	cutil_btree_itr*  itr = cutil_btree_itr_create(btree);
-	int val = 0;
-	int count = 0;
+	int key = 0;
 	int ok = 1;
+	int i = 0;
 
-	while (cutil_btree_itr_next(itr, &val)) {
-		if (expected_sequence[count++] != val) {
+	if (sequence_length != cutil_btree_size(btree)) {
+	    *error_index = -1;
+	    return 0;
+	}
+
+	while (cutil_btree_itr_next(itr)) {
+	    cutil_btree_itr_get_key(itr, &key);
+
+		if ((int)expected_sequence[i] != key) {
+		    *error_index = i;
 			ok = 0;
 			break;
 		}
+
+		i += 1;
 	}
 
 	cutil_btree_itr_destroy(itr);
