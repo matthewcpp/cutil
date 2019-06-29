@@ -36,7 +36,7 @@ void test_btree_itr_forward_empty()
 		visitied_nodes = 1;
 	}
 
-	CUTIL_TESTING_ASSERT_FALSE(visitied_nodes);
+	CTEST_ASSERT_FALSE(visitied_nodes);
 }
 
 /* ensures that the forward iterator visits nodes in the expected order */
@@ -51,8 +51,8 @@ void test_btree_itr_forward_pod() {
 	int i = 0;
 
 	g_btree = cutil_btree_create(5, cutil_trait_int(), cutil_trait_int());
-	CUTIL_TESTING_ASSERT_TRUE(insert_char_sequence(g_btree, insert_sequence, insert_seq_mult_10));
-	CUTIL_TESTING_ASSERT_INT_EQ(expected_sequence_length, cutil_btree_size(g_btree));
+	CTEST_ASSERT_TRUE(insert_char_sequence(g_btree, insert_sequence, insert_seq_mult_10));
+	CTEST_ASSERT_INT_EQ(expected_sequence_length, cutil_btree_size(g_btree));
 
 	g_btree_itr = cutil_btree_itr_create(g_btree);
 
@@ -64,8 +64,8 @@ void test_btree_itr_forward_pod() {
 		cutil_btree_itr_get_key(g_btree_itr, &actual_key);
 		cutil_btree_itr_get_value(g_btree_itr, &actual_value);
 
-		CUTIL_TESTING_ASSERT_INT_EQ(expected_key, actual_key);
-		CUTIL_TESTING_ASSERT_INT_EQ(expected_value, actual_value);
+		CTEST_ASSERT_INT_EQ(expected_key, actual_key);
+		CTEST_ASSERT_INT_EQ(expected_value, actual_value);
 
 		i += 1;
 	}
@@ -124,7 +124,7 @@ void test_btree_itr_forward_ptr() {
 
 	for (i = 0; i < value_count; i++) {
 		int* value = values + i;
-		CUTIL_TESTING_EXPECT_TRUE(cutil_btree_insert(g_btree, &i, &value));
+		CTEST_EXPECT_TRUE(cutil_btree_insert(g_btree, &i, &value));
 	}
 
 	g_btree_itr = cutil_btree_itr_create(g_btree);
@@ -134,10 +134,10 @@ void test_btree_itr_forward_ptr() {
 		int key;
 		int* value;
 
-		CUTIL_TESTING_EXPECT_TRUE(cutil_btree_itr_get_key(g_btree_itr, &key));
-		CUTIL_TESTING_EXPECT_TRUE(cutil_btree_itr_get_value(g_btree_itr, &value));
-		CUTIL_TESTING_EXPECT_INT_EQ(key, i);
-		CUTIL_TESTING_EXPECT_INT_EQ(*value, values[i]);
+		CTEST_EXPECT_TRUE(cutil_btree_itr_get_key(g_btree_itr, &key));
+		CTEST_EXPECT_TRUE(cutil_btree_itr_get_value(g_btree_itr, &value));
+		CTEST_EXPECT_INT_EQ(key, i);
+		CTEST_EXPECT_INT_EQ(*value, values[i]);
 
 		i += 1;
 	}
@@ -146,11 +146,11 @@ void test_btree_itr_forward_ptr() {
 }
 
 void add_btree_itr_tests() {
-	cutil_testing_suite("btree_itr");
-	cutil_testing_suite_after_each(&btree_itr_after_each);
+    ctest_suite("btree_itr");
+    ctest_suite_after_each(&btree_itr_after_each);
 
-	CUTIL_TESTING_ADD(test_btree_itr_forward_empty)
-	CUTIL_TESTING_ADD(test_btree_itr_forward_pod);
-    CUTIL_TESTING_ADD(test_btree_itr_forward_cstring);
-	CUTIL_TESTING_ADD(test_btree_itr_forward_ptr);
+    CTEST_ADD_TEST(test_btree_itr_forward_empty)
+    CTEST_ADD_TEST(test_btree_itr_forward_pod);
+    CTEST_ADD_TEST(test_btree_itr_forward_cstring);
+    CTEST_ADD_TEST(test_btree_itr_forward_ptr);
 }

@@ -13,7 +13,7 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-    cutil_testing_init();
+    ctest_init();
 
     add_vector_tests();
     add_list_tests();
@@ -25,13 +25,13 @@ int main(int argc, char** argv) {
 	filter_string = cutil_test_get_filter_string();
 
 	if (filter_string) {
-		cutil_testing_set_filter(filter_string);
+        ctest_config_set_filter(filter_string);
 	}
 
-	result = cutil_testing_run();
+	result = ctest_run();
 
-    
-    cutil_testing_destroy();
+
+    ctest_destroy();
 	cutil_test_settings_destroy();
 
     return result;
