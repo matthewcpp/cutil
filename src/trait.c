@@ -1,4 +1,4 @@
-#include "trait.h"
+#include "cutil/trait.h"
 
 #include <stdlib.h>
 #include <string.h>

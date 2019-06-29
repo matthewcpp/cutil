@@ -1,7 +1,7 @@
 #ifndef CUTIL_TEST_BTREE_UTIL_H
 #define CUTIL_TEST_BTREE_UTIL_H
 
-#include "btree.h"
+#include "cutil/btree.h"
 
 #include <stdio.h>
 

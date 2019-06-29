@@ -1,8 +1,8 @@
 set(cutil_sources
-    ../include/trait.h trait.c
-	../include/vector.h vector.c
-	../include/list.h list.c
-	../include/btree.h btree_private.h btree.c btree_itr.c
+    ../include/cutil/trait.h trait.c
+	../include/cutil/vector.h vector.c
+	../include/cutil/list.h list.c
+	../include/cutil/btree.h btree_private.h btree.c btree_itr.c
 )
 
 add_library (cutil ${cutil_sources})
@@ -24,7 +24,7 @@ endif()
 
 
 set(testing_sources
-	../include/testing.h
+	../include/ctest/testing.h
     testing.c
 )
 

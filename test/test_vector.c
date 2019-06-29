@@ -1,9 +1,9 @@
 #include "test_suites.h"
 
-#include "testing.h"
+#include "ctest/testing.h"
 
-#include "trait.h"
-#include "vector.h"
+#include "cutil/trait.h"
+#include "cutil/vector.h"
 
 #include <stdlib.h>
 
