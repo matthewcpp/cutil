@@ -1,5 +1,5 @@
-#ifndef CUTIL_TESTING_H
-#define CUTIL_TESTING_H
+#ifndef CTEST_CTEST_H
+#define CTEST_CTEST_H
 
 typedef void(*cutil_test_function)();
 

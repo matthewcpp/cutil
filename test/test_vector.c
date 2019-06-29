@@ -1,6 +1,6 @@
 #include "test_suites.h"
 
-#include "ctest/testing.h"
+#include "ctest/ctest.h"
 
 #include "cutil/trait.h"
 #include "cutil/vector.h"

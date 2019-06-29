@@ -1,4 +1,4 @@
-#include "ctest/testing.h"
+#include "ctest/ctest.h"
 
 #include <stdlib.h>
 #include <stdio.h>

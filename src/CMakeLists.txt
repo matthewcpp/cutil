@@ -24,8 +24,8 @@ endif()
 
 
 set(testing_sources
-	../include/ctest/testing.h
-    testing.c
+	../include/ctest/ctest.h
+    ctest.c
 )
 
 add_library (cutil_testing ${testing_sources})

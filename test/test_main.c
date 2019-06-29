@@ -1,6 +1,6 @@
 #include "test_suites.h"
 
-#include "ctest/testing.h"
+#include "ctest/ctest.h"
 #include "test_settings.h"
 
 int main(int argc, char** argv) {

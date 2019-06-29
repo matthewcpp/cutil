@@ -1,6 +1,6 @@
 #include "cutil/btree.h"
 
-#include "ctest/testing.h"
+#include "ctest/ctest.h"
 #include "test_suites.h"
 
 #include "test_btree_util.h"
