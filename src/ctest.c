@@ -1,4 +1,4 @@
-#include "ctest/testing.h"
+#include "ctest/ctest.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -138,24 +138,24 @@ void _cutil_testing_system_destroy(void) {
 /*******************************************/
 /* Implementation for main testing interface. */
 
-void cutil_testing_init() {
+void ctest_init() {
 	if (!test_system) {
 		test_system = malloc(sizeof(_cutil_test_system));
 		_cutil_testing_system_init();
 	}
 }
 
-void cutil_testing_destroy() {
+void ctest_destroy() {
 	if (test_system) {
         _cutil_testing_system_destroy();
 		test_system = NULL;
 	}
 }
 
-void cutil_testing_suite(const char *name) {
+void ctest_suite(const char *name) {
 	_cutil_test_suite* new_suite;
 
-	cutil_testing_init();
+    ctest_init();
 
 	new_suite = _cutil_testing_suite_create(name);
 	if (test_system->_current_suite) {
@@ -169,12 +169,12 @@ void cutil_testing_suite(const char *name) {
 	test_system->_current_test = NULL;
 }
 
-void _cutil_testing_add(const char *test_name, cutil_test_function test_func) {
+void _ctest_add_test(const char *test_name, cutil_test_function test_func) {
 	_cutil_test_entry* test_entry;
-    cutil_testing_init();
+    ctest_init();
 
 	if (!test_system->_current_suite) {
-		cutil_testing_suite("Default");
+        ctest_suite("Default");
 	}
 
 	test_entry = _cutil_testing_entry_create(test_name, test_func);
@@ -188,7 +188,7 @@ void _cutil_testing_add(const char *test_name, cutil_test_function test_func) {
 	test_system->_current_test = test_entry;
 }
 
-int cutil_testing_suite_before_each(cutil_test_function func) {
+int ctest_suite_before_each(cutil_test_function func) {
 	if (test_system->_current_suite) {
 		test_system->_current_suite->before_each = func;
 
@@ -199,7 +199,7 @@ int cutil_testing_suite_before_each(cutil_test_function func) {
 	}
 }
 
-int cutil_testing_suite_after_each(cutil_test_function func) {
+int ctest_suite_after_each(cutil_test_function func) {
 	if (test_system->_current_suite) {
 		test_system->_current_suite->after_each = func;
 
@@ -239,7 +239,7 @@ char** _cutil_testing_get_suite_names(const char* str, int* count) {
 	return tokens;
 }
 
-void cutil_testing_set_filter(const char* filter_str)
+void ctest_config_set_filter(const char *filter_str)
 {
 	test_system->test_filters = _cutil_testing_get_suite_names(filter_str, &test_system->test_filter_count);
 }
@@ -326,7 +326,7 @@ void _cutil_print_results(int total_pass_count, int total_fail_count) {
 	printf("Tests Failed: %d\n", total_fail_count);
 }
 
-int cutil_testing_run() {
+int ctest_run() {
 	int total_pass_count = 0;
 	int total_fail_count = 0;
 
@@ -354,7 +354,7 @@ int cutil_testing_run() {
 		return 0;
 }
 
-int _cutil_testing_assert_true(const char *exppression_str, int result) {
+int _ctest_predicate_true(const char *exppression_str, int result) {
 	if (!result) {
 		printf("Assertion: Expected: %s to be true\n", exppression_str);
 		test_system->_current_test->test_result = 1;
@@ -365,7 +365,7 @@ int _cutil_testing_assert_true(const char *exppression_str, int result) {
 	}
 }
 
-int _cutil_testing_assert_false(const char *exppression_str, int result) {
+int _ctest_predicate_false(const char *exppression_str, int result) {
 	if (result) {
 		printf("Assertion: Expected: %s to be false\n", exppression_str);
 		test_system->_current_test->test_result = 1;
@@ -376,7 +376,7 @@ int _cutil_testing_assert_false(const char *exppression_str, int result) {
 	}
 }
 
-int _cutil_testing_assert_int_eq(const char *exppression_str, int expected, int result) {
+int _ctest_predicate_int_eq(const char *exppression_str, int expected, int result) {
 	if (expected != result) {
 		printf("Assertion: %s Expected: %i Actual: %i\n", exppression_str, expected, result);
 		test_system->_current_test->test_result = 1;
@@ -387,7 +387,7 @@ int _cutil_testing_assert_int_eq(const char *exppression_str, int expected, int 
 	}
 }
 
-int _cutil_testing_assert_int_lt(const char *exppression_str, int expected, int result) {
+int _ctest_predicate_int_lt(const char *exppression_str, int expected, int result) {
 	if (result >= expected) {
 		printf("Assertion: %s < %i. Actual: %i\n", exppression_str, expected, result);
 		test_system->_current_test->test_result = 1;
@@ -398,7 +398,7 @@ int _cutil_testing_assert_int_lt(const char *exppression_str, int expected, int 
 	}
 }
 
-int _cutil_testing_assert_int_gt(const char *exppression_str, int expected, int result) {
+int _ctest_predicate_int_gt(const char *exppression_str, int expected, int result) {
 	if (result <= expected) {
 		printf("Assertion: %s > %i. Actual: %i\n", exppression_str, expected, result);
 		test_system->_current_test->test_result = 1;
@@ -409,7 +409,7 @@ int _cutil_testing_assert_int_gt(const char *exppression_str, int expected, int 
 	}
 }
 
-int _cutil_testing_assert_float_eq(const char *exppression_str, float expected, float result) {
+int _ctest_predicate_float_eq(const char *exppression_str, float expected, float result) {
 	if (expected != result) {
 		printf("Assertion: %s Expected: %f Actual: %f\n", exppression_str, expected, result);
 		test_system->_current_test->test_result = 1;
@@ -420,7 +420,7 @@ int _cutil_testing_assert_float_eq(const char *exppression_str, float expected, 
 	}
 }
 
-int _cutil_testing_assert_ptr_eq(const char *exppression_str, void* expected, void* result) {
+int _ctest_predicate_ptr_eq(const char *exppression_str, void* expected, void* result) {
 	if (expected != result) {
 		printf("Assertion: %s Expected: %p Actual: %p\n", exppression_str, expected, result);
 		test_system->_current_test->test_result = 1;
@@ -431,7 +431,7 @@ int _cutil_testing_assert_ptr_eq(const char *exppression_str, void* expected, vo
 	}
 }
 
-int _cutil_testing_assert_ptr_null(const char *exppression_str, void* ptr) {
+int _ctest_predicate_ptr_null(const char *exppression_str, void* ptr) {
 	if (ptr != NULL) {
 		printf("Assertion: %s Expected: NULL Actual: %p\n", exppression_str, ptr);
 		test_system->_current_test->test_result = 1;
@@ -441,7 +441,7 @@ int _cutil_testing_assert_ptr_null(const char *exppression_str, void* ptr) {
 	return 0;
 }
 
-int _cutil_testing_assert_ptr_not_null(const char *exppression_str, void* ptr) {
+int _ctest_predicate_ptr_not_null(const char *exppression_str, void* ptr) {
 	if (ptr == NULL) {
 		printf("Assertion:  Expected: %s to be non-NULL\n", exppression_str);
 		test_system->_current_test->test_result = 1;
@@ -451,7 +451,7 @@ int _cutil_testing_assert_ptr_not_null(const char *exppression_str, void* ptr) {
 	return 0;
 }
 
-int _cutil_testing_assert_ptr_not_eq(const char *ptr1_str, void* ptr1, void* ptr2) {
+int _ctest_predicate_ptr_neq(const char *ptr1_str, void* ptr1, void* ptr2) {
 	if (ptr1 == ptr2) {
 		printf("Assertion:  Expected: %s to not equal %p\n", ptr1_str, ptr2);
 		test_system->_current_test->test_result = 1;
