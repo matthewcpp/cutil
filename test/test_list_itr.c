@@ -5,25 +5,21 @@
 
 #include <stdlib.h>
 
-cutil_trait* g_itr_trait = NULL;
 cutil_list* g_itr_list = NULL;
 
 void list_itr_before_each() {
-	g_itr_trait = cutil_trait_create_int();
-	g_itr_list = cutil_list_create(g_itr_trait);
+	g_itr_list = cutil_list_create(cutil_trait_int());
 }
 
 void list_itr_after_each() {
 	cutil_list_destroy(g_itr_list);
-	free(g_itr_trait);
+	cutil_trait_destroy();
 
 	g_itr_list = NULL;
-	g_itr_trait = NULL;
 }
 
 void list_itrp_before_each() {
-	g_itr_trait = cutil_trait_create_ptr();
-	g_itr_list = cutil_list_create(g_itr_trait);
+	g_itr_list = cutil_list_create(cutil_trait_ptr());
 }
 
 void list_itr_empty_list_has_next() {
