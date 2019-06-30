@@ -33,6 +33,13 @@ Subsequent calls to this function will return the same trait.
 cutil_trait* cutil_trait_uint();
 
 /**
+Returns a trait describing a floating point value
+Subsequent calls to this function will return the same trait.
+\see cutil_trait_destroy()
+*/
+cutil_trait* cutil_trait_float();
+
+/**
 Returns a trait describing a generic pointer.
 Pointed to data will not be copied when inseted into a container.
 The caller should take care to free resources consumed by pointed to data before the pointer goes out of scope.

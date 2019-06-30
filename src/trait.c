@@ -37,6 +37,23 @@ int cutil_trait_uint_compare(void* a, void* b, void* user_data) {
 	}
 }
 
+int cutil_trait_float_compare(void* a, void* b, void* user_data) {
+	float float_a = *(float*)a;
+	float float_b = *(float*)b;
+
+	(void)user_data;
+
+	if (float_a > float_b) {
+		return 1;
+	}
+	else if (float_a < float_b) {
+		return -1;
+	}
+	else {
+		return 0;
+	}
+}
+
 int cutil_trait_ptr_compare(void* a, void* b, void* user_data) {
 	void* a_ptr = *(void**)a;
 	void* b_ptr = *(void**)b;
@@ -88,6 +105,7 @@ static cutil_trait* default_traits = NULL;
 typedef enum {
 	CUTIL_DEFAULT_TRAIT_INT = 0,
 	CUTIL_DEFAULT_TRAIT_UINT,
+	CUTIL_DEFAULT_TRAIT_FLOAT,
 	CUTIL_DEFAULT_TRAIT_PTR,
 	CUTIL_DEFAULT_TRAIT_CSTRING,
 	CUTIL_DEFAULT_TRAIT_COUNT
@@ -109,6 +127,11 @@ void init_default_traits() {
 	trait = default_traits + CUTIL_DEFAULT_TRAIT_UINT;
 	trait->compare_func = cutil_trait_uint_compare;
 	trait->size = sizeof(unsigned int);
+
+	/* int trait */
+	trait = default_traits + CUTIL_DEFAULT_TRAIT_FLOAT;
+	trait->compare_func = cutil_trait_float_compare;
+	trait->size = sizeof(float);
 
 	/* ptr trait */
 	trait = default_traits + CUTIL_DEFAULT_TRAIT_PTR;
@@ -133,6 +156,12 @@ cutil_trait* cutil_trait_uint() {
 	init_default_traits();
 
 	return default_traits + CUTIL_DEFAULT_TRAIT_UINT;
+}
+
+cutil_trait* cutil_trait_float() {
+	init_default_traits();
+
+	return default_traits + CUTIL_DEFAULT_TRAIT_FLOAT;
 }
 
 cutil_trait* cutil_trait_ptr() {

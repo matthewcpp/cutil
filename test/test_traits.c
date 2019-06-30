@@ -33,6 +33,20 @@ void trait_uint_compare() {
 	CTEST_ASSERT_INT_GT(uint_trait->compare_func(&b, &a1, uint_trait->user_data), 0);
 }
 
+void trait_float_size() {
+	cutil_trait* float_trait = cutil_trait_float();
+	CTEST_ASSERT_INT_EQ(float_trait->size, sizeof(float));
+}
+
+void trait_float_compare() {
+	cutil_trait* float_trait = cutil_trait_int();
+	float a = -1.0f, b1 = 1.0f, b2 = 1.0f, c = 2.0f;
+
+	CTEST_ASSERT_INT_LT(float_trait->compare_func(&a, &b1, float_trait->user_data), 0);
+	CTEST_ASSERT_INT_EQ(float_trait->compare_func(&b1, &b2, float_trait->user_data), 0);
+	CTEST_ASSERT_INT_GT(float_trait->compare_func(&c, &a, float_trait->user_data), 0);
+}
+
 void trait_uint_size() {
 	cutil_trait* uint_trait = cutil_trait_uint();
 	CTEST_ASSERT_INT_EQ(uint_trait->size, sizeof(unsigned int));
@@ -93,10 +107,17 @@ void default_trait_int() {
 }
 
 void default_trait_uint() {
-	cutil_trait* uint_trait1 = cutil_trait_int();
-	cutil_trait* uint_trait2 = cutil_trait_int();
+	cutil_trait* uint_trait1 = cutil_trait_uint();
+	cutil_trait* uint_trait2 = cutil_trait_uint();
 
 	CTEST_ASSERT_PTR_EQ(uint_trait1, uint_trait2);
+}
+
+void default_trait_float() {
+	cutil_trait* float_trait1 = cutil_trait_float();
+	cutil_trait* float_trait2 = cutil_trait_float();
+
+	CTEST_ASSERT_PTR_EQ(float_trait1, float_trait2);
 }
 
 void default_trait_ptr() {
@@ -127,6 +148,9 @@ void add_trait_tests() {
 	CTEST_ADD_TEST(trait_uint_compare);
 	CTEST_ADD_TEST(trait_uint_size);
 
+	CTEST_ADD_TEST(trait_float_compare);
+	CTEST_ADD_TEST(trait_float_size);
+
     CTEST_ADD_TEST(trait_ptr_compare);
     CTEST_ADD_TEST(trait_ptr_size);
 
@@ -137,6 +161,7 @@ void add_trait_tests() {
 
     CTEST_ADD_TEST(default_trait_int);
 	CTEST_ADD_TEST(default_trait_uint);
+	CTEST_ADD_TEST(default_trait_float);
     CTEST_ADD_TEST(default_trait_ptr);
     CTEST_ADD_TEST(default_trait_cstring);
 }
