@@ -19,11 +19,18 @@ typedef struct {
 } cutil_trait;
 
 /**
-Returns a trait describing a 32 bit signed integer
+Returns a trait describing a signed integer
 Subsequent calls to this function will return the same trait.
 \see cutil_trait_destroy()
 */
 cutil_trait* cutil_trait_int();
+
+/**
+Returns a trait describing an unsigned integer
+Subsequent calls to this function will return the same trait.
+\see cutil_trait_destroy()
+*/
+cutil_trait* cutil_trait_uint();
 
 /**
 Returns a trait describing a generic pointer.
