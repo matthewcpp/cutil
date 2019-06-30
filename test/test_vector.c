@@ -7,25 +7,21 @@
 
 #include <stdlib.h>
 
-cutil_trait* g_vector_trait = NULL;
 cutil_vector* g_vector = NULL;
 
 void vector_before_each() {
-	g_vector_trait = cutil_trait_create_int();
-    g_vector = cutil_vector_create(g_vector_trait);
+    g_vector = cutil_vector_create(cutil_trait_int());
 }
 
 void vector_after_each() {
     cutil_vector_destroy(g_vector);
-	free(g_vector_trait);
+	cutil_trait_destroy();
 
     g_vector = NULL;
-	g_vector_trait = NULL;
 }
 
 void vectorp_before_each() {
-	g_vector_trait = cutil_trait_create_ptr();
-	g_vector = cutil_vector_create(g_vector_trait);
+	g_vector = cutil_vector_create(cutil_trait_ptr());
 }
 
 /* Initializing Vector sets size to 0 */
@@ -35,7 +31,7 @@ void vector_init_size_0() {
 
 /* getting vector trait returns correct pointer */
 void vector_trait() {
-	CTEST_ASSERT_PTR_EQ(cutil_vector_trait(g_vector), g_vector_trait);
+	CTEST_ASSERT_PTR_EQ(cutil_vector_trait(g_vector), cutil_trait_int());
 }
 
 /* pushing an item to an empty vector grows it by one */

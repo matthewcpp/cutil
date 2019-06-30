@@ -9,12 +9,11 @@
 cutil_trait* g_trait = NULL;
 
 void trait_int_before_each() {
-	g_trait = cutil_trait_create_int();
+	g_trait = cutil_trait_int();
 }
 
 void trait_after_each() {
-	free(g_trait);
-	g_trait = NULL;
+	cutil_trait_destroy();
 }
 
 void trait_int_compare() {
@@ -30,7 +29,7 @@ void trait_int_size() {
 }
 
 void trait_ptr_before_each() {
-	g_trait = cutil_trait_create_ptr();
+	g_trait = cutil_trait_ptr();
 }
 
 void trait_ptr_compare() {
@@ -51,7 +50,7 @@ void trait_ptr_size() {
 }
 
 void trait_cstring_before_each() {
-	g_trait = cutil_trait_create_cstring();
+	g_trait = cutil_trait_cstring();
 }
 
 void trait_cstring_size() {
