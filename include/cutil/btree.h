@@ -1,6 +1,8 @@
 #ifndef CUTIL_BTREE_H
 #define CUTIL_BTREE_H
 
+/** \file btree.h */
+
 #include "trait.h"
 
 typedef struct cutil_btree cutil_btree;
