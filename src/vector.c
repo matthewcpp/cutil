@@ -22,12 +22,8 @@ cutil_vector* cutil_vector_create(cutil_trait* trait){
 	return vector;
 }
 
-void cutil_vector_uninit(cutil_vector* vector){
-    cutil_vector_clear(vector);
-}
-
 void cutil_vector_destroy(cutil_vector* vector) {
-    cutil_vector_uninit(vector);
+	cutil_vector_clear(vector);
     free(vector);
 }
 
