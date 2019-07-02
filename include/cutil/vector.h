@@ -1,6 +1,8 @@
 #ifndef CUTIL_VECTOR_H
 #define CUTIL_VECTOR_H
 
+/** \file vector.h */
+
 #include "trait.h"
 
 typedef struct cutil_vector cutil_vector;

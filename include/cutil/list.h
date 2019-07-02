@@ -1,6 +1,8 @@
 #ifndef CUTIL_LIST_H
 #define CUTIL_LIST_H
 
+/** \file list.h */
+
 #include "trait.h"
 
 #include <stddef.h>

@@ -56,5 +56,8 @@ build
 cmake-build-*
 .idea/*
 
+# Docs build
+docs/_build
+
 # Mac Files
 *.DS_Store
