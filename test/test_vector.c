@@ -37,7 +37,7 @@ void vector_trait() {
 /* pushing an item to an empty vector grows it by one */
 void vector_push_empty(){
     int i = 7;
-    cutil_vector_push(g_vector, &i);
+    cutil_vector_push_back(g_vector, &i);
 
     CTEST_ASSERT_INT_EQ(cutil_vector_capacity(g_vector), 1);
     CTEST_ASSERT_INT_EQ(cutil_vector_size(g_vector), 1);
@@ -47,7 +47,7 @@ void vector_push_empty(){
 void vector_push_multiple(){
     int i;
     for (i = 0; i < 10; i++){
-        cutil_vector_push(g_vector, &i);
+        cutil_vector_push_back(g_vector, &i);
     }
 
     CTEST_ASSERT_INT_EQ(cutil_vector_size(g_vector), 10);
@@ -56,7 +56,7 @@ void vector_push_multiple(){
 
 /* popping an empty vector does nothing */
 void vector_pop_empty(){
-    cutil_vector_pop(g_vector);
+    cutil_vector_pop_back(g_vector);
 }
 
 /* popping an item from the vector reduces its size */
@@ -65,11 +65,11 @@ void vector_pop_non_empty(){
 
     int i;
     for (i = 0; i < 10; i++){
-        cutil_vector_push(g_vector, &i);
+        cutil_vector_push_back(g_vector, &i);
     }
 
     previous_size = cutil_vector_size(g_vector);
-    cutil_vector_pop(g_vector);
+    cutil_vector_pop_back(g_vector);
 	CTEST_ASSERT_INT_EQ(cutil_vector_size(g_vector), previous_size - 1);
 }
 
@@ -78,11 +78,11 @@ void vector_pop_and_add(){
     size_t expected_capacity;
 
     int i = 66;
-    cutil_vector_push(g_vector, &i);
+    cutil_vector_push_back(g_vector, &i);
 
 	expected_capacity = cutil_vector_capacity(g_vector);
-    cutil_vector_pop(g_vector);
-    cutil_vector_push(g_vector, &i);
+    cutil_vector_pop_back(g_vector);
+    cutil_vector_push_back(g_vector, &i);
 
     CTEST_ASSERT_INT_EQ(expected_capacity, cutil_vector_capacity(g_vector));
 }
@@ -92,17 +92,33 @@ void vector_clear_empty(){
     cutil_vector_clear(g_vector);
 }
 
-/* clearing a vector resets size and capacity */
-void vector_clear_reset(){
+/* clearing a vector resets size and leaves capacity unmodified */
+void vector_clear(){
     int i;
+	size_t expected_capacity;
+
     for (i = 0; i < 10; i++){
-        cutil_vector_push(g_vector, &i);
+        cutil_vector_push_back(g_vector, &i);
     }
 
+	expected_capacity = cutil_vector_capacity(g_vector);
     cutil_vector_clear(g_vector);
 
     CTEST_ASSERT_INT_EQ(cutil_vector_size(g_vector), 0);
-    CTEST_ASSERT_INT_EQ(cutil_vector_capacity(g_vector), 0);
+    CTEST_ASSERT_INT_EQ(cutil_vector_capacity(g_vector), expected_capacity);
+}
+
+/* resetting a vector resets size and capacity */
+void vector_reset() {
+	int i;
+	for (i = 0; i < 10; i++) {
+		cutil_vector_push_back(g_vector, &i);
+	}
+
+	cutil_vector_reset(g_vector);
+
+	CTEST_ASSERT_INT_EQ(cutil_vector_size(g_vector), 0);
+	CTEST_ASSERT_INT_EQ(cutil_vector_capacity(g_vector), 0);
 }
 
 /* get retrieves the correct items for valid indices */
@@ -111,7 +127,7 @@ void vector_get_valid() {
 
     int i;
     for (i = 0; i < 10; i++){
-        cutil_vector_push(g_vector, &i);
+        cutil_vector_push_back(g_vector, &i);
     }
 
     for (i = 0; i < 10; i++){
@@ -137,7 +153,7 @@ void vector_get_invalid() {
 
     int i;
     for (i = 0; i < 10; i++){
-        cutil_vector_push(g_vector, &i);
+        cutil_vector_push_back(g_vector, &i);
     }
 
     get_result = cutil_vector_get(g_vector, 111, &actual_value);
@@ -151,9 +167,9 @@ void vector_pop_get() {
     int actual_val = -1;
     int get_result;
 
-    cutil_vector_push(g_vector, &int_val1);
-    cutil_vector_pop(g_vector);
-    cutil_vector_push(g_vector, &int_val2);
+    cutil_vector_push_back(g_vector, &int_val1);
+    cutil_vector_pop_back(g_vector);
+    cutil_vector_push_back(g_vector, &int_val2);
 
     get_result = cutil_vector_get(g_vector, 0, &actual_val);
     CTEST_ASSERT_TRUE(get_result);
@@ -168,7 +184,7 @@ void vectorp_push_and_get(){
     int* int_ptr = (int*)malloc(sizeof(int));
     *int_ptr = expected_val;
 
-    cutil_vector_push(g_vector, &int_ptr);
+    cutil_vector_push_back(g_vector, &int_ptr);
     cutil_vector_get(g_vector, 0, &actual_ptr);
 
     CTEST_ASSERT_PTR_EQ(actual_ptr, int_ptr);
@@ -198,7 +214,8 @@ void add_vector_tests(){
     CTEST_ADD_TEST(vector_get_valid);
 
     CTEST_ADD_TEST(vector_clear_empty);
-    CTEST_ADD_TEST(vector_clear_reset);
+    CTEST_ADD_TEST(vector_clear);
+	CTEST_ADD_TEST(vector_reset);
 
     ctest_suite("vectorp");
     ctest_suite_before_each(&vectorp_before_each);
