@@ -31,11 +31,20 @@ Returns the number of items currently in the vector.
 size_t cutil_vector_size(cutil_vector* vector);
 
 /**
-Clears the vector, resetting it to an empty state.
+Clears all items in the vector, setting its size to zero.
+This function will not deallocate any memory or adjust the vector's capacity.
 If the vector's trait includes a deletion function, it will be called for every item in the vector.
-This function will also deallocate the memory used by the vector internally and reset its capacity.
+\see cutil_vector_reset()
 */
 void cutil_vector_clear(cutil_vector* vector);
+
+/**
+Resets the vector, leaving it in a fresh state.
+This function will also deallocate the memory used by the vector internally and reset its size and capacity.
+If the vector's trait includes a deletion function, it will be called for every item in the vector.
+\see cutil_vector_clear()
+*/
+void cutil_vector_reset(cutil_vector* vector);
 
 /**
 Pushes an item to the back of the vector.
@@ -43,14 +52,14 @@ For the type T that this vector's trait defines, the data parameter should be of
 If the vector's trait includes a copy function, it will be called on the data passed into this function.
 \param data pointer to data of Type T* where T is the type described by the vector's trait.
 */
-void cutil_vector_push(cutil_vector* vector, void* data);
+void cutil_vector_push_back(cutil_vector* vector, void* data);
 
 /**
 Pops an item from the back of the vector.
 If the vector's trait includes a deletion function, it will be called on the last item in the vector.
 This function has no effect on an empty vector.
 */
-void cutil_vector_pop(cutil_vector* vector);
+void cutil_vector_pop_back(cutil_vector* vector);
 
 /**
 Gets the data at a specific index.

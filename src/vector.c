@@ -23,11 +23,27 @@ cutil_vector* cutil_vector_create(cutil_trait* trait){
 }
 
 void cutil_vector_destroy(cutil_vector* vector) {
-	cutil_vector_clear(vector);
+	cutil_vector_reset(vector);
     free(vector);
 }
 
 void cutil_vector_clear(cutil_vector* vector) {
+	if (vector->_data && vector->_trait->pre_destroy_func) {
+		size_t i;
+		
+		for (i = 0; i < vector->_size; i++) {
+			void* object = (char*)vector->_data + (i * vector->_trait->size);
+
+			vector->_trait->pre_destroy_func(object, vector->_trait->user_data);
+		}
+	}
+
+	vector->_size = 0;
+}
+
+void cutil_vector_reset(cutil_vector* vector) {
+	cutil_vector_clear(vector);
+
 	if (vector->_data) {
 		free(vector->_data);
 	}
@@ -41,47 +57,47 @@ size_t cutil_vector_size(cutil_vector* vector){
     return vector->_size;
 }
 
-void _grow_vector(cutil_vector* vector) {
+int _grow_vector(cutil_vector* vector) {
 	if (vector->_size == vector->_capacity) {
 		size_t new_capacity = (vector->_capacity > 0) ? vector->_capacity * 2U : 1U;
+		void* new_data = realloc(vector->_data, vector->_trait->size * new_capacity);
 
-		void* new_data = malloc(vector->_trait->size * new_capacity);
-		memcpy(new_data, vector->_data, vector->_size * vector->_trait->size);
+		if (new_data) {
+			vector->_capacity = new_capacity;
+			vector->_data = new_data;
 
-		if(vector->_data){
-			free(vector->_data);
+			return 1;
+		}
+		else {
+			return 0;
+		}
+	}
+
+	return 1;
+}
+
+void cutil_vector_push_back(cutil_vector* vector, void* data) {
+	if (_grow_vector(vector)) {
+		size_t byte_offset = vector->_size * vector->_trait->size;
+		char* location = ((char*)vector->_data) + byte_offset;
+
+		if (vector->_trait->copy_func) {
+			vector->_trait->copy_func(location, data, vector->_trait->user_data);
+		}
+		else {
+			memcpy(location, data, vector->_trait->size);
 		}
 
-		vector->_capacity = new_capacity;
-		vector->_data = new_data;
+		vector->_size += 1;
 	}
 }
 
-void cutil_vector_push(cutil_vector* vector, void* data) {
-	size_t byte_offset = 0;
-	char* location = NULL;
-	_grow_vector(vector);
-
-
-	byte_offset = vector->_size * vector->_trait->size;
-	location = ((char*)vector->_data) + byte_offset;
-
-	if (vector->_trait->copy_func) {
-		vector->_trait->copy_func(location, data, vector->_trait->user_data);
-	}
-	else {
-		memcpy(location, data, vector->_trait->size);
-	}
-	
-
-	vector->_size += 1;
-}
-
-void cutil_vector_pop(cutil_vector* vector) {
+void cutil_vector_pop_back(cutil_vector* vector) {
 	if (vector->_size > 0) {
-		void* object = (char*)vector->_data + ((vector->_size - 1) * vector->_trait->size);
 
 		if (vector->_trait->pre_destroy_func) {
+			void* object = (char*)vector->_data + ((vector->_size - 1) * vector->_trait->size);
+
 			vector->_trait->pre_destroy_func(object, vector->_trait->user_data);
 		}
 		
