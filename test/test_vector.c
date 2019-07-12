@@ -1,6 +1,7 @@
 #include "test_suites.h"
 
 #include "ctest/ctest.h"
+#include "test_util/defs.h"
 #include "test_util/trait_tracker.h"
 
 #include "cutil/trait.h"
@@ -10,7 +11,7 @@
 #include <stdio.h>
 
 cutil_vector* g_vector = NULL;
-cutil_trait* g_trait = NULL;
+cutil_trait* g_vector_trait = NULL;
 
 void vector_before_each() {
     g_vector = cutil_vector_create(cutil_trait_int());
@@ -196,12 +197,12 @@ void vectorp_push_and_get(){
     free(int_ptr);
 }
 
-void _insert_test_strings(cutil_vector* vector, int count) {
+void _vector_insert_test_strings(cutil_vector* vector, int count) {
     int i;
     char* buffer = malloc(20);
 
     for (i = 0; i < count; i++) {
-        snprintf(buffer, 20, "str %d", i);
+		cutil_snprintf_func(buffer, 20, "str %d", i);
 
         cutil_vector_push_back(vector, &buffer);
     }
@@ -212,66 +213,66 @@ void _insert_test_strings(cutil_vector* vector, int count) {
 /* Tests that the vector calls the trait's copy function when pushing an item. */
 void vector_trait_copy_on_push() {
     int expected_copy_count = 10;
-    _insert_test_strings(g_vector, expected_copy_count);
+    _vector_insert_test_strings(g_vector, expected_copy_count);
 
-    CTEST_ASSERT_INT_EQ(expected_copy_count, cutil_test_trait_tracker_copy_count(g_trait));
+    CTEST_ASSERT_INT_EQ(expected_copy_count, cutil_test_trait_tracker_copy_count(g_vector_trait));
 }
 
 /* Tests that the trait's copy function is called when getting data from the vector. */
 void vector_trait_copy_on_get() {
     char* buffer = malloc(20);
-    const char* test_str = "test string!";
+    char* test_str = "test string!";
     cutil_vector_push_back(g_vector, &test_str);
 
     cutil_vector_get(g_vector, 0, &buffer);
 
-    CTEST_ASSERT_INT_EQ(2, cutil_test_trait_tracker_copy_count(g_trait));
+    CTEST_ASSERT_INT_EQ(2, cutil_test_trait_tracker_copy_count(g_vector_trait));
     free(buffer);
 }
 
 /* Tests that the trait's destroy function is called when popping data from the end of the vector. */
 void vector_trait_destroy_on_pop_back() {
     int expected_destroy_count = 10;
-    _insert_test_strings(g_vector, expected_destroy_count);
+    _vector_insert_test_strings(g_vector, expected_destroy_count);
 
     while (cutil_vector_size(g_vector) > 0) {
         cutil_vector_pop_back(g_vector);
     }
 
-    CTEST_ASSERT_INT_EQ(expected_destroy_count, cutil_test_trait_tracker_destroy_count(g_trait));
+    CTEST_ASSERT_INT_EQ(expected_destroy_count, cutil_test_trait_tracker_destroy_count(g_vector_trait));
 }
 
 void vector_trait_destroy_on_vec_destroy() {
     int expected_destroy_count = 10;
-    _insert_test_strings(g_vector, expected_destroy_count);
+    _vector_insert_test_strings(g_vector, expected_destroy_count);
 
     cutil_vector_destroy(g_vector);
     g_vector = NULL;
 
-    CTEST_ASSERT_INT_EQ(expected_destroy_count, cutil_test_trait_tracker_destroy_count(g_trait));
+    CTEST_ASSERT_INT_EQ(expected_destroy_count, cutil_test_trait_tracker_destroy_count(g_vector_trait));
 }
 
 void vector_trait_destroy_on_vec_clear() {
     int expected_destroy_count = 10;
-    _insert_test_strings(g_vector, expected_destroy_count);
+    _vector_insert_test_strings(g_vector, expected_destroy_count);
 
     cutil_vector_clear(g_vector);
 
-    CTEST_ASSERT_INT_EQ(expected_destroy_count, cutil_test_trait_tracker_destroy_count(g_trait));
+    CTEST_ASSERT_INT_EQ(expected_destroy_count, cutil_test_trait_tracker_destroy_count(g_vector_trait));
 }
 
 void vector_trait_destroy_on_vec_reset() {
     int expected_destroy_count = 10;
-    _insert_test_strings(g_vector, expected_destroy_count);
+    _vector_insert_test_strings(g_vector, expected_destroy_count);
 
     cutil_vector_clear(g_vector);
 
-    CTEST_ASSERT_INT_EQ(expected_destroy_count, cutil_test_trait_tracker_destroy_count(g_trait));
+    CTEST_ASSERT_INT_EQ(expected_destroy_count, cutil_test_trait_tracker_destroy_count(g_vector_trait));
 }
 
 void vector_trait_before_each() {
-	g_trait = cutil_test_create_trait_tracker(cutil_trait_cstring());
-	g_vector = cutil_vector_create(g_trait);
+	g_vector_trait = cutil_test_create_trait_tracker(cutil_trait_cstring());
+	g_vector = cutil_vector_create(g_vector_trait);
 }
 
 void vector_trait_after_each() {
@@ -280,9 +281,9 @@ void vector_trait_after_each() {
         g_vector = NULL;
     }
 
-    if (g_trait) {
-        cutil_test_destroy_trait_tracker(g_trait);
-        g_trait = NULL;
+    if (g_vector_trait) {
+        cutil_test_destroy_trait_tracker(g_vector_trait);
+        g_vector_trait = NULL;
     }
 
     cutil_trait_destroy();
