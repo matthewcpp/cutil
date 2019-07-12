@@ -685,17 +685,18 @@ int cutil_btree_delete(cutil_btree* btree, void* key) {
 	_btree_node*  node = _btree_find_node_for_key(btree, btree->root, key);
 	unsigned int item_pos = _node_key_position(btree, node, key);
 
-	if (btree->key_trait->pre_destroy_func) {
-		void* item_key = _node_get_key(node, btree->key_trait, item_pos);
-		btree->key_trait->pre_destroy_func(item_key, btree->key_trait->user_data);
-	}
-
-	if (btree->value_trait->pre_destroy_func) {
-		void* item_key = _node_get_value(node, btree->value_trait, item_pos);
-		btree->value_trait->pre_destroy_func(item_key, btree->value_trait->user_data);
-	}
-
 	if (item_pos != ITEM_NOT_PRESENT) {
+
+		if (btree->key_trait->pre_destroy_func) {
+			void* item_key = _node_get_key(node, btree->key_trait, item_pos);
+			btree->key_trait->pre_destroy_func(item_key, btree->key_trait->user_data);
+		}
+
+		if (btree->value_trait->pre_destroy_func) {
+			void* item_key = _node_get_value(node, btree->value_trait, item_pos);
+			btree->value_trait->pre_destroy_func(item_key, btree->value_trait->user_data);
+		}
+
 		if (_node_is_leaf(node)) {
 			_btree_delete_from_leaf(btree, node, item_pos);
 		}

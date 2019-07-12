@@ -3,6 +3,8 @@
 #include "test_settings.h"
 #include "btree_private.h"
 
+#include "test_util/defs.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,9 +40,8 @@ int read_btree_from_file(cutil_btree* btree, const char* test_data_name) {
 		file_size = ftell(file);
 		fseek(file, 0, SEEK_SET);
 
-		file_data = malloc(file_size + 1);
+		file_data = calloc(file_size + 1, 1);
 		fread(file_data, 1, file_size, file);
-		file_data[file_size] = 0;
 		fclose(file);
 
 		read_btree(btree, file_data);
