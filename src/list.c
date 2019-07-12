@@ -150,7 +150,13 @@ int cutil_list_at(cutil_list* list, size_t index, void* data) {
 	}
 
 	if (count == index) {
-		memcpy(data, node->data, list->trait->size);
+		if (list->trait->copy_func) {
+			list->trait->copy_func(data, node->data, list->trait->user_data);
+		}
+		else {
+			memcpy(data, node->data, list->trait->size);
+		}
+		
 		return 1;
 	}
 	else {

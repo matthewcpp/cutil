@@ -1,11 +1,16 @@
 #include "test_suites.h"
 
+#include "test_util/defs.h"
+#include "test_util/trait_tracker.h"
+
 #include "cutil/list.h"
 #include "ctest/ctest.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 cutil_list* g_list = NULL;
+cutil_trait* g_list_trait = NULL;
 
 void list_before_each() {
 	g_list = cutil_list_create(cutil_trait_int());
@@ -248,6 +253,104 @@ void list_get_back_data_empty() {
 	CTEST_ASSERT_FALSE(get_back_result);
 }
 
+void list_trait_before_each() {
+	g_list_trait = cutil_test_create_trait_tracker(cutil_trait_cstring());
+	g_list = cutil_list_create(g_list_trait);
+}
+
+void list_trait_after_each() {
+	if (g_list) {
+		cutil_list_destroy(g_list);
+		g_list = NULL;
+	}
+
+	if (g_list_trait) {
+		cutil_test_destroy_trait_tracker(g_list_trait);
+		g_list_trait = NULL;
+	}
+
+	cutil_trait_destroy();
+}
+
+void _list_insert_test_strings(cutil_list* list, int count, int push_back) {
+	int i;
+	char* buffer = malloc(20);
+
+	for (i = 0; i < count; i++) {
+		cutil_snprintf_func(buffer, 20, "str %d", i);
+
+		if (push_back) {
+			cutil_list_push_back(list, &buffer);
+		}
+		else {
+			cutil_list_push_front(list, &buffer);
+		}
+	}
+
+	free(buffer);
+}
+
+void list_copy_on_push_back() {
+	int expected_copy_count = 10;
+	_list_insert_test_strings(g_list, expected_copy_count, 1);
+
+	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_copy_count(g_list_trait), expected_copy_count);
+}
+
+void list_copy_on_push_front() {
+	int expected_copy_count = 10;
+	_list_insert_test_strings(g_list, expected_copy_count, 0);
+
+	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_copy_count(g_list_trait), expected_copy_count);
+}
+
+void list_copy_on_at() {
+	int item_count = 1;
+	char* buffer = malloc(20);
+
+	_list_insert_test_strings(g_list, item_count, 1);
+
+	cutil_list_at(g_list, 0, &buffer);
+	free(buffer);
+
+	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_copy_count(g_list_trait), item_count + 1);
+}
+
+void list_delete_pop_front() {
+	_list_insert_test_strings(g_list, 1, 1);
+
+	cutil_list_pop_front(g_list);
+
+	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_destroy_count(g_list_trait), 1);
+}
+
+void list_delete_pop_back() {
+	_list_insert_test_strings(g_list, 1, 1);
+
+	cutil_list_pop_back(g_list);
+
+	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_destroy_count(g_list_trait), 1);
+}
+
+void list_delete_on_destroy() {
+	int expected_destroy_count = 10;
+	_list_insert_test_strings(g_list, expected_destroy_count, 1);
+
+	cutil_list_destroy(g_list);
+	g_list = NULL;
+
+	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_destroy_count(g_list_trait), expected_destroy_count);
+}
+
+void list_delete_on_clear() {
+	int expected_destroy_count = 10;
+	_list_insert_test_strings(g_list, expected_destroy_count, 1);
+
+	cutil_list_clear(g_list);
+
+	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_destroy_count(g_list_trait), expected_destroy_count);
+}
+
 void add_list_tests(){
     ctest_suite("list");
     ctest_suite_before_each(&list_before_each);
@@ -285,4 +388,16 @@ void add_list_tests(){
 
     CTEST_ADD_TEST(list_push_get_front_pointer);
     CTEST_ADD_TEST(push_get_back_pointer);
+
+	ctest_suite("list-trait");
+	ctest_suite_before_each(&list_trait_before_each);
+	ctest_suite_after_each(&list_trait_after_each);
+
+	CTEST_ADD_TEST(list_copy_on_push_back)
+	CTEST_ADD_TEST(list_copy_on_push_front)
+	CTEST_ADD_TEST(list_copy_on_at)
+	CTEST_ADD_TEST(list_delete_pop_front)
+	CTEST_ADD_TEST(list_delete_pop_back);
+	CTEST_ADD_TEST(list_delete_on_destroy);
+	CTEST_ADD_TEST(list_delete_on_clear);
 }
