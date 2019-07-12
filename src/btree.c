@@ -681,7 +681,7 @@ void _btree_delete_from_interior(cutil_btree* btree, _btree_node* node, unsigned
 	_rebalance_node(btree, max_leaf);
 }
 
-int cutil_btree_delete(cutil_btree* btree, void* key) {
+int cutil_btree_erase(cutil_btree* btree, void* key) {
 	_btree_node*  node = _btree_find_node_for_key(btree, btree->root, key);
 	unsigned int item_pos = _node_key_position(btree, node, key);
 

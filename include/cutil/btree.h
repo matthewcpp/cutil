@@ -24,7 +24,7 @@ int cutil_btree_contains(cutil_btree* btree, void* key);
 void cutil_btree_clear(cutil_btree* btree);
 size_t cutil_btree_size(cutil_btree* btree);
 
-int cutil_btree_delete(cutil_btree* btree, void* key);
+int cutil_btree_erase(cutil_btree* btree, void* key);
 
 
 cutil_btree_itr* cutil_btree_itr_create(cutil_btree* btree);

@@ -340,7 +340,7 @@ void btree_delete_decrements_size_when_removing_item() {
 	insert_char_sequence(g_btree, "ABF", NULL);
 	starting_size = cutil_btree_size(g_btree);
 
-	cutil_btree_delete(g_btree, &value);
+	cutil_btree_erase(g_btree, &value);
 	actual_size = cutil_btree_size(g_btree);
 	CTEST_ASSERT_INT_EQ(actual_size, starting_size - 1);
 }
@@ -353,7 +353,7 @@ void btree_delete_does_not_decrement_size_when_removing_invalid_item() {
 	insert_char_sequence(g_btree, "ABF", NULL);
 	starting_size = cutil_btree_size(g_btree);
 
-	cutil_btree_delete(g_btree, &value);
+	cutil_btree_erase(g_btree, &value);
 	actual_size = cutil_btree_size(g_btree);
 	CTEST_ASSERT_INT_EQ(actual_size, starting_size);
 }
@@ -362,14 +362,14 @@ void btree_delete_returns_true_deleting_key_that_is_present() {
 	int key = (int)'A';
 
 	insert_char_sequence(g_btree, "ABF", NULL);
-	CTEST_ASSERT_TRUE(cutil_btree_delete(g_btree, &key));
+	CTEST_ASSERT_TRUE(cutil_btree_erase(g_btree, &key));
 }
 
 void btree_delete_returns_false_deleting_unknown_key() {
 	int key = (int)'Z';
 
 	insert_char_sequence(g_btree, "ABF", NULL);
-	CTEST_ASSERT_FALSE(cutil_btree_delete(g_btree, &key));
+	CTEST_ASSERT_FALSE(cutil_btree_erase(g_btree, &key));
 }
 
 /** utility method for running a delete test.  Loads a tree, removes a key, and validates it aginst the expected result */
@@ -383,7 +383,7 @@ void do_btree_delete_test(const char* test_tree_data, const char* expected_tree_
 	original_tree_size = cutil_btree_size(g_btree);
 
 	for (i = 0; i < key_count; i++) {
-		CTEST_ASSERT_TRUE(cutil_btree_delete(g_btree, keys_to_delete + i));
+		CTEST_ASSERT_TRUE(cutil_btree_erase(g_btree, keys_to_delete + i));
 		CTEST_ASSERT_FALSE(cutil_btree_contains(g_btree, keys_to_delete + i));
 		CTEST_ASSERT_TRUE(validate_btree(g_btree));
 	}
@@ -447,7 +447,7 @@ void btree_trait_pod() {
 	}
 
 	for (i = item_count - 1; i >= 0; i--) {
-		CTEST_ASSERT_TRUE(cutil_btree_delete(g_btree, &i));
+		CTEST_ASSERT_TRUE(cutil_btree_erase(g_btree, &i));
 	}
 
 	CTEST_ASSERT_INT_EQ(0, cutil_btree_size(g_btree));
@@ -477,7 +477,7 @@ void btree_trait_cstring() {
 		char* insert_str = malloc(32);
 		cutil_snprintf_func(insert_str, 32, "test string %i", i);
 
-		delete_result = cutil_btree_delete(g_btree, &insert_str);
+		delete_result = cutil_btree_erase(g_btree, &insert_str);
 		free(insert_str);
 
 		CTEST_ASSERT_TRUE(delete_result);
@@ -506,7 +506,7 @@ void btree_trait_ptr() {
 
 	for (i = item_count - 1; i >= 0; i--) {
 		int* test_ptr = test_ptrs[i];
-		CTEST_EXPECT_TRUE(cutil_btree_delete(g_btree, &test_ptr));
+		CTEST_EXPECT_TRUE(cutil_btree_erase(g_btree, &test_ptr));
 	}
 
 	/* test cleanup */
@@ -651,7 +651,7 @@ void btree_key_trait_destroy_on_erase() {
 	char* value = "test value";
 
 	CTEST_ASSERT_TRUE(cutil_btree_insert(g_btree, &key, &value));
-	CTEST_ASSERT_TRUE(cutil_btree_delete(g_btree, &key));
+	CTEST_ASSERT_TRUE(cutil_btree_erase(g_btree, &key));
 
 	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_destroy_count(g_btree_key_trait), 1);
 }
@@ -682,7 +682,7 @@ void btree_val_trait_destroy_on_erase() {
 	char* value = "test value";
 
 	CTEST_ASSERT_TRUE(cutil_btree_insert(g_btree, &key, &value));
-	CTEST_ASSERT_TRUE(cutil_btree_delete(g_btree, &key));
+	CTEST_ASSERT_TRUE(cutil_btree_erase(g_btree, &key));
 
 	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_destroy_count(g_btree_val_trait), 1);
 }
