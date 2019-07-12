@@ -3,6 +3,7 @@
 #include "ctest/ctest.h"
 #include "test_suites.h"
 
+#include "test_util/defs.h"
 #include "test_btree_util.h"
 
 #include <stdlib.h>
