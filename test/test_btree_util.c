@@ -33,7 +33,7 @@ int read_btree_from_file(cutil_btree* btree, const char* test_data_name) {
 	free(path_str);
 
 	if (file) {
-		long file_size = 0;
+		size_t file_size = 0, bytes_read = 0;
 		char* file_data = NULL;
 
 		fseek(file, 0, SEEK_END);
@@ -41,12 +41,14 @@ int read_btree_from_file(cutil_btree* btree, const char* test_data_name) {
 		fseek(file, 0, SEEK_SET);
 
 		file_data = calloc(file_size + 1, 1);
-		fread(file_data, 1, file_size, file);
+		bytes_read = fread(file_data, 1, file_size, file);
 		fclose(file);
 
+        (void)bytes_read;  /* TODO: Handle error case bytes_read != file_size */
 		read_btree(btree, file_data);
 
 		free(file_data);
+
 		return 1;
 	}
 	else {
