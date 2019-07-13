@@ -20,7 +20,7 @@ cutil_vector* cutil_vector_create(cutil_trait* trait);
 
 /**
 Destroys a vector, freeing all resources used by it.
-If the vector's trait includes a deletion function, it will be called for every item in the vector.
+If the vector's trait includes a destroy function, it will be called for every item in the vector.
 \param vector vector that will be destroyed.
 */
 void cutil_vector_destroy(cutil_vector* vector);
@@ -66,7 +66,7 @@ Gets the data at a specific index.
 For the type T that this vector's trait defines, the out parameter should be of type T*.
 If the vector's trait includes a copy function it will be called on the item being accessed.
 \param index the index of the item to get.
-\param out pointer of tpye T* where T is the type described by the vector's trait.
+\param out pointer of type T* where T is the type described by the vector's trait.
 \returns non zero value if the index was valid or zero if the index was invalid.
 */
 int cutil_vector_get(cutil_vector* vector, unsigned int index, void* out);

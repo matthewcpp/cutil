@@ -12,7 +12,7 @@ The function should not modify the data pointed to by the parameters.
 \param a Pointer to the first item that is to be compared.
 \param b Pointer to the second item that is to be compared.
 \param user_data User specified data attached to the trait object.
-\returns integer value indicating the result of the comparison.  -1 indicates that the the first item is less than the second.  0 indicates that the items are equal.  1 indicates that the first item is greater than the second.
+\returns integer value indicating the result of the comparison.  < 0 indicates that the the first item is less than the second.  0 indicates that the items are equal.  1 indicates that the first item is greater than the second.
 */
 typedef int (*cutil_trait_compare_func)(void* a, void* b, void* user_data);
 
