@@ -92,7 +92,8 @@ cutil_trait* cutil_trait_ptr();
 
 /**
 Returns a trait describing a basic cstring.
-cstring data will be copied when a a container using this trait receives a new cstring.  
+cstring data will be copied when a container using this trait receives a new cstring.
+When retrieving cstrings from a container, unless explicitly stated, the data is copied and returned as a char*.  It is the responsibility of the caller to free the memory pointed to by the result.
 The pointed to string will be freed when the pointer goes out of scope.
 Subsequent calls to this function will return the same trait object.
 \see cutil_trait_destroy()

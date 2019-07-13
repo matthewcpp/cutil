@@ -1,3 +1,5 @@
+include (CTest)
+
 set(testing_sources
         test_main.c test_suites.h
 		test_settings.h test_settings.c
