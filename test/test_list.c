@@ -306,14 +306,17 @@ void list_copy_on_push_front() {
 
 void list_copy_on_at() {
 	int item_count = 1;
-	char* buffer = malloc(20);
+	char* buffer = NULL;
 
 	_list_insert_test_strings(g_list, item_count, 1);
 
-	cutil_list_at(g_list, 0, &buffer);
-	free(buffer);
+	CTEST_EXPECT_TRUE(cutil_list_at(g_list, 0, &buffer));
 
-	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_copy_count(g_list_trait), item_count + 1);
+	CTEST_EXPECT_INT_EQ(cutil_test_trait_tracker_copy_count(g_list_trait), item_count + 1)
+
+    if (buffer){
+        free(buffer);
+    }
 }
 
 void list_delete_pop_front() {

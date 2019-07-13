@@ -220,14 +220,17 @@ void vector_trait_copy_on_push() {
 
 /* Tests that the trait's copy function is called when getting data from the vector. */
 void vector_trait_copy_on_get() {
-    char* buffer = malloc(20);
+    char* buffer = NULL;
     char* test_str = "test string!";
     cutil_vector_push_back(g_vector, &test_str);
 
-    cutil_vector_get(g_vector, 0, &buffer);
+    CTEST_EXPECT_TRUE(cutil_vector_get(g_vector, 0, &buffer));
 
-    CTEST_ASSERT_INT_EQ(2, cutil_test_trait_tracker_copy_count(g_vector_trait));
-    free(buffer);
+    CTEST_EXPECT_INT_EQ(cutil_test_trait_tracker_copy_count(g_vector_trait), 2)
+
+    if (buffer){
+        free(buffer);
+    }
 }
 
 /* Tests that the trait's destroy function is called when popping data from the end of the vector. */
