@@ -1,8 +1,5 @@
 language: c
 
-script:
-  - make && make test
-
 matrix:
   include:
     - os: linux
@@ -13,28 +10,50 @@ matrix:
           - lcov
       install:
         - gem install coveralls-lcov
-      before_script:
+      script:
         - mkdir build
         - cd build
         - cmake .. -DCOVERAGE=1 -DCMAKE_BUILD_TYPE=Debug
+        - make && make test
       after_success:
         - lcov --compat-libtool --directory . --capture --output-file coverage.info
         - coveralls-lcov coverage.info
+      env:
+        - BUILD_NAME=coverage
     - os: linux
       compiler: gcc
-      before_script:
+      addons:
+        apt:
+          packages:
+          - valgrind
+      script:
+        - mkdir build
+        - cd build
+        - cmake .. -DCMAKE_BUILD_TYPE=Debug
+        - make && ctest --overwrite MemoryCheckCommandOptions="--leak-check=full --error-exitcode=1" -T memcheck
+      after_failure:
+        - cat Testing/Temporary/MemoryChecker.*.log
+        - sleep 3
+      env:
+        - BUILD_NAME=valgrind
+    - os: linux
+      compiler: gcc
+      script:
         - mkdir build
         - cd build
         - cmake .. -DCMAKE_BUILD_TYPE=Release
+        - make && make test
     - os: linux
       compiler: clang
-      before_script:
+      script:
         - mkdir build
         - cd build
         - cmake .. -DCMAKE_BUILD_TYPE=Release
+        - make && make test
     - os: osx
       compiler: clang
-      before_script:
+      script:
         - mkdir build
         - cd build
         - cmake .. -DCMAKE_BUILD_TYPE=Release
+        - make && make test
