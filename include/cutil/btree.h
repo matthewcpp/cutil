@@ -19,7 +19,7 @@ Creates a new btree configured with the specified order and key / value traits.
 \param value_trait trait object describing the keys of the container.
 \returns pointer to newly created btree.  If creation failed then this function will return NULL.
 */
-cutil_btree* cutil_btree_create(int order, cutil_trait* key_trait, cutil_trait* value_trait);
+cutil_btree* cutil_btree_create(unsigned int order, cutil_trait* key_trait, cutil_trait* value_trait);
 
 /**
 Destroys a btree, freeing all resources used by it.

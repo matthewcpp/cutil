@@ -75,10 +75,7 @@ void btree_invalid_key_trait_no_copy() {
 }
 
 void btree_invalid_creation_parameters() {
-	cutil_btree* result = cutil_btree_create(-1, cutil_trait_int(), cutil_trait_int());
-	CTEST_ASSERT_PTR_NULL(result);
-
-	result = cutil_btree_create(5, NULL, cutil_trait_int());
+	cutil_btree* result = cutil_btree_create(5, NULL, cutil_trait_int());
 	CTEST_ASSERT_PTR_NULL(result);
 
 	result = cutil_btree_create(5, cutil_trait_int(), NULL);

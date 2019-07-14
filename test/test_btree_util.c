@@ -88,7 +88,8 @@ _btree_node* read_btree_node(cutil_btree* btree, _btree_node* parent, int* item_
 
 	/* process node if it is not NULL and has items */
 	if (strcmp(node_type, "N") != 0 && item_count > 0) {
-		int i, key_value = 0;
+		unsigned int i;
+		int key_value = 0;
 
 		_btree_node* node = _node_create(btree);
 		node->parent = parent;
@@ -174,7 +175,7 @@ void* get_max_value_for_leaf(cutil_btree* btree, _btree_node* node) {
 
 /* Ensures that the keys of a node are within the appropriate ranges, and stored in ascending order */
 int validate_btree_node_keys(cutil_btree* btree, _btree_node* node) {
-    int i;
+    unsigned int i;
 
     void* min_key, *max_key;
 
@@ -270,7 +271,7 @@ int validate_leaf_depths(_btree_node* node, int current_depth, int target_depth)
 		return current_depth == target_depth;
 	}
 	else {
-		int i;
+		unsigned int i;
 		for (i = 0; i <= node->item_count; i++) {
 			if (!validate_leaf_depths(node->branches[i], current_depth + 1, target_depth)) {
 			    return 0;
@@ -356,7 +357,7 @@ void indent(int depth, FILE* file) {
 
 void dump_btree_node(cutil_btree* btree, _btree_node* node, int depth, FILE* file) {
 	char node_type;
-	int i;
+	unsigned int i;
 
 	indent(depth, file);
 
