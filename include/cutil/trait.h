@@ -23,7 +23,7 @@ This function will be called before a container removes an item.
 \param item Pointer to the item that will be removed.
 \param user_data User specified data attached to the trait object.
 */
-typedef void (*cutil_trait_pre_destroy_func)(void* item, void* user_data);
+typedef void (*cutil_trait_destroy_func)(void* item, void* user_data);
 
 /**
 Trait function for copying an element.
@@ -48,7 +48,7 @@ typedef struct {
 	cutil_trait_compare_func compare_func;
 
 	/** Function used to free any resources that an element may be holding. This member is optional and may be NULL. */
-	cutil_trait_pre_destroy_func pre_destroy_func;
+	cutil_trait_destroy_func destroy_func;
 
 	/** Function used to copy an element. This member is optional and may be NULL. */
 	cutil_trait_copy_func copy_func;
