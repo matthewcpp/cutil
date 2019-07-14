@@ -28,7 +28,7 @@ void cutil_test_trait_tracker_destroy(void* item, void* user_data) {
 	cutil_test_trait_tracker* trait_tracker = (cutil_test_trait_tracker*)user_data;
 	trait_tracker->destroy_func_count += 1;
 
-	trait_tracker->tracked_trait->pre_destroy_func(item, trait_tracker->tracked_trait->user_data);
+	trait_tracker->tracked_trait->destroy_func(item, trait_tracker->tracked_trait->user_data);
 }
 
 cutil_trait* cutil_test_create_trait_tracker(cutil_trait* tracked_trait) {
@@ -45,8 +45,8 @@ cutil_trait* cutil_test_create_trait_tracker(cutil_trait* tracked_trait) {
 		trait->copy_func = cutil_test_trait_tracker_copy;
 	}
 	
-	if (tracked_trait->pre_destroy_func) {
-		trait->pre_destroy_func = cutil_test_trait_tracker_destroy;
+	if (tracked_trait->destroy_func) {
+		trait->destroy_func = cutil_test_trait_tracker_destroy;
 	}
 
 	trait->size = tracked_trait->size;

@@ -80,8 +80,8 @@ cutil_list_node* cutil_list_node_create(cutil_trait* trait, void* data) {
 }
 
 void cutil_list_node_destroy(cutil_trait* trait, cutil_list_node* list_node){
-	if (trait->pre_destroy_func) {
-		trait->pre_destroy_func(list_node->data, trait->user_data);
+	if (trait->destroy_func) {
+		trait->destroy_func(list_node->data, trait->user_data);
 	}
 	
     free(list_node->data);

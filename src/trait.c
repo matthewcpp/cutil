@@ -92,7 +92,7 @@ void cutil_trait_cstring_copy(void* dest, void* src, void* user_data) {
 	memcpy(dest, &str_copy, sizeof(char*));
 }
 
-void cutil_trait_cstring_pre_destroy(void* item, void* user_data) {
+void cutil_trait_cstring_destroy(void* item, void* user_data) {
 	char* item_ptr = *((char**)item);
 
 	(void)user_data;
@@ -141,7 +141,7 @@ void init_default_traits() {
 	/* cstring trait*/
 	trait = default_traits + CUTIL_DEFAULT_TRAIT_CSTRING;
 	trait->compare_func = cutil_trait_cstring_compare;
-	trait->pre_destroy_func = cutil_trait_cstring_pre_destroy;
+	trait->destroy_func = cutil_trait_cstring_destroy;
 	trait->copy_func = cutil_trait_cstring_copy;
 	trait->size = sizeof(char*);
 }

@@ -28,13 +28,13 @@ void cutil_vector_destroy(cutil_vector* vector) {
 }
 
 void cutil_vector_clear(cutil_vector* vector) {
-	if (vector->_data && vector->_trait->pre_destroy_func) {
+	if (vector->_data && vector->_trait->destroy_func) {
 		size_t i;
 		
 		for (i = 0; i < vector->_size; i++) {
 			void* object = (char*)vector->_data + (i * vector->_trait->size);
 
-			vector->_trait->pre_destroy_func(object, vector->_trait->user_data);
+			vector->_trait->destroy_func(object, vector->_trait->user_data);
 		}
 	}
 
@@ -95,10 +95,10 @@ void cutil_vector_push_back(cutil_vector* vector, void* data) {
 void cutil_vector_pop_back(cutil_vector* vector) {
 	if (vector->_size > 0) {
 
-		if (vector->_trait->pre_destroy_func) {
+		if (vector->_trait->destroy_func) {
 			void* object = (char*)vector->_data + ((vector->_size - 1) * vector->_trait->size);
 
-			vector->_trait->pre_destroy_func(object, vector->_trait->user_data);
+			vector->_trait->destroy_func(object, vector->_trait->user_data);
 		}
 		
 		vector->_size -= 1;

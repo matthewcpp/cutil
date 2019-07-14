@@ -116,16 +116,16 @@ void _btree_node_recursive_delete(cutil_btree* btree, _btree_node* node) {
 	cutil_trait* trait = btree->key_trait;
 	unsigned int i;
 
-	if (trait->pre_destroy_func) {
+	if (trait->destroy_func) {
 		for (i = 0; i < node->item_count; i++) {
-			trait->pre_destroy_func(_node_get_key(node, trait, i), trait->user_data);
+			trait->destroy_func(_node_get_key(node, trait, i), trait->user_data);
 		}
 	}
 
 	trait = btree->value_trait;
-	if (trait->pre_destroy_func) {
+	if (trait->destroy_func) {
 		for (i = 0; i < node->item_count; i++) {
-			trait->pre_destroy_func(_node_get_value(node, trait, i), trait->user_data);
+			trait->destroy_func(_node_get_value(node, trait, i), trait->user_data);
 		}
 	}
 
@@ -440,8 +440,8 @@ void cutil_btree_insert(cutil_btree* btree, void* key, void* value) {
 	if (insert_position >= btree->order) {
 		void* node_value = _node_get_value(node, btree->value_trait, insert_position - btree->order);
 
-        if (btree->value_trait->pre_destroy_func) {
-            btree->value_trait->pre_destroy_func(node_value, btree->value_trait->user_data);
+        if (btree->value_trait->destroy_func) {
+            btree->value_trait->destroy_func(node_value, btree->value_trait->user_data);
         }
 
         _copy_with_trait(node_value, value, btree->value_trait);
@@ -705,14 +705,14 @@ int cutil_btree_erase(cutil_btree* btree, void* key) {
 
 	if (item_pos != ITEM_NOT_PRESENT) {
 
-		if (btree->key_trait->pre_destroy_func) {
+		if (btree->key_trait->destroy_func) {
 			void* item_key = _node_get_key(node, btree->key_trait, item_pos);
-			btree->key_trait->pre_destroy_func(item_key, btree->key_trait->user_data);
+			btree->key_trait->destroy_func(item_key, btree->key_trait->user_data);
 		}
 
-		if (btree->value_trait->pre_destroy_func) {
+		if (btree->value_trait->destroy_func) {
 			void* item_value = _node_get_value(node, btree->value_trait, item_pos);
-			btree->value_trait->pre_destroy_func(item_value, btree->value_trait->user_data);
+			btree->value_trait->destroy_func(item_value, btree->value_trait->user_data);
 		}
 
 		if (_node_is_leaf(node)) {
