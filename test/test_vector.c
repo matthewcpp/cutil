@@ -218,21 +218,6 @@ void vector_trait_copy_on_push() {
     CTEST_ASSERT_INT_EQ(expected_copy_count, cutil_test_trait_tracker_copy_count(g_vector_trait));
 }
 
-/* Tests that the trait's copy function is called when getting data from the vector. */
-void vector_trait_copy_on_get() {
-    char* buffer = NULL;
-    char* test_str = "test string!";
-    cutil_vector_push_back(g_vector, &test_str);
-
-    CTEST_EXPECT_TRUE(cutil_vector_get(g_vector, 0, &buffer));
-
-    CTEST_EXPECT_INT_EQ(cutil_test_trait_tracker_copy_count(g_vector_trait), 2)
-
-    if (buffer){
-        free(buffer);
-    }
-}
-
 /* Tests that the trait's destroy function is called when popping data from the end of the vector. */
 void vector_trait_destroy_on_pop_back() {
     int expected_destroy_count = 10;
@@ -328,7 +313,6 @@ void add_vector_tests(){
 	ctest_suite_after_each(&vector_trait_after_each);
 
 	CTEST_ADD_TEST(vector_trait_copy_on_push)
-	CTEST_ADD_TEST(vector_trait_copy_on_get)
 	CTEST_ADD_TEST(vector_trait_destroy_on_pop_back)
 	CTEST_ADD_TEST(vector_trait_destroy_on_vec_destroy)
     CTEST_ADD_TEST(vector_trait_destroy_on_vec_reset)

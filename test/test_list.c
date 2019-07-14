@@ -224,6 +224,32 @@ void push_get_front_data() {
 	CTEST_ASSERT_INT_EQ(front_val, ival);
 }
 
+/* Get data from list by index*/
+void list_get_data_at() {
+	int item_count = 5, i = 0, actual_value = 0;
+	
+	for (i = 0; i < item_count; i++) {
+		cutil_list_push_back(g_list, &i);
+	}
+
+	for (i = 0; i < item_count; i++) {
+		CTEST_ASSERT_TRUE(cutil_list_at(g_list, (size_t)i, &actual_value));
+
+		CTEST_ASSERT_INT_EQ(actual_value, i);
+	}
+}
+
+/* Get data from invalid index returns false*/
+void list_get_data_at_invalid_index() {
+	int item_count = 5, i = 0, actual_value = 0;
+
+	for (i = 0; i < item_count; i++) {
+		cutil_list_push_back(g_list, &i);
+	}
+
+	CTEST_ASSERT_FALSE(cutil_list_at(g_list, (size_t)item_count, &actual_value));
+}
+
 /* Getting the front item of an empty list returns false */
 void list_get_front_data_empty() {
 	int front_val = 0;
@@ -304,21 +330,6 @@ void list_copy_on_push_front() {
 	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_copy_count(g_list_trait), expected_copy_count);
 }
 
-void list_copy_on_at() {
-	int item_count = 1;
-	char* buffer = NULL;
-
-	_list_insert_test_strings(g_list, item_count, 1);
-
-	CTEST_EXPECT_TRUE(cutil_list_at(g_list, 0, &buffer));
-
-	CTEST_EXPECT_INT_EQ(cutil_test_trait_tracker_copy_count(g_list_trait), item_count + 1)
-
-    if (buffer){
-        free(buffer);
-    }
-}
-
 void list_delete_pop_front() {
 	_list_insert_test_strings(g_list, 1, 1);
 
@@ -385,6 +396,9 @@ void add_list_tests(){
     CTEST_ADD_TEST(list_get_back_data_empty);
     CTEST_ADD_TEST(list_get_front_data_empty);
 
+	CTEST_ADD_TEST(list_get_data_at);
+	CTEST_ADD_TEST(list_get_data_at_invalid_index);
+
     ctest_suite("listp");
     ctest_suite_before_each(&listp_before_each);
     ctest_suite_after_each(&list_after_each);
@@ -398,7 +412,6 @@ void add_list_tests(){
 
 	CTEST_ADD_TEST(list_copy_on_push_back)
 	CTEST_ADD_TEST(list_copy_on_push_front)
-	CTEST_ADD_TEST(list_copy_on_at)
 	CTEST_ADD_TEST(list_delete_pop_front)
 	CTEST_ADD_TEST(list_delete_pop_back);
 	CTEST_ADD_TEST(list_delete_on_destroy);

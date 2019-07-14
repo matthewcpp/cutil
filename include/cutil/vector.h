@@ -62,9 +62,9 @@ This function has no effect on an empty vector.
 void cutil_vector_pop_back(cutil_vector* vector);
 
 /**
-Gets the data at a specific index.
+Gets a reference to the element at a specific index.
 For the type T that this vector's trait defines, the out parameter should be of type T*.
-If the vector's trait includes a copy function it will be called on the item being accessed.
+Note that the pointer placed in the out parameter is owned by the container and should be copied if it needs to be persisted beyond its lifetime.
 \param index the index of the item to get.
 \param out pointer of type T* where T is the type described by the vector's trait.
 \returns non zero value if the index was valid or zero if the index was invalid.

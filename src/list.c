@@ -138,30 +138,20 @@ int cutil_list_back(cutil_list* list, void* out) {
 
 int cutil_list_at(cutil_list* list, size_t index, void* out) {
 	cutil_list_node* node = list->base.next;
-	size_t count = 0;
+	size_t current = 0;
 
 	if (index >= list->size) {
 		return 0;
 	}
 
-	while (count < index) {
+	while (current < index) {
 		node = node->next;
-		count += 1;
+		current += 1;
 	}
 
-	if (count == index) {
-		if (list->trait->copy_func) {
-			list->trait->copy_func(out, node->data, list->trait->user_data);
-		}
-		else {
-			memcpy(out, node->data, list->trait->size);
-		}
-		
-		return 1;
-	}
-	else {
-		return 0;
-	}
+	memcpy(out, node->data, list->trait->size);
+
+	return 1;
 }
 
 void cutil_list_push_back(cutil_list* list, void* data) {
@@ -267,12 +257,12 @@ int cutil_list_itr_has_prev(cutil_list_itr* itr) {
 	return (itr->node->prev->data != NULL);
 }
 
-int cutil_list_itr_prev(cutil_list_itr* itr, void* data) {
+int cutil_list_itr_prev(cutil_list_itr* itr, void* out) {
 	if (cutil_list_itr_has_prev(itr)) {
 		itr->node = itr->node->prev;
 
-		if (data) {
-			memcpy(data, itr->node->data, itr->list->trait->size);
+		if (out) {
+			memcpy(out, itr->node->data, itr->list->trait->size);
 		}
 
 		return 1;
