@@ -85,15 +85,25 @@ void _node_destroy(_btree_node* node) {
 cutil_btree* cutil_btree_create(int order, cutil_trait* key_trait, cutil_trait* value_trait) {
 	cutil_btree* btree = NULL;
 
-	if (order >= 3 && key_trait != NULL && value_trait != NULL) {
-		btree = malloc(sizeof(cutil_btree));
-
-		btree->order = order;
-		btree->size = 0;
-		btree->key_trait = key_trait;
-		btree->value_trait = value_trait;
-		btree->root = _node_create(btree);
+	if (order < 3) {
+		return btree;
 	}
+
+	if (key_trait == NULL || key_trait->compare_func == NULL) {
+		return btree;
+	}
+
+	if (value_trait == NULL) {
+		return btree;
+	}
+
+	btree = malloc(sizeof(cutil_btree));
+
+	btree->order = order;
+	btree->size = 0;
+	btree->key_trait = key_trait;
+	btree->value_trait = value_trait;
+	btree->root = _node_create(btree);
 
 	return btree;
 }

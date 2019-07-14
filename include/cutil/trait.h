@@ -18,7 +18,7 @@ typedef int (*cutil_trait_compare_func)(void* a, void* b, void* user_data);
 
 /**
 Trait function for destroying an element.
-For a trait describing type T, the paramter passed into this function will be of T*.
+For a trait describing type T, the parameter passed into this function will be of T*.
 This function will be called before a container removes an item.
 \param item Pointer to the item that will be removed.
 \param user_data User specified data attached to the trait object.
@@ -27,7 +27,7 @@ typedef void (*cutil_trait_pre_destroy_func)(void* item, void* user_data);
 
 /**
 Trait function for copying an element.
-For a trait describing type T, the paramter passed into this function will be of T*.
+For a trait describing type T, the parameter passed into this function will be of T*.
 For a trait describing a type T, the src parameter passed into this function will be of T*.
 This function will be called when an element is added to a collection.
 \param dest the address of memory that src should be copied to.  It's size will be equal to the sie paramter of the trait object.
@@ -38,10 +38,10 @@ typedef void (*cutil_trait_copy_func)(void* dest, void* src, void* user_data);
 
 /**
 The trait structure describes an arbitrary type of data.
-This structure is used by cntainers to work with generic data.
+This structure is used by containers to work with generic data.
 All members of this structure are optional except for the size.
 Some containers require specific functions are defined for a type.
-Using an incompatable trait will result in the constructor for the container failing if all required functions are not present.
+Using an incompatible trait will result in the constructor for the container failing if all required functions are not present.
 */
 typedef struct {
 	/** Function used for comparing two elements. This member is optional and may be NULL. */
@@ -83,7 +83,7 @@ cutil_trait* cutil_trait_float();
 
 /**
 Returns a trait describing a generic pointer.
-Pointed to data will not be copied when inseted into a container.
+Pointed to data will not be copied when inserted into a container.
 The caller should take care to free resources consumed by pointed to data before the pointer goes out of scope.
 Subsequent calls to this function will return the same trait object.
 \see cutil_trait_destroy()
@@ -92,8 +92,8 @@ cutil_trait* cutil_trait_ptr();
 
 /**
 Returns a trait describing a basic cstring.
-cstring data will be copied when a container using this trait receives a new cstring.
-When retrieving cstrings from a container, unless explicitly stated, the data is copied and returned as a char*.  It is the responsibility of the caller to free the memory pointed to by the result.
+cstring data will be copied when it is added to a container
+When retrieving cstrings from a container, the value placed in out parameters will be a pointer to the container owned cstring.  If this string needs to be perissted beyond the life of the container it should be copied.
 The pointed to string will be freed when the pointer goes out of scope.
 Subsequent calls to this function will return the same trait object.
 \see cutil_trait_destroy()
