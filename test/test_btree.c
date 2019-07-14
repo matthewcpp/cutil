@@ -61,6 +61,19 @@ void btree_test_size_non_empty() {
 	}
 }
 
+void btree_invalid_key_trait_no_copy() {
+	cutil_btree* result;
+
+	cutil_trait* bogus_trait = malloc(sizeof(cutil_trait));
+	memcpy(bogus_trait, cutil_trait_int(), sizeof(cutil_trait));
+	bogus_trait->compare_func = NULL;
+
+	result = cutil_btree_create(5, bogus_trait, cutil_trait_int());
+	CTEST_EXPECT_PTR_NULL(result);
+
+	free(bogus_trait);
+}
+
 void btree_invalid_creation_parameters() {
 	cutil_btree* result = cutil_btree_create(-1, cutil_trait_int(), cutil_trait_int());
 	CTEST_ASSERT_PTR_NULL(result);
@@ -748,6 +761,7 @@ void add_btree_tests() {
     ctest_suite_after_each(&btree_after_each);
 
     CTEST_ADD_TEST(btree_invalid_creation_parameters);
+	CTEST_ADD_TEST(btree_invalid_key_trait_no_copy);
     CTEST_ADD_TEST(btree_create_order_sets_correct_value);
 
     CTEST_ADD_TEST(btree_test_size_empty);

@@ -109,12 +109,7 @@ int cutil_vector_get(cutil_vector* vector, unsigned int index, void* out) {
 	if (index < vector->_size) {
 		size_t byte_offset = index * vector->_trait->size;
 
-		if (vector->_trait->copy_func){
-            vector->_trait->copy_func(out, (char*)vector->_data + byte_offset, vector->_trait->user_data);
-		}
-		else {
-            memcpy(out, (char*)vector->_data + byte_offset, vector->_trait->size);
-        }
+        memcpy(out, (char*)vector->_data + byte_offset, vector->_trait->size);
 
 		return 1;
 	}

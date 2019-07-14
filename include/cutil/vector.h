@@ -20,7 +20,7 @@ cutil_vector* cutil_vector_create(cutil_trait* trait);
 
 /**
 Destroys a vector, freeing all resources used by it.
-If the vector's trait includes a deletion function, it will be called for every item in the vector.
+If the vector's trait includes a destroy function, it will be called for every item in the vector.
 \param vector vector that will be destroyed.
 */
 void cutil_vector_destroy(cutil_vector* vector);
@@ -33,7 +33,6 @@ size_t cutil_vector_size(cutil_vector* vector);
 /**
 Clears all items in the vector, setting its size to zero.
 This function will not deallocate any memory or adjust the vector's capacity.
-If the vector's trait includes a deletion function, it will be called for every item in the vector.
 \see cutil_vector_reset()
 */
 void cutil_vector_clear(cutil_vector* vector);
@@ -41,7 +40,6 @@ void cutil_vector_clear(cutil_vector* vector);
 /**
 Resets the vector, leaving it in a fresh state.
 This function will also deallocate the memory used by the vector internally and reset its size and capacity.
-If the vector's trait includes a deletion function, it will be called for every item in the vector.
 \see cutil_vector_clear()
 */
 void cutil_vector_reset(cutil_vector* vector);
@@ -49,7 +47,6 @@ void cutil_vector_reset(cutil_vector* vector);
 /**
 Pushes an item to the back of the vector.
 For the type T that this vector's trait defines, the data parameter should be of type T*.
-If the vector's trait includes a copy function, it will be called on the data passed into this function.
 \param data pointer to data of Type T* where T is the type described by the vector's trait.
 */
 void cutil_vector_push_back(cutil_vector* vector, void* data);
@@ -62,11 +59,10 @@ This function has no effect on an empty vector.
 void cutil_vector_pop_back(cutil_vector* vector);
 
 /**
-Gets the data at a specific index.
-For the type T that this vector's trait defines, the out parameter should be of type T*.
-If the vector's trait includes a copy function it will be called on the item being accessed.
+Gets a reference to the element at a specific index.
+Note that the pointer placed in the out parameter is owned by the container and should be copied if it needs to be persisted beyond its lifetime.
 \param index the index of the item to get.
-\param out pointer of tpye T* where T is the type described by the vector's trait.
+\param out pointer of type T* where T is the type described by the vector's trait.
 \returns non zero value if the index was valid or zero if the index was invalid.
 */
 int cutil_vector_get(cutil_vector* vector, unsigned int index, void* out);
