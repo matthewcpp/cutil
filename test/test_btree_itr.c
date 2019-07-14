@@ -125,7 +125,7 @@ void test_btree_itr_forward_ptr() {
 
 	for (i = 0; i < value_count; i++) {
 		int* value = values + i;
-		CTEST_EXPECT_TRUE(cutil_btree_insert(g_btree, &i, &value));
+		cutil_btree_insert(g_btree, &i, &value);
 	}
 
 	g_btree_itr = cutil_btree_itr_create(g_btree);
