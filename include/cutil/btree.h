@@ -49,11 +49,11 @@ The two btrees being compared must have the same key and value traits, otherwise
 int cutil_btree_equals(cutil_btree *a, cutil_btree *b);
 
 /**
-Inserts a new element into the btree.
+Inserts a new element into the btree.  If there is an existing item present for the supplied key, it will be replaced with the new value.
 \param key pointer of type T* where T is the type described by the btree's key trait.
 \param value pointer of type T* where T is the type described by the btree's value trait.
 */
-int cutil_btree_insert(cutil_btree* btree, void* key, void* value);
+void cutil_btree_insert(cutil_btree* btree, void* key, void* value);
 
 /**
 Gets a reference to the value stored in the continer for the given key.

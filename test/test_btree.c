@@ -142,6 +142,20 @@ void btree_clear_removes_all_items(){
 
 }
 
+void btree_insert_replaces_existing_key() {
+    int key = 123;
+    int expected_value1 = 1000, expected_value2 = 2000;
+    int actual_value = 0;
+
+    cutil_btree_insert(g_btree, &key, &expected_value1);
+    CTEST_ASSERT_TRUE(cutil_btree_get(g_btree, &key, &actual_value));
+    CTEST_ASSERT_INT_EQ(expected_value1, actual_value);
+
+    cutil_btree_insert(g_btree, &key, &expected_value2);
+    CTEST_ASSERT_TRUE(cutil_btree_get(g_btree, &key, &actual_value));
+    CTEST_ASSERT_INT_EQ(expected_value2, actual_value);
+}
+
 void btree_split_interior_node_push_up(){
 	int key = 123;
 	cutil_btree* expected_btree = NULL;
@@ -455,7 +469,7 @@ void btree_trait_pod() {
 	g_btree = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_int(), cutil_trait_int());
 
 	for (i = item_count - 1; i >= 0; i--) {
-		CTEST_ASSERT_TRUE(cutil_btree_insert(g_btree, &i, &i));
+		cutil_btree_insert(g_btree, &i, &i);
 		CTEST_EXPECT_TRUE(cutil_btree_contains(g_btree, &i));
 	}
 
@@ -471,15 +485,14 @@ void btree_trait_cstring() {
 	g_btree = cutil_btree_create(DEFAULT_ODD_BTREE_ORDER, cutil_trait_cstring(), cutil_trait_cstring());
 
 	for (i = item_count - 1; i >= 0; i--) {
-		int insert_result, contains_result;
+		int contains_result;
 		char* insert_str = malloc(32);
 		cutil_snprintf_func(insert_str, 32, "test string %i", i);
 
-		insert_result = cutil_btree_insert(g_btree, &insert_str, &insert_str);
+		cutil_btree_insert(g_btree, &insert_str, &insert_str);
 		contains_result = cutil_btree_contains(g_btree, &insert_str);
 		free(insert_str);
 
-		CTEST_ASSERT_TRUE(insert_result);
 		CTEST_ASSERT_TRUE(contains_result);
 	}
 
@@ -513,7 +526,7 @@ void btree_trait_ptr() {
 		*test_ptr = i;
 		test_ptrs[i] = test_ptr;
 
-		CTEST_EXPECT_TRUE(cutil_btree_insert(g_btree, &test_ptr, &ptr_val));
+		cutil_btree_insert(g_btree, &test_ptr, &ptr_val);
 		CTEST_EXPECT_TRUE(cutil_btree_contains(g_btree, &test_ptr));
 	}
 
@@ -540,8 +553,7 @@ void btree_test_get_pod() {
 
 	for (i = 1; i <= item_count; i++) {
 		int expected_value = i * 10;
-		int result = cutil_btree_insert(g_btree, &i, &expected_value);
-		CTEST_ASSERT_TRUE(result)
+		cutil_btree_insert(g_btree, &i, &expected_value);
 	}
 
 	for (i = 1; i <= item_count; i++) {
@@ -567,7 +579,7 @@ void bree_test_get_ptr() {
 		keys[i] = malloc(sizeof(int));
 		values[i] = malloc(sizeof(int));
 
-		CTEST_EXPECT_TRUE(cutil_btree_insert(g_btree, &keys[i], &values[i]));
+		cutil_btree_insert(g_btree, &keys[i], &values[i]);
 	}
 
 	for (i = 0; i < item_count; i++) {
@@ -654,7 +666,7 @@ void btree_key_trait_copy_on_insert() {
 	char* key = "test key";
 	char* value = "test value";
 
-	CTEST_ASSERT_TRUE(cutil_btree_insert(g_btree, &key, &value));
+	cutil_btree_insert(g_btree, &key, &value);
 
 	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_copy_count(g_btree_key_trait), 1);
 }
@@ -663,7 +675,7 @@ void btree_key_trait_destroy_on_erase() {
 	char* key = "test key";
 	char* value = "test value";
 
-	CTEST_ASSERT_TRUE(cutil_btree_insert(g_btree, &key, &value));
+	cutil_btree_insert(g_btree, &key, &value);
 	CTEST_ASSERT_TRUE(cutil_btree_erase(g_btree, &key));
 
 	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_destroy_count(g_btree_key_trait), 1);
@@ -674,8 +686,8 @@ void btree_key_trait_compare_on_insert() {
 	char* key2 = "test key2";
 	char* value = "test value";
 
-	CTEST_ASSERT_TRUE(cutil_btree_insert(g_btree, &key1, &value));
-	CTEST_ASSERT_TRUE(cutil_btree_insert(g_btree, &key2, &value));
+	cutil_btree_insert(g_btree, &key1, &value);
+	cutil_btree_insert(g_btree, &key2, &value);
 
 	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_compare_count(g_btree_key_trait), 1);
 }
@@ -685,7 +697,7 @@ void btree_val_trait_copy_on_insert() {
 	char* key = "test key";
 	char* value = "test value";
 
-	CTEST_ASSERT_TRUE(cutil_btree_insert(g_btree, &key, &value));
+	cutil_btree_insert(g_btree, &key, &value);
 
 	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_copy_count(g_btree_val_trait), 1);
 }
@@ -694,7 +706,7 @@ void btree_val_trait_destroy_on_erase() {
 	char* key = "test key";
 	char* value = "test value";
 
-	CTEST_ASSERT_TRUE(cutil_btree_insert(g_btree, &key, &value));
+	cutil_btree_insert(g_btree, &key, &value);
 	CTEST_ASSERT_TRUE(cutil_btree_erase(g_btree, &key));
 
 	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_destroy_count(g_btree_val_trait), 1);
@@ -755,6 +767,20 @@ void btree_key_trait_destroy_on_destroy() {
 	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_destroy_count(g_btree_key_trait), item_count);
 }
 
+void btree_val_trait_insert_replace() {
+    char* key = "key", *val1 = "val1", *val2 = "val2";
+    size_t copy_count, destroy_count;
+    cutil_btree_insert(g_btree, &key, &val1);
+
+    copy_count = cutil_test_trait_tracker_copy_count(g_btree_val_trait);
+    destroy_count = cutil_test_trait_tracker_destroy_count(g_btree_val_trait);
+
+    cutil_btree_insert(g_btree, &key, &val2);
+
+    CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_copy_count(g_btree_val_trait), copy_count + 1);
+    CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_destroy_count(g_btree_val_trait), destroy_count + 1);
+}
+
 void add_btree_tests() {
     ctest_suite("btree_insert_odd_order");
     ctest_suite_before_each(&btree_before_each);
@@ -773,6 +799,8 @@ void add_btree_tests() {
     CTEST_ADD_TEST(btree_contains_returns_true_if_key_in_interior_node);
     CTEST_ADD_TEST(btree_contains_returns_true_if_key_in_root_node);
     CTEST_ADD_TEST(btree_contains_returns_false_if_key_not_present);
+
+    CTEST_ADD_TEST(btree_insert_replaces_existing_key);
 
     CTEST_ADD_TEST(btree_split_interior_node_push_up);
 
@@ -842,4 +870,6 @@ void add_btree_tests() {
 	CTEST_ADD_TEST(btree_val_trait_destroy_on_erase);
 	CTEST_ADD_TEST(btree_val_trait_destroy_on_clear);
 	CTEST_ADD_TEST(btree_val_trait_destroy_on_destroy);
+
+    CTEST_ADD_TEST(btree_val_trait_insert_replace);
 }

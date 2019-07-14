@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <limits.h>
 
-#define ITEM_ALREADY_INSERTED INT_MAX
 #define ITEM_NOT_PRESENT INT_MAX
 
 void _node_clear_empty_branch_ptrs(cutil_btree* btree, _btree_node* node);
@@ -31,7 +30,7 @@ unsigned int _get_pivot_index(cutil_btree* btree) {
 
 /*
 Searches through existing keys in the node and returns the index the supplied key should be inserted at.
-returns ITEM_ALREADY_INSERTED if they key already exists in the node.
+returns btree->order + position if they key already exists in the node.
 */
 unsigned int _node_get_insertion_position(cutil_btree* btree, _btree_node*  node, void* key);
 
@@ -433,13 +432,22 @@ void _copy_with_trait(void* dest, void* src, cutil_trait* trait) {
 }
 
 
-int cutil_btree_insert(cutil_btree* btree, void* key, void* value) {
+void cutil_btree_insert(cutil_btree* btree, void* key, void* value) {
 	_btree_node*  node = _btree_find_node_for_key(btree, btree->root, key);
 	unsigned int i, insert_position = _node_get_insertion_position(btree, node, key);
 
-	if (insert_position == ITEM_ALREADY_INSERTED) {
-		return 0;
+	/* if the key is already present in the btree then we just need to replace the value */
+	if (insert_position >= btree->order) {
+		void* node_value = _node_get_value(node, btree->value_trait, insert_position - btree->order);
+
+        if (btree->value_trait->pre_destroy_func) {
+            btree->value_trait->pre_destroy_func(node_value, btree->value_trait->user_data);
+        }
+
+        _copy_with_trait(node_value, value, btree->value_trait);
+        return;
 	}
+
 	if (_node_full(btree, node)) {
 		void* copied_key = malloc(sizeof(btree->key_trait->size));
 		void* copied_value = malloc(sizeof(btree->value_trait->size));
@@ -470,7 +478,7 @@ int cutil_btree_insert(cutil_btree* btree, void* key, void* value) {
 	}
 
 	btree->size += 1;
-	return 1;
+	return;
 }
 
 int cutil_btree_get(cutil_btree* btree, void* key, void* value) {
@@ -703,8 +711,8 @@ int cutil_btree_erase(cutil_btree* btree, void* key) {
 		}
 
 		if (btree->value_trait->pre_destroy_func) {
-			void* item_key = _node_get_value(node, btree->value_trait, item_pos);
-			btree->value_trait->pre_destroy_func(item_key, btree->value_trait->user_data);
+			void* item_value = _node_get_value(node, btree->value_trait, item_pos);
+			btree->value_trait->pre_destroy_func(item_value, btree->value_trait->user_data);
 		}
 
 		if (_node_is_leaf(node)) {
@@ -727,7 +735,7 @@ int cutil_btree_contains(cutil_btree* btree, void* key) {
 	_btree_node* node = _btree_find_node_for_key(btree, btree->root, key);
 	unsigned int insert_position = _node_get_insertion_position(btree, node, key);
 
-	return insert_position == ITEM_ALREADY_INSERTED;
+	return insert_position >= btree->order;
 }
 
 void cutil_btree_clear(cutil_btree* btree) {
@@ -757,7 +765,7 @@ unsigned int _node_get_insertion_position(cutil_btree* btree, _btree_node* node,
 		int key_comp = btree->key_trait->compare_func(key, item_key, btree->key_trait->user_data);
 
 		if (key_comp == 0) {
-			insert_pos = ITEM_ALREADY_INSERTED;
+			insert_pos = btree->order + i;
 			break;
 		}
 		else if (key_comp < 0) {
