@@ -11,7 +11,9 @@ This is a small C utility library inspired by the c++ stl that can be used in C 
 - [btree](https://cutil.readthedocs.io/en/master/btree_8h.html): Self balancing search tree
 
 ### Building
-In order to build the library, CMake 3.11 or greater is required.  To easily build the library run the following commands in your terminal:
+In order to build the library, CMake 3.11 or greater is required.  Cutil depends on [ctest](https://github.com/matthewcpp/ctest) which will automatically be downloaded by Cmake when the project is configured.
+
+To easily build the library run the following commands in your terminal:
 ```bash
 mkdir build
 cd build
