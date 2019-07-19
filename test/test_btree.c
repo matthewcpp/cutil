@@ -557,7 +557,7 @@ void btree_test_get_pod() {
 		int expected_value = i * 10;
 		int actual_value = 0;
 		int result = cutil_btree_get(g_btree, &i, &actual_value);
-		CTEST_ASSERT_TRUE(result)
+		CTEST_ASSERT_TRUE(result);
 		CTEST_ASSERT_INT_EQ(expected_value, actual_value);
 	}
 }

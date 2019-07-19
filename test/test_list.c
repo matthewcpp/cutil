@@ -410,9 +410,9 @@ void add_list_tests(){
 	ctest_suite_before_each(&list_trait_before_each);
 	ctest_suite_after_each(&list_trait_after_each);
 
-	CTEST_ADD_TEST(list_copy_on_push_back)
-	CTEST_ADD_TEST(list_copy_on_push_front)
-	CTEST_ADD_TEST(list_delete_pop_front)
+	CTEST_ADD_TEST(list_copy_on_push_back);
+	CTEST_ADD_TEST(list_copy_on_push_front);
+	CTEST_ADD_TEST(list_delete_pop_front);
 	CTEST_ADD_TEST(list_delete_pop_back);
 	CTEST_ADD_TEST(list_delete_on_destroy);
 	CTEST_ADD_TEST(list_delete_on_clear);

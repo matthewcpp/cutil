@@ -312,9 +312,9 @@ void add_vector_tests(){
 	ctest_suite_before_each(&vector_trait_before_each);
 	ctest_suite_after_each(&vector_trait_after_each);
 
-	CTEST_ADD_TEST(vector_trait_copy_on_push)
-	CTEST_ADD_TEST(vector_trait_destroy_on_pop_back)
-	CTEST_ADD_TEST(vector_trait_destroy_on_vec_destroy)
-    CTEST_ADD_TEST(vector_trait_destroy_on_vec_reset)
-    CTEST_ADD_TEST(vector_trait_destroy_on_vec_clear)
+	CTEST_ADD_TEST(vector_trait_copy_on_push);
+	CTEST_ADD_TEST(vector_trait_destroy_on_pop_back);
+	CTEST_ADD_TEST(vector_trait_destroy_on_vec_destroy);
+	CTEST_ADD_TEST(vector_trait_destroy_on_vec_reset);
+	CTEST_ADD_TEST(vector_trait_destroy_on_vec_clear);
 }

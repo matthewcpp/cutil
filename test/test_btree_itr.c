@@ -150,7 +150,7 @@ void add_btree_itr_tests() {
     ctest_suite("btree_itr");
     ctest_suite_after_each(&btree_itr_after_each);
 
-    CTEST_ADD_TEST(test_btree_itr_forward_empty)
+	CTEST_ADD_TEST(test_btree_itr_forward_empty);
     CTEST_ADD_TEST(test_btree_itr_forward_pod);
     CTEST_ADD_TEST(test_btree_itr_forward_cstring);
     CTEST_ADD_TEST(test_btree_itr_forward_ptr);
