@@ -7,6 +7,7 @@ set(cutil_sources
 
 add_library (cutil ${cutil_sources})
 set_compiler_options(cutil)
+target_include_directories(cutil PUBLIC ../include)
 
 if (NOT MSVC)
     set(cutil_public_link_libs m)
@@ -21,15 +22,3 @@ if (NOT MSVC)
         PRIVATE ${cutil_private_link_libs}
     )
 endif()
-
-
-set(testing_sources
-	../include/ctest/ctest.h
-    ctest.c
-)
-
-add_library (cutil_testing ${testing_sources})
-set_compiler_options(cutil_testing)
-
-target_link_libraries(cutil_testing cutil)
-
