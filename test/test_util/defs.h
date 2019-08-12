@@ -12,4 +12,15 @@ Although the behavior of this method is not exactly the same as the standardized
 	#define cutil_snprintf_func snprintf
 #endif
 
+#define CTEST_UTIL_FREE_PTR_ARRAY(ptr_arr, count) \
+    if (ptr_arr) { \
+        int i; \
+        for (i = 0; i < count; i++) { \
+            if (ptr_arr[i]) \
+                free(ptr_arr[i]); \
+        } \
+        free(ptr_arr); \
+    } \
+
+
 #endif
