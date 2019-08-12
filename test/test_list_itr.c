@@ -4,152 +4,144 @@
 #include "ctest/ctest.h"
 
 #include <stdlib.h>
+#include <string.h>
 
-cutil_list* g_itr_list = NULL;
+typedef struct {
+    cutil_list* list;
+    cutil_list_itr* itr;
+} list_itr_test;
 
-void list_itr_before_each() {
-	g_itr_list = cutil_list_create(cutil_trait_int());
+void list_itr_test_setup(list_itr_test* test) {
+    memset(test, 0, sizeof(list_itr_test));
 }
 
-void list_itr_after_each() {
-	cutil_list_destroy(g_itr_list);
-	cutil_trait_destroy();
+void list_itr_test_teardown(list_itr_test* test) {
+    if (test->itr) {
+        cutil_list_itr_destroy(test->itr);
+    }
+    if (test->list) {
+        cutil_list_destroy(test->list);
+    }
 
-	g_itr_list = NULL;
+    cutil_trait_destroy();
 }
 
-void list_itrp_before_each() {
-	g_itr_list = cutil_list_create(cutil_trait_ptr());
+CTEST_FIXTURE(list_itr, list_itr_test, list_itr_test_setup, list_itr_test_teardown)
+
+
+void has_next_empty(list_itr_test* test) {
+    test->list = cutil_list_create(cutil_trait_int());
+	test->itr = cutil_list_itr_create(test->list);
+
+	CTEST_ASSERT_FALSE(cutil_list_itr_has_next(test->itr));
 }
 
-void list_itr_empty_list_has_next() {
-	cutil_list_itr* it = cutil_list_itr_create(g_itr_list);
+void has_prev_empty(list_itr_test* test) {
+    test->list = cutil_list_create(cutil_trait_int());
+    test->itr = cutil_list_itr_create(test->list);
 
-	CTEST_ASSERT_FALSE(cutil_list_itr_has_next(it));
-
-	cutil_list_itr_destroy(it);
+	CTEST_ASSERT_FALSE(cutil_list_itr_has_prev(test->itr));
 }
 
-void list_itr_empty_list_has_prev() {
-	cutil_list_itr* it = cutil_list_itr_create(g_itr_list);
+void next_empty(list_itr_test* test) {
+    test->list = cutil_list_create(cutil_trait_int());
+    test->itr = cutil_list_itr_create(test->list);
 
-	CTEST_ASSERT_FALSE(cutil_list_itr_has_prev(it));
-
-	cutil_list_itr_destroy(it);
+	CTEST_ASSERT_FALSE(cutil_list_itr_next(test->itr, NULL));
 }
 
-void list_itr_empty_list_next() {
-	cutil_list_itr* it = cutil_list_itr_create(g_itr_list);
+void prev_empty(list_itr_test* test) {
+    test->list = cutil_list_create(cutil_trait_int());
+    test->itr = cutil_list_itr_create(test->list);
 
-	CTEST_ASSERT_FALSE(cutil_list_itr_next(it, NULL));
-
-	cutil_list_itr_destroy(it);
+	CTEST_ASSERT_FALSE(cutil_list_itr_prev(test->itr, NULL));
 }
 
-void list_itr_empty_list_prev() {
-	cutil_list_itr* it = cutil_list_itr_create(g_itr_list);
-
-	CTEST_ASSERT_FALSE(cutil_list_itr_prev(it, NULL));
-
-	cutil_list_itr_destroy(it);
-}
-
-void list_itr_has_next() {
-	cutil_list_itr* it = NULL;
-
+void has_next(list_itr_test* test) {
 	int i = 55;
-	cutil_list_push_back(g_itr_list, &i);
 
-	it = cutil_list_itr_create(g_itr_list);
-	CTEST_ASSERT_TRUE(cutil_list_itr_has_next(it));
+    test->list = cutil_list_create(cutil_trait_int());
+	cutil_list_push_back(test->list, &i);
 
-	cutil_list_itr_destroy(it);
+    test->itr = cutil_list_itr_create(test->list);
+	CTEST_ASSERT_TRUE(cutil_list_itr_has_next(test->itr));
 }
 
-void list_itr_has_prev() {
-	cutil_list_itr* it = NULL;
-
+void has_prev(list_itr_test* test) {
 	int i = 55;
-	cutil_list_push_back(g_itr_list, &i);
 
-	it = cutil_list_itr_create(g_itr_list);
-	CTEST_ASSERT_TRUE(cutil_list_itr_has_prev(it));
+    test->list = cutil_list_create(cutil_trait_int());
+	cutil_list_push_back(test->list, &i);
 
-	cutil_list_itr_destroy(it);
+	test->itr = cutil_list_itr_create(test->list);
+	CTEST_ASSERT_TRUE(cutil_list_itr_has_prev(test->itr));
 }
 
-void list_itr_next() {
-	cutil_list_itr* it;
+void next_one_item(list_itr_test* test) {
 	int actual_val = 0;
-
 	int expected_val = 55;
-	cutil_list_push_back(g_itr_list, &expected_val);
 
-	it = cutil_list_itr_create(g_itr_list);
+    test->list = cutil_list_create(cutil_trait_int());
+	cutil_list_push_back(test->list, &expected_val);
 
-	CTEST_ASSERT_TRUE(cutil_list_itr_next(it, &actual_val));
+	test->itr = cutil_list_itr_create(test->list);
+
+	CTEST_ASSERT_TRUE(cutil_list_itr_next(test->itr, &actual_val));
 	CTEST_ASSERT_INT_EQ(expected_val, actual_val);
-
-	cutil_list_itr_destroy(it);
 }
 
-void list_itr_prev() {
-	cutil_list_itr* it = NULL;
+void prev_one_item(list_itr_test* test) {
 	int actual_val = 0;
-
 	int expected_val = 55;
-	cutil_list_push_back(g_itr_list, &expected_val);
 
-	it = cutil_list_itr_create(g_itr_list);
+    test->list = cutil_list_create(cutil_trait_int());
+	cutil_list_push_back(test->list, &expected_val);
 
-	CTEST_ASSERT_TRUE(cutil_list_itr_prev(it, &actual_val));
+	test->itr = cutil_list_itr_create(test->list);
+
+	CTEST_ASSERT_TRUE(cutil_list_itr_prev(test->itr, &actual_val));
 	CTEST_ASSERT_INT_EQ(expected_val, actual_val);
-
-	cutil_list_itr_destroy(it);
 }
 
-void list_itr_next_null() {
-	cutil_list_itr* it;
-
+void next_null(list_itr_test* test) {
 	int int_val = 55;
-	cutil_list_push_back(g_itr_list, &int_val);
 
-	it = cutil_list_itr_create(g_itr_list);
+    test->list = cutil_list_create(cutil_trait_int());
+	cutil_list_push_back(test->list, &int_val);
 
-	CTEST_ASSERT_TRUE(cutil_list_itr_next(it, NULL));
+	test->itr = cutil_list_itr_create(test->list);
 
-	cutil_list_itr_destroy(it);
+	CTEST_ASSERT_TRUE(cutil_list_itr_next(test->itr, NULL));
 }
 
-void list_itr_prev_null() {
-	cutil_list_itr* it;
+void prev_null(list_itr_test* test) {
+    int int_val = 55;
 
-	int int_val = 55;
-	cutil_list_push_back(g_itr_list, &int_val);
+    test->list = cutil_list_create(cutil_trait_int());
+	cutil_list_push_back(test->list, &int_val);
 
-	it = cutil_list_itr_create(g_itr_list);
+	test->itr = cutil_list_itr_create(test->list );
 
-	CTEST_ASSERT_TRUE(cutil_list_itr_prev(it, NULL));
-
-	cutil_list_itr_destroy(it);
+	CTEST_ASSERT_TRUE(cutil_list_itr_prev(test->itr, NULL));
 }
 
-void list_itr_iterate_list_next() {
-	cutil_list_itr* it = NULL;
+void iterate_list_next(list_itr_test* test) {
 	int expected_sum = 0;
 	int actual_sum = 0;
 	int current_val = 0;
 	int prev_val = -1;
-
 	int i;
+
+    test->list = cutil_list_create(cutil_trait_int());
+
 	for (i = 0; i < 10; i++) {
 		expected_sum += i;
-		cutil_list_push_back(g_itr_list, &i);
+		cutil_list_push_back(test->list, &i);
 	}
 
-	it = cutil_list_itr_create(g_itr_list);
+	test->itr = cutil_list_itr_create(test->list);
 
-	while (cutil_list_itr_next(it, &current_val)) {
+	while (cutil_list_itr_next(test->itr, &current_val)) {
 		actual_sum += current_val;
 		
 		CTEST_ASSERT_TRUE(current_val > prev_val);
@@ -157,27 +149,25 @@ void list_itr_iterate_list_next() {
 	}
 
 	CTEST_ASSERT_INT_EQ(expected_sum, actual_sum);
-
-	cutil_list_itr_destroy(it);
 }
 
-void list_itr_iterate_list_prev() {
-	cutil_list_itr* it = NULL;
-
-	int expected_sum = 0;
+void iterate_list_prev(list_itr_test* test) {
+    int expected_sum = 0;
 	int actual_sum = 0;
 	int current_val = 0;
 	int prev_val = 10;
-
 	int i;
+
+    test->list = cutil_list_create(cutil_trait_int());
+
 	for (i = 0; i < 10; i++) {
 		expected_sum += i;
-		cutil_list_push_back(g_itr_list, &i);
+		cutil_list_push_back(test->list, &i);
 	}
 
-	it = cutil_list_itr_create(g_itr_list);
+	test->itr = cutil_list_itr_create(test->list);
 
-	while (cutil_list_itr_prev(it, &current_val)) {
+	while (cutil_list_itr_prev(test->itr, &current_val)) {
 		actual_sum += current_val;
 
 		CTEST_ASSERT_TRUE(current_val < prev_val);
@@ -185,131 +175,112 @@ void list_itr_iterate_list_prev() {
 	}
 
 	CTEST_ASSERT_INT_EQ(expected_sum, actual_sum);
-
-	cutil_list_itr_destroy(it);
 }
 
-void list_itrp_iterate_list_ptr_next() {
-	cutil_list_itr* it = NULL;
-
+void iterate_list_next_ptr(list_itr_test* test) {
 	int expected_sum = 0;
 	int actual_sum = 0;
 	int* current_ptr = NULL;
 	int prev_val = -1;
-
 	int i;
+	int int_arr[10];
+
+	test->list = cutil_list_create(cutil_trait_ptr());
+
 	for (i = 0; i < 10; i++) {
-		int* intptr = malloc(sizeof(int));
+		int* intptr = &int_arr[i];
 		*intptr = i;
-		cutil_list_push_back(g_itr_list, &intptr);
+		cutil_list_push_back(test->list, &intptr);
 
 		expected_sum += i;
 	}
 
-	it = cutil_list_itr_create(g_itr_list);
+	test->itr = cutil_list_itr_create(test->list);
 
-	while (cutil_list_itr_next(it, &current_ptr)) {
+	while (cutil_list_itr_next(test->itr, &current_ptr)) {
 		actual_sum += *current_ptr;
 
 		CTEST_ASSERT_TRUE(*current_ptr > prev_val);
 		prev_val = *current_ptr;
-
-		free(current_ptr);
 	}
 
 	CTEST_ASSERT_INT_EQ(expected_sum, actual_sum);
-
-	cutil_list_itr_destroy(it);
 }
 
-void list_itrp_iterate_list_ptr_prev() {
-	cutil_list_itr* it = NULL;
-
+void iterate_list_prev_ptr(list_itr_test* test) {
 	int expected_sum = 0;
 	int actual_sum = 0;
 	int* current_ptr = NULL;
 	int prev_val = 10;
-
 	int i;
+	int int_arr[10];
+
+	test->list = cutil_list_create(cutil_trait_ptr());
+
 	for (i = 0; i < 10; i++) {
-		int* intptr = malloc(sizeof(int));
+		int* intptr = &int_arr[i];
 		*intptr = i;
 
-		cutil_list_push_back(g_itr_list, &intptr);
+		cutil_list_push_back(test->list, &intptr);
 
 		expected_sum += i;
 	}
 
-	it = cutil_list_itr_create(g_itr_list);
+	test->itr = cutil_list_itr_create(test->list);
 
-	while (cutil_list_itr_prev(it, &current_ptr)) {
+	while (cutil_list_itr_prev(test->itr, &current_ptr)) {
 		actual_sum += *current_ptr;
 
 		CTEST_ASSERT_TRUE(*current_ptr < prev_val);
 		prev_val = *current_ptr;
-
-		free(current_ptr);
 	}
 
 	CTEST_ASSERT_INT_EQ(expected_sum, actual_sum);
-
-	cutil_list_itr_destroy(it);
 }
 
-void list_itr_forward_back() {
-    cutil_list_itr* it = NULL;
+void forward_back(list_itr_test* test) {
 	int i = 27;
-	cutil_list_push_back(g_itr_list, &i);
 
-	it = cutil_list_itr_create(g_itr_list);
-	CTEST_ASSERT_TRUE(cutil_list_itr_next(it, NULL));
-	CTEST_ASSERT_FALSE(cutil_list_itr_prev(it, NULL));
+	test->list = cutil_list_create(cutil_trait_int());
+	cutil_list_push_back(test->list, &i);
 
-	cutil_list_itr_destroy(it);
+	test->itr = cutil_list_itr_create(test->list);
+	CTEST_ASSERT_TRUE(cutil_list_itr_next(test->itr, NULL));
+	CTEST_ASSERT_FALSE(cutil_list_itr_prev(test->itr, NULL));
 }
 
-void list_itr_back_forward() {
-    cutil_list_itr* it = NULL;
+void back_forward(list_itr_test* test) {
 	int i = 27;
-	cutil_list_push_back(g_itr_list, &i);
 
-	it = cutil_list_itr_create(g_itr_list);
-	CTEST_ASSERT_TRUE(cutil_list_itr_next(it, NULL));
-	CTEST_ASSERT_FALSE(cutil_list_itr_prev(it, NULL));
+	test->list = cutil_list_create(cutil_trait_int());
+	cutil_list_push_back(test->list, &i);
 
-	cutil_list_itr_destroy(it);
+	test->itr = cutil_list_itr_create(test->list);
+	CTEST_ASSERT_TRUE(cutil_list_itr_next(test->itr, NULL));
+	CTEST_ASSERT_FALSE(cutil_list_itr_prev(test->itr, NULL));
 }
 
 void add_list_itr_tests() {
-    ctest_suite("list_itr");
-    ctest_suite_before_each(&list_itr_before_each);
-    ctest_suite_after_each(&list_itr_after_each);
+    CTEST_ADD_TEST_F(list_itr, has_next_empty);
+    CTEST_ADD_TEST_F(list_itr, has_next);
 
-    CTEST_ADD_TEST(list_itr_empty_list_has_next);
-    CTEST_ADD_TEST(list_itr_empty_list_has_prev);
+    CTEST_ADD_TEST_F(list_itr, has_prev_empty);
+    CTEST_ADD_TEST_F(list_itr, has_prev);
 
-    CTEST_ADD_TEST(list_itr_empty_list_next);
-    CTEST_ADD_TEST(list_itr_empty_list_prev);
+    CTEST_ADD_TEST_F(list_itr, next_empty);
+    CTEST_ADD_TEST_F(list_itr, next_null);
+    CTEST_ADD_TEST_F(list_itr, next_one_item);
 
-    CTEST_ADD_TEST(list_itr_has_next);
-    CTEST_ADD_TEST(list_itr_has_prev);
+    CTEST_ADD_TEST_F(list_itr, prev_empty);
+    CTEST_ADD_TEST_F(list_itr, prev_one_item);
+    CTEST_ADD_TEST_F(list_itr, prev_null);
 
-    CTEST_ADD_TEST(list_itr_next);
-    CTEST_ADD_TEST(list_itr_prev);
+    CTEST_ADD_TEST_F(list_itr, iterate_list_next);
+	CTEST_ADD_TEST_F(list_itr, iterate_list_next_ptr);
 
-    CTEST_ADD_TEST(list_itr_next_null);
-    CTEST_ADD_TEST(list_itr_prev_null);
+    CTEST_ADD_TEST_F(list_itr, iterate_list_prev);
+	CTEST_ADD_TEST_F(list_itr, iterate_list_prev_ptr);
 
-    CTEST_ADD_TEST(list_itr_iterate_list_next);
-    CTEST_ADD_TEST(list_itr_iterate_list_prev);
-
-    CTEST_ADD_TEST(list_itr_forward_back);
-    CTEST_ADD_TEST(list_itr_back_forward);
-
-    ctest_suite("list_itrp");
-    ctest_suite_before_each(&list_itrp_before_each);
-    ctest_suite_after_each(&list_itr_after_each);
-
-    CTEST_ADD_TEST(list_itrp_iterate_list_ptr_next);
-    CTEST_ADD_TEST(list_itrp_iterate_list_ptr_prev);
+    CTEST_ADD_TEST_F(list_itr, forward_back);
+    CTEST_ADD_TEST_F(list_itr, back_forward);
 }
