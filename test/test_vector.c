@@ -9,133 +9,173 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
-cutil_vector* g_vector = NULL;
-cutil_trait* g_vector_trait = NULL;
+typedef struct {
+    cutil_vector* vector;
+} vector_test;
 
-void vector_before_each() {
-    g_vector = cutil_vector_create(cutil_trait_int());
+void vector_test_setup(vector_test* test) {
+    memset(test, 0 , sizeof(vector_test));
+}
+void vector_test_teardown(vector_test* test) {
+    if (test->vector) {
+        cutil_vector_destroy(test->vector);
+    }
+
+    cutil_trait_destroy();
 }
 
-void vector_after_each() {
-    cutil_vector_destroy(g_vector);
-	cutil_trait_destroy();
+typedef struct {
+    cutil_vector* vector;
+    cutil_trait* trait_tracker;
+} vector_trait_func_test;
 
-    g_vector = NULL;
+void vector_trait_func_test_setup(vector_trait_func_test* test) {
+    memset(test, 0, sizeof(vector_trait_func_test));
 }
 
-void vectorp_before_each() {
-	g_vector = cutil_vector_create(cutil_trait_ptr());
+void vector_trait_func_test_teardown(vector_trait_func_test* test) {
+    if (test->vector) {
+        cutil_vector_destroy(test->vector);
+    }
+
+    if (test->trait_tracker) {
+        cutil_test_destroy_trait_tracker(test->trait_tracker);
+    }
+
+    cutil_trait_destroy();
 }
+
+CTEST_FIXTURE(vector, vector_test, vector_test_setup, vector_test_teardown)
+CTEST_FIXTURE(vector_trait_func, vector_trait_func_test, vector_trait_func_test_setup, vector_trait_func_test_teardown)
 
 /* Initializing Vector sets size to 0 */
-void vector_init_size_0() {
-    CTEST_ASSERT_INT_EQ(cutil_vector_size(g_vector), 0);
+void init_size_0_vec(vector_test* test) {
+    test->vector = cutil_vector_create(cutil_trait_int());
+
+    CTEST_ASSERT_INT_EQ(cutil_vector_size(test->vector), 0);
 }
 
 /* getting vector trait returns correct pointer */
-void vector_trait() {
-	CTEST_ASSERT_PTR_EQ(cutil_vector_trait(g_vector), cutil_trait_int());
+void get_trait(vector_test* test) {
+    test->vector = cutil_vector_create(cutil_trait_int());
+
+	CTEST_ASSERT_PTR_EQ(cutil_vector_trait(test->vector), cutil_trait_int());
 }
 
 /* pushing an item to an empty vector grows it by one */
-void vector_push_empty(){
+void push_back_empty(vector_test* test){
     int i = 7;
-    cutil_vector_push_back(g_vector, &i);
 
-    CTEST_ASSERT_INT_EQ(cutil_vector_capacity(g_vector), 1);
-    CTEST_ASSERT_INT_EQ(cutil_vector_size(g_vector), 1);
+    test->vector = cutil_vector_create(cutil_trait_int());
+    cutil_vector_push_back(test->vector, &i);
+
+    CTEST_ASSERT_INT_EQ(cutil_vector_capacity(test->vector), 1);
+    CTEST_ASSERT_INT_EQ(cutil_vector_size(test->vector), 1);
 }
 
 /* pushing a number of items to the vector will add them to the end */
-void vector_push_multiple(){
+void push_back_multiple_vec(vector_test* test){
     int i;
+
+    test->vector = cutil_vector_create(cutil_trait_int());
+
     for (i = 0; i < 10; i++){
-        cutil_vector_push_back(g_vector, &i);
+        cutil_vector_push_back(test->vector, &i);
     }
 
-    CTEST_ASSERT_INT_EQ(cutil_vector_size(g_vector), 10);
-    CTEST_ASSERT_INT_EQ(cutil_vector_capacity(g_vector), 16);
+    CTEST_ASSERT_INT_EQ(cutil_vector_size(test->vector), 10);
+    CTEST_ASSERT_INT_EQ(cutil_vector_capacity(test->vector), 16);
 }
 
 /* popping an empty vector does nothing */
-void vector_pop_empty(){
-    cutil_vector_pop_back(g_vector);
+void pop_back_empty_vec(vector_test* test){
+    test->vector = cutil_vector_create(cutil_trait_int());
+
+    cutil_vector_pop_back(test->vector);
 }
 
 /* popping an item from the vector reduces its size */
-void vector_pop_non_empty(){
+void pop_back_non_empty(vector_test* test){
     size_t previous_size;
-
     int i;
+
+    test->vector = cutil_vector_create(cutil_trait_int());
     for (i = 0; i < 10; i++){
-        cutil_vector_push_back(g_vector, &i);
+        cutil_vector_push_back(test->vector, &i);
     }
 
-    previous_size = cutil_vector_size(g_vector);
-    cutil_vector_pop_back(g_vector);
-	CTEST_ASSERT_INT_EQ(cutil_vector_size(g_vector), previous_size - 1);
+    previous_size = cutil_vector_size(test->vector);
+    cutil_vector_pop_back(test->vector);
+	CTEST_ASSERT_INT_EQ(cutil_vector_size(test->vector), previous_size - 1);
 }
 
 /* pop and add does not trigger array growth */
-void vector_pop_and_add(){
+void pop_back_and_add(vector_test* test){
     size_t expected_capacity;
-
     int i = 66;
-    cutil_vector_push_back(g_vector, &i);
 
-	expected_capacity = cutil_vector_capacity(g_vector);
-    cutil_vector_pop_back(g_vector);
-    cutil_vector_push_back(g_vector, &i);
+    test->vector = cutil_vector_create(cutil_trait_int());
+    cutil_vector_push_back(test->vector, &i);
 
-    CTEST_ASSERT_INT_EQ(expected_capacity, cutil_vector_capacity(g_vector));
+	expected_capacity = cutil_vector_capacity(test->vector);
+    cutil_vector_pop_back(test->vector);
+    cutil_vector_push_back(test->vector, &i);
+
+    CTEST_ASSERT_INT_EQ(expected_capacity, cutil_vector_capacity(test->vector));
 }
 
 /* clearing an empty vector does nothing */
-void vector_clear_empty(){
-    cutil_vector_clear(g_vector);
+void clear_empty_vec(vector_test* test){
+	test->vector = cutil_vector_create(cutil_trait_int());
+    cutil_vector_clear(test->vector);
 }
 
 /* clearing a vector resets size and leaves capacity unmodified */
-void vector_clear(){
+void clear(vector_test* test){
     int i;
 	size_t expected_capacity;
 
+	test->vector = cutil_vector_create(cutil_trait_int());
     for (i = 0; i < 10; i++){
-        cutil_vector_push_back(g_vector, &i);
+        cutil_vector_push_back(test->vector, &i);
     }
 
-	expected_capacity = cutil_vector_capacity(g_vector);
-    cutil_vector_clear(g_vector);
+	expected_capacity = cutil_vector_capacity(test->vector);
+    cutil_vector_clear(test->vector);
 
-    CTEST_ASSERT_INT_EQ(cutil_vector_size(g_vector), 0);
-    CTEST_ASSERT_INT_EQ(cutil_vector_capacity(g_vector), expected_capacity);
+    CTEST_ASSERT_INT_EQ(cutil_vector_size(test->vector), 0);
+    CTEST_ASSERT_INT_EQ(cutil_vector_capacity(test->vector), expected_capacity);
 }
 
 /* resetting a vector resets size and capacity */
-void vector_reset() {
+void reset(vector_test* test) {
 	int i;
+
+	test->vector = cutil_vector_create(cutil_trait_int());
 	for (i = 0; i < 10; i++) {
-		cutil_vector_push_back(g_vector, &i);
+		cutil_vector_push_back(test->vector, &i);
 	}
 
-	cutil_vector_reset(g_vector);
+	cutil_vector_reset(test->vector);
 
-	CTEST_ASSERT_INT_EQ(cutil_vector_size(g_vector), 0);
-	CTEST_ASSERT_INT_EQ(cutil_vector_capacity(g_vector), 0);
+	CTEST_ASSERT_INT_EQ(cutil_vector_size(test->vector), 0);
+	CTEST_ASSERT_INT_EQ(cutil_vector_capacity(test->vector), 0);
 }
 
 /* get retrieves the correct items for valid indices */
-void vector_get_valid() {
+void get_valid(vector_test* test) {
     int actual_value = -1;
-
     int i;
+
+	test->vector = cutil_vector_create(cutil_trait_int());
     for (i = 0; i < 10; i++){
-        cutil_vector_push_back(g_vector, &i);
+        cutil_vector_push_back(test->vector, &i);
     }
 
     for (i = 0; i < 10; i++){
-        int get_result = cutil_vector_get(g_vector, i, &actual_value);
+        int get_result = cutil_vector_get(test->vector, i, &actual_value);
 
         CTEST_ASSERT_TRUE(get_result);
         CTEST_ASSERT_INT_EQ(actual_value, i);
@@ -143,58 +183,64 @@ void vector_get_valid() {
 }
 
 /* false is returned when trying to get value from empty vector */
-void vector_get_empty() {
+void get_empty(vector_test* test) {
     int actual_value = -1;
+	int get_result = -1;
 
-    int get_result = cutil_vector_get(g_vector, 0, &actual_value);
+	test->vector = cutil_vector_create(cutil_trait_int());
+    get_result = cutil_vector_get(test->vector, 0, &actual_value);
+
     CTEST_ASSERT_FALSE(get_result);
 }
 
 /* false is returned when trying to get invalid indices */
-void vector_get_invalid() {
+void get_invalid(vector_test* test) {
     int actual_value = -1;
     int get_result;
-
     int i;
+
+	test->vector = cutil_vector_create(cutil_trait_int());
     for (i = 0; i < 10; i++){
-        cutil_vector_push_back(g_vector, &i);
+        cutil_vector_push_back(test->vector, &i);
     }
 
-    get_result = cutil_vector_get(g_vector, 111, &actual_value);
+    get_result = cutil_vector_get(test->vector, 111, &actual_value);
     CTEST_ASSERT_FALSE(get_result);
 }
 
 /* popping and getting a value works as expected */
-void vector_pop_get() {
+void pop_back_get(vector_test* test) {
     int int_val1 = 66;
     int int_val2 = 77;
     int actual_val = -1;
     int get_result;
 
-    cutil_vector_push_back(g_vector, &int_val1);
-    cutil_vector_pop_back(g_vector);
-    cutil_vector_push_back(g_vector, &int_val2);
+	test->vector = cutil_vector_create(cutil_trait_int());
+    cutil_vector_push_back(test->vector, &int_val1);
+    cutil_vector_pop_back(test->vector);
+    cutil_vector_push_back(test->vector, &int_val2);
 
-    get_result = cutil_vector_get(g_vector, 0, &actual_val);
+    get_result = cutil_vector_get(test->vector, 0, &actual_val);
     CTEST_ASSERT_TRUE(get_result);
     CTEST_ASSERT_INT_EQ(actual_val, int_val2);
 }
 
 /* pushing and getting a pointer work correctly */
-void vectorp_push_and_get(){
+void ptr_push_and_get(vector_test* test){
     int expected_val = 999;
     int* actual_ptr;
+	int int_val;
+	int* int_ptr = &int_val;
 
-    int* int_ptr = (int*)malloc(sizeof(int));
+	test->vector = cutil_vector_create(cutil_trait_ptr());
+
     *int_ptr = expected_val;
 
-    cutil_vector_push_back(g_vector, &int_ptr);
-    cutil_vector_get(g_vector, 0, &actual_ptr);
+    cutil_vector_push_back(test->vector, &int_ptr);
+    cutil_vector_get(test->vector, 0, &actual_ptr);
 
     CTEST_ASSERT_PTR_EQ(actual_ptr, int_ptr);
     CTEST_ASSERT_INT_EQ(expected_val, *actual_ptr);
-
-    free(int_ptr);
 }
 
 void _vector_insert_test_strings(cutil_vector* vector, int count) {
@@ -211,110 +257,98 @@ void _vector_insert_test_strings(cutil_vector* vector, int count) {
 }
 
 /* Tests that the vector calls the trait's copy function when pushing an item. */
-void vector_trait_copy_on_push() {
+void copy_on_push(vector_trait_func_test* test) {
     int expected_copy_count = 10;
-    _vector_insert_test_strings(g_vector, expected_copy_count);
 
-    CTEST_ASSERT_INT_EQ(expected_copy_count, cutil_test_trait_tracker_copy_count(g_vector_trait));
+	test->trait_tracker = cutil_test_create_trait_tracker(cutil_trait_cstring());
+	test->vector = cutil_vector_create(test->trait_tracker);
+
+    _vector_insert_test_strings(test->vector, expected_copy_count);
+
+    CTEST_ASSERT_INT_EQ(expected_copy_count, cutil_test_trait_tracker_copy_count(test->trait_tracker));
 }
 
 /* Tests that the trait's destroy function is called when popping data from the end of the vector. */
-void vector_trait_destroy_on_pop_back() {
+void destroy_on_pop_back(vector_trait_func_test* test) {
     int expected_destroy_count = 10;
-    _vector_insert_test_strings(g_vector, expected_destroy_count);
 
-    while (cutil_vector_size(g_vector) > 0) {
-        cutil_vector_pop_back(g_vector);
+	test->trait_tracker = cutil_test_create_trait_tracker(cutil_trait_cstring());
+	test->vector = cutil_vector_create(test->trait_tracker);
+
+    _vector_insert_test_strings(test->vector, expected_destroy_count);
+
+    while (cutil_vector_size(test->vector) > 0) {
+        cutil_vector_pop_back(test->vector);
     }
 
-    CTEST_ASSERT_INT_EQ(expected_destroy_count, cutil_test_trait_tracker_destroy_count(g_vector_trait));
+    CTEST_ASSERT_INT_EQ(expected_destroy_count, cutil_test_trait_tracker_destroy_count(test->trait_tracker));
 }
 
-void vector_trait_destroy_on_vec_destroy() {
+void destroy_on_vec_destroy(vector_trait_func_test* test) {
     int expected_destroy_count = 10;
-    _vector_insert_test_strings(g_vector, expected_destroy_count);
 
-    cutil_vector_destroy(g_vector);
-    g_vector = NULL;
+	test->trait_tracker = cutil_test_create_trait_tracker(cutil_trait_cstring());
+	test->vector = cutil_vector_create(test->trait_tracker);
 
-    CTEST_ASSERT_INT_EQ(expected_destroy_count, cutil_test_trait_tracker_destroy_count(g_vector_trait));
+    _vector_insert_test_strings(test->vector, expected_destroy_count);
+
+    cutil_vector_destroy(test->vector);
+	test->vector = NULL;
+
+    CTEST_ASSERT_INT_EQ(expected_destroy_count, cutil_test_trait_tracker_destroy_count(test->trait_tracker));
 }
 
-void vector_trait_destroy_on_vec_clear() {
+void destroy_on_vec_reset(vector_trait_func_test* test) {
     int expected_destroy_count = 10;
-    _vector_insert_test_strings(g_vector, expected_destroy_count);
 
-    cutil_vector_clear(g_vector);
+	test->trait_tracker = cutil_test_create_trait_tracker(cutil_trait_cstring());
+	test->vector = cutil_vector_create(test->trait_tracker);
 
-    CTEST_ASSERT_INT_EQ(expected_destroy_count, cutil_test_trait_tracker_destroy_count(g_vector_trait));
+    _vector_insert_test_strings(test->vector, expected_destroy_count);
+
+    cutil_vector_reset(test->vector);
+
+    CTEST_ASSERT_INT_EQ(expected_destroy_count, cutil_test_trait_tracker_destroy_count(test->trait_tracker));
 }
 
-void vector_trait_destroy_on_vec_reset() {
+void destroy_on_vec_clear(vector_trait_func_test* test) {
     int expected_destroy_count = 10;
-    _vector_insert_test_strings(g_vector, expected_destroy_count);
 
-    cutil_vector_clear(g_vector);
+	test->trait_tracker = cutil_test_create_trait_tracker(cutil_trait_cstring());
+	test->vector = cutil_vector_create(test->trait_tracker);
 
-    CTEST_ASSERT_INT_EQ(expected_destroy_count, cutil_test_trait_tracker_destroy_count(g_vector_trait));
-}
+    _vector_insert_test_strings(test->vector, expected_destroy_count);
 
-void vector_trait_before_each() {
-	g_vector_trait = cutil_test_create_trait_tracker(cutil_trait_cstring());
-	g_vector = cutil_vector_create(g_vector_trait);
-}
+    cutil_vector_clear(test->vector);
 
-void vector_trait_after_each() {
-    if (g_vector) {
-        cutil_vector_destroy(g_vector);
-        g_vector = NULL;
-    }
-
-    if (g_vector_trait) {
-        cutil_test_destroy_trait_tracker(g_vector_trait);
-        g_vector_trait = NULL;
-    }
-
-    cutil_trait_destroy();
-
+    CTEST_ASSERT_INT_EQ(expected_destroy_count, cutil_test_trait_tracker_destroy_count(test->trait_tracker));
 }
 
 void add_vector_tests(){
-    ctest_suite("vector");
-    ctest_suite_before_each(&vector_before_each);
-    ctest_suite_after_each(&vector_after_each);
+    CTEST_ADD_TEST_F(vector, init_size_0_vec);
+    CTEST_ADD_TEST_F(vector, get_trait);
 
-    CTEST_ADD_TEST(vector_init_size_0);
-    CTEST_ADD_TEST(vector_trait);
+    CTEST_ADD_TEST_F(vector, push_back_empty);
+    CTEST_ADD_TEST_F(vector, push_back_multiple_vec);
 
-    CTEST_ADD_TEST(vector_push_empty);
-    CTEST_ADD_TEST(vector_push_multiple);
+    CTEST_ADD_TEST_F(vector, pop_back_empty_vec);
+    CTEST_ADD_TEST_F(vector, pop_back_non_empty);
+    CTEST_ADD_TEST_F(vector, pop_back_and_add);
+    CTEST_ADD_TEST_F(vector, pop_back_get);
 
-    CTEST_ADD_TEST(vector_pop_empty);
-    CTEST_ADD_TEST(vector_pop_non_empty);
-    CTEST_ADD_TEST(vector_pop_and_add);
-    CTEST_ADD_TEST(vector_pop_get);
+    CTEST_ADD_TEST_F(vector, get_invalid);
+    CTEST_ADD_TEST_F(vector, get_empty);
+    CTEST_ADD_TEST_F(vector, get_valid);
 
-    CTEST_ADD_TEST(vector_get_invalid);
-    CTEST_ADD_TEST(vector_get_empty);
-    CTEST_ADD_TEST(vector_get_valid);
+    CTEST_ADD_TEST_F(vector, clear_empty_vec);
+    CTEST_ADD_TEST_F(vector, clear);
+	CTEST_ADD_TEST_F(vector, reset);
 
-    CTEST_ADD_TEST(vector_clear_empty);
-    CTEST_ADD_TEST(vector_clear);
-	CTEST_ADD_TEST(vector_reset);
+    CTEST_ADD_TEST_F(vector, ptr_push_and_get);
 
-    ctest_suite("vectorp");
-    ctest_suite_before_each(&vectorp_before_each);
-    ctest_suite_after_each(&vector_after_each);
-
-    CTEST_ADD_TEST(vectorp_push_and_get);
-
-	ctest_suite("vector-trait");
-	ctest_suite_before_each(&vector_trait_before_each);
-	ctest_suite_after_each(&vector_trait_after_each);
-
-	CTEST_ADD_TEST(vector_trait_copy_on_push);
-	CTEST_ADD_TEST(vector_trait_destroy_on_pop_back);
-	CTEST_ADD_TEST(vector_trait_destroy_on_vec_destroy);
-	CTEST_ADD_TEST(vector_trait_destroy_on_vec_reset);
-	CTEST_ADD_TEST(vector_trait_destroy_on_vec_clear);
+	CTEST_ADD_TEST_F(vector_trait_func, copy_on_push);
+	CTEST_ADD_TEST_F(vector_trait_func, destroy_on_pop_back);
+	CTEST_ADD_TEST_F(vector_trait_func, destroy_on_vec_destroy);
+	CTEST_ADD_TEST_F(vector_trait_func, destroy_on_vec_reset);
+	CTEST_ADD_TEST_F(vector_trait_func, destroy_on_vec_clear);
 }

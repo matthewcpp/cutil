@@ -12,17 +12,14 @@
 #include <math.h>
 
 _btree_node* read_btree_node(cutil_btree* btree, _btree_node* parent, int* item_counter, const char* data, int* string_pos);
-void read_btree(cutil_btree* btree, const char* data);
+cutil_btree* read_btree(const char* data);
 
-int read_btree_from_file(cutil_btree* btree, const char* test_data_name) {
+cutil_btree* read_btree_from_file(const char* test_data_name) {
+    cutil_btree* result = NULL;
 	const char* test_data_dir = NULL;
 	char* path_str = NULL;
 	FILE* file = NULL;
 	int path_size;
-
-	if (!btree) {
-		return 0;
-	}
 
 	test_data_dir = cutil_test_get_data_directory();
 	path_size = cutil_snprintf_func(NULL, 0, "%s/%s.txt", test_data_dir, test_data_name);
@@ -45,26 +42,26 @@ int read_btree_from_file(cutil_btree* btree, const char* test_data_name) {
 		fclose(file);
 
         (void)bytes_read;  /* TODO: Handle error case bytes_read != file_size */
-		read_btree(btree, file_data);
+		result = read_btree(file_data);
 
 		free(file_data);
+	}
 
-		return 1;
-	}
-	else {
-		return 0;
-	}
+    return result;
 }
 
-void read_btree(cutil_btree* btree, const char* data) {
-	int order = 0;
-	int string_pos = 0;
-	int item_counter = 0;
+cutil_btree* read_btree(const char* data) {
+	int string_pos = 0, item_counter = 0;
+    int order = 0;
+
+    cutil_btree* btree = NULL;
 	_btree_node* new_root = NULL;
 
 	sscanf(data, "%i%n", &order, &string_pos);
 
-	new_root = read_btree_node(btree, NULL, &item_counter, data, &string_pos);
+    btree = cutil_btree_create((unsigned int)order, cutil_trait_int(), cutil_trait_int());
+
+    new_root = read_btree_node(btree, NULL, &item_counter, data, &string_pos);
 	if (new_root) {
 		_node_destroy(btree->root);
 
@@ -73,6 +70,11 @@ void read_btree(cutil_btree* btree, const char* data) {
 		btree->root = new_root;
 		btree->size = item_counter;
 	}
+	else {
+	    cutil_btree_destroy(btree);
+	}
+
+	return btree;
 }
 
 _btree_node* read_btree_node(cutil_btree* btree, _btree_node* parent, int* item_counter, const char* data, int* string_pos) {
@@ -407,4 +409,21 @@ void dump_btree(cutil_btree* btree, const char* path) {
 	dump_btree_node(btree, btree->root, 0, file);
 
 	fclose(file);
+}
+
+void _btree_test_insert_test_strings(cutil_btree* btree, int item_count) {
+	int i;
+
+	char key_str[32];
+	char value_str[32];
+
+	char* key_ptr = &key_str[0];
+	char* value_ptr = &value_str[0];
+
+	for (i = 0; i < item_count; i++) {
+		cutil_snprintf_func(key_str, 32, "key %i", i);
+		cutil_snprintf_func(value_str, 32, "value %i", i);
+
+		cutil_btree_insert(btree, &key_ptr, &value_ptr);
+	}
 }

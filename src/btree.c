@@ -478,7 +478,6 @@ void cutil_btree_insert(cutil_btree* btree, void* key, void* value) {
 	}
 
 	btree->size += 1;
-	return;
 }
 
 int cutil_btree_get(cutil_btree* btree, void* key, void* value) {
@@ -615,6 +614,7 @@ void _btree_borrow_from_left_sibling(cutil_btree* btree, _btree_node* node, _btr
 	the lowest value key from the sibling will be borrowed so that a value from the nodes parent can be used to ensure the target has enough keys*/
 void _btree_borrow_from_right_sibling(cutil_btree* btree, _btree_node* node, _btree_node* right_sibling) {
 	unsigned int i;
+	unsigned int copy_count = _node_is_leaf(node) ? right_sibling->item_count -1 : right_sibling->item_count;
 
 	/* first take our corresponding key from our parent and add it to the end of our key list and increment our item count */
 	_node_copy_item(btree, node, node->item_count++, node->parent, node->position);
@@ -626,7 +626,8 @@ void _btree_borrow_from_right_sibling(cutil_btree* btree, _btree_node* node, _bt
 	_set_node_child(node, right_sibling->branches[0], node->item_count);
 
 	/* adjust the remaining keys and branches for the right sibling */
-	for (i = 1; i <= right_sibling->item_count; i++) {
+
+	for (i = 1; i <= copy_count; i++) {
 		_node_copy_item(btree, right_sibling, i - 1, right_sibling, i);
 		_set_node_child(right_sibling, right_sibling->branches[i], i - 1);
 	}

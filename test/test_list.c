@@ -8,101 +8,137 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
-cutil_list* g_list = NULL;
-cutil_trait* g_list_trait = NULL;
+typedef struct {
+	cutil_list* list;
+} list_test;
 
-void list_before_each() {
-	g_list = cutil_list_create(cutil_trait_int());
+void list_test_setup(list_test* test) {
+	memset(test, 0, sizeof(list_test));
 }
 
-void list_after_each() {
-	cutil_list_destroy(g_list);
+void list_test_teardown(list_test* test) {
+	if (test->list) {
+		cutil_list_destroy(test->list);
+	}
+
 	cutil_trait_destroy();
-
-	g_list = NULL;
 }
 
-void listp_before_each() {
-	g_list = cutil_list_create(cutil_trait_ptr());
+typedef struct {
+	cutil_list* list;
+	cutil_trait* trait_tracker;
+} list_trait_func_test;
+
+void list_trait_func_test_setup(list_trait_func_test* test) {
+	memset(test, 0, sizeof(list_trait_func_test));
 }
+
+void list_trait_func_test_teardown(list_trait_func_test* test) {
+	if (test->list) {
+		cutil_list_destroy(test->list);
+	}
+
+	if (test->trait_tracker) {
+		cutil_test_destroy_trait_tracker(test->trait_tracker);
+	}
+
+	cutil_trait_destroy();
+}
+
+CTEST_FIXTURE(list, list_test, list_test_setup, list_test_teardown)
+CTEST_FIXTURE(list_trait_func, list_trait_func_test, list_trait_func_test_setup, list_trait_func_test_teardown)
 
 /* Initializing a list sets size to 0 */
-void list_init_size_0(){
-    CTEST_ASSERT_INT_EQ(cutil_list_size(g_list), 0);
-}
+void init_size_0_list(list_test* test){
+	test->list = cutil_list_create(cutil_trait_int());
 
-/* Clearing an empty list does nothing */
-void list_clear_empty() {
-	cutil_list_clear(g_list);
+    CTEST_ASSERT_INT_EQ(cutil_list_size(test->list), 0);
 }
 
 /* Clearing a list sets its size to 0 */
-void list_clear_size_0 (){
+void clear_size_0(list_test* test) {
 	int value = 10;
 
-	cutil_list_push_front(g_list, &value);
-	cutil_list_clear(g_list);
+	test->list = cutil_list_create(cutil_trait_int());
 
-	CTEST_ASSERT_INT_EQ(cutil_list_size(g_list), 0);
+	cutil_list_push_front(test->list, &value);
+	cutil_list_clear(test->list);
+
+	CTEST_ASSERT_INT_EQ(cutil_list_size(test->list), 0);
+}
+
+/* Clearing an empty list does nothing */
+void clear_empty_list(list_test* test) {
+	test->list = cutil_list_create(cutil_trait_int());
+	cutil_list_clear(test->list);
 }
 
 /* Pushing data to the front of the list increases its size */
-void list_push_data_front_size() {
+void push_front_size(list_test* test) {
 	int value = 10;
-
 	int i;
-	for (i = 0; i < 10; i++) {
-		cutil_list_push_front(g_list, &value);
 
-		CTEST_ASSERT_INT_EQ(cutil_list_size(g_list), i + 1);
+	test->list = cutil_list_create(cutil_trait_int());
+
+	for (i = 0; i < 10; i++) {
+		cutil_list_push_front(test->list, &value);
+
+		CTEST_ASSERT_INT_EQ(cutil_list_size(test->list), i + 1);
 	}
 }
 
-/* Pushing data to the back of the list increases its size */
-void list_push_data_back_size() {
-	int value = 10;
-
-	int i;
-	for (i = 0; i < 10; i++) {
-		cutil_list_push_back(g_list, &value);
-		
-		CTEST_ASSERT_INT_EQ(cutil_list_size(g_list), i + 1);
-	}
-}
-
-/* Pushing items to the back appends them to the list */
-void list_data_push_multiple_back() {
+/* Pushing items to the front appends them to the list */
+void push_front_multiple(list_test* test) {
 	int actual_value;
-
 	int i;
+
+	test->list = cutil_list_create(cutil_trait_int());
+
 	for (i = 0; i < 5; i++) {
 		int inserted_value = i * 10;
-		cutil_list_push_back(g_list, &inserted_value);
+		cutil_list_push_front(test->list, &inserted_value);
 	}
 
-	for (i = 0; i < 5; i++) {
-		int expected_value = i * 10;
-		int result = cutil_list_at(g_list, i, &actual_value);
+	for (i = 4; i >= 0; i--) {
+		int expected_value = (4 - i) * 10;
+		int result = cutil_list_at(test->list, i, &actual_value);
 
 		CTEST_ASSERT_TRUE(result);
 		CTEST_ASSERT_INT_EQ(expected_value, actual_value);
 	}
 }
 
-/* Pushing items to the front appends them to the list */
-void list_data_push_multiple_front() {
-	int actual_value;
-
+/* Pushing data to the back of the list increases its size */
+void push_back_size(list_test* test) {
+	int value = 10;
 	int i;
+
+	test->list = cutil_list_create(cutil_trait_int());
+
+	for (i = 0; i < 10; i++) {
+		cutil_list_push_back(test->list, &value);
+		
+		CTEST_ASSERT_INT_EQ(cutil_list_size(test->list), i + 1);
+	}
+}
+
+/* Pushing items to the back appends them to the list */
+void push_back_multiple_list(list_test* test) {
+	int actual_value;
+	int i;
+
+	test->list = cutil_list_create(cutil_trait_int());
+
 	for (i = 0; i < 5; i++) {
 		int inserted_value = i * 10;
-		cutil_list_push_front(g_list, &inserted_value);
+		cutil_list_push_back(test->list, &inserted_value);
 	}
 
-	for (i = 4; i >= 0; i--) {
-		int expected_value = (4 - i) * 10;
-		int result = cutil_list_at(g_list, i, &actual_value);
+	for (i = 0; i < 5; i++) {
+		int expected_value = i * 10;
+		int result = cutil_list_at(test->list, i, &actual_value);
 
 		CTEST_ASSERT_TRUE(result);
 		CTEST_ASSERT_INT_EQ(expected_value, actual_value);
@@ -110,192 +146,199 @@ void list_data_push_multiple_front() {
 }
 
 /* Popping an item from the back removes the item */
-void list_multiple_pop_back_removes_item() {
+void pop_back_removes_item(list_test* test) {
 	int list_size = 5;
 	int actual_value;
-
 	int i;
+
+	test->list = cutil_list_create(cutil_trait_int());
+
 	for (i = 0; i < list_size; i++) {
-		cutil_list_push_back(g_list, &i);
+		cutil_list_push_back(test->list, &i);
 	}
 
-	cutil_list_pop_back(g_list);
+	cutil_list_pop_back(test->list);
 
-	CTEST_ASSERT_INT_EQ(cutil_list_size(g_list), list_size - 1);
-	CTEST_ASSERT_FALSE(cutil_list_at(g_list, list_size - 1, &actual_value));
+	CTEST_ASSERT_INT_EQ(cutil_list_size(test->list), list_size - 1);
+	CTEST_ASSERT_FALSE(cutil_list_at(test->list, list_size - 1, &actual_value));
+}
+
+/* Popping the only item from the front correctly sets list pointers */
+void pop_back_one_item(list_test* test) {
+	int val = 55;
+
+	test->list = cutil_list_create(cutil_trait_int());
+
+	cutil_list_push_back(test->list, &val);
+	cutil_list_pop_back(test->list);
+
+	CTEST_ASSERT_INT_EQ(cutil_list_size(test->list), 0);
+}
+
+/* Popping the back of an empty list does nothing */
+void pop_back_empty_list(list_test* test) {
+	test->list = cutil_list_create(cutil_trait_int());
+
+	CTEST_ASSERT_FALSE(cutil_list_pop_front(test->list));
 }
 
 /* Popping an item from the front removes the item */
-void list_multiple_pop_front_removes_item() {
+void pop_front_removes_item(list_test* test) {
 	int list_size = 5;
 	int actual_value = 0;
 	int at_result;
-
 	int i;
+
+	test->list = cutil_list_create(cutil_trait_int());
+
 	for (i = 0; i < list_size; i++) {
-		cutil_list_push_back(g_list, &i);
+		cutil_list_push_back(test->list, &i);
 	}
 
-	cutil_list_pop_front(g_list);
-	CTEST_ASSERT_INT_EQ(cutil_list_size(g_list), list_size - 1);
+	cutil_list_pop_front(test->list);
+	CTEST_ASSERT_INT_EQ(cutil_list_size(test->list), list_size - 1);
 
 
-	at_result = cutil_list_at(g_list, 0, &actual_value);
+	at_result = cutil_list_at(test->list, 0, &actual_value);
 	CTEST_ASSERT_TRUE(at_result);
 	CTEST_ASSERT_INT_EQ(actual_value, 1);
 }
 
-/* Popping the only item from the front correctly sets list pointers */
-void list_pop_back_one_item() {
-	int val = 55;
-	cutil_list_push_back(g_list, &val);
-
-	cutil_list_pop_back(g_list);
-
-	CTEST_ASSERT_INT_EQ(cutil_list_size(g_list), 0);
-}
-
 /* Popping the only item from the back correctly sets list pointers */
-void list_pop_front_one_item() {
+void pop_front_one_item(list_test* test) {
 	int val = 55;
-	cutil_list_push_back(g_list, &val);
 
-	cutil_list_pop_front(g_list);
+	test->list = cutil_list_create(cutil_trait_int());
 
-	CTEST_ASSERT_INT_EQ(cutil_list_size(g_list), 0);
+	cutil_list_push_back(test->list, &val);
+	cutil_list_pop_front(test->list);
+
+	CTEST_ASSERT_INT_EQ(cutil_list_size(test->list), 0);
 }
 
 /* Popping the front of an empty list does nothing */
-void list_pop_front_empty() {
-	CTEST_ASSERT_FALSE(cutil_list_pop_front(g_list));
-}
+void pop_front_empty(list_test* test) {
+	test->list = cutil_list_create(cutil_trait_int());
 
-/* Popping the back of an empty list does nothing */
-void list_pop_back_empty() {
-	CTEST_ASSERT_FALSE(cutil_list_pop_front(g_list));
+	CTEST_ASSERT_FALSE(cutil_list_pop_front(test->list));
 }
 
 /* Pushing a pointer to the front and retrieving it functions correctly */
-void list_push_get_front_pointer() {
+void front_pointer(list_test* test) {
 	int* frontptr = NULL;
 	int get_front_result;
+	int ptr_val = 55;
+	int* iptr = &ptr_val;
 
-	int* iptr = malloc(sizeof(int));
-	*iptr = 55;
+	test->list = cutil_list_create(cutil_trait_ptr());
 
-	cutil_list_push_front(g_list, &iptr);
+	cutil_list_push_front(test->list, &iptr);
 
-
-	get_front_result = cutil_list_front(g_list, &frontptr);
+	get_front_result = cutil_list_front(test->list, &frontptr);
 
 	CTEST_ASSERT_TRUE(get_front_result);
 	CTEST_ASSERT_PTR_EQ(frontptr, iptr);
-
-	free(iptr);
 }
 
 /* Pushing a pointer to the back and retrieving it functions correctly */
-void push_get_back_pointer() {
+void back_pointer(list_test* test) {
 	int* backptr = NULL;
 	int get_back_result;
+	int ptr_val = 55;
+	int* iptr = &ptr_val;
 
-	int* iptr = malloc(sizeof(int));
-	*iptr = 55;
-	cutil_list_push_back(g_list, &iptr);
+	test->list = cutil_list_create(cutil_trait_ptr());
 
-	get_back_result = cutil_list_back(g_list, &backptr);
+	cutil_list_push_back(test->list, &iptr);
+
+	get_back_result = cutil_list_back(test->list, &backptr);
 
 	CTEST_ASSERT_TRUE(get_back_result);
 	CTEST_ASSERT_PTR_EQ(backptr, iptr);
-
-	free(iptr);
 }
 
 /* Pushing data to the front and retrieving it functions correctly */
-void push_get_front_data() {
+void front_pod(list_test* test) {
 	int ival = 3;
 	int front_val;
 	int get_front_result;
 
-	cutil_list_push_front(g_list, &ival);
-	get_front_result = cutil_list_front(g_list, &front_val);
+	test->list = cutil_list_create(cutil_trait_int());
+
+	cutil_list_push_front(test->list, &ival);
+	get_front_result = cutil_list_front(test->list, &front_val);
 
 	CTEST_ASSERT_TRUE(get_front_result);
 	CTEST_ASSERT_INT_EQ(front_val, ival);
 }
 
 /* Get data from list by index*/
-void list_get_data_at() {
+void at_valid_index(list_test* test) {
 	int item_count = 5, i = 0, actual_value = 0;
+
+	test->list = cutil_list_create(cutil_trait_int());
 	
 	for (i = 0; i < item_count; i++) {
-		cutil_list_push_back(g_list, &i);
+		cutil_list_push_back(test->list, &i);
 	}
 
 	for (i = 0; i < item_count; i++) {
-		CTEST_ASSERT_TRUE(cutil_list_at(g_list, (size_t)i, &actual_value));
+		CTEST_ASSERT_TRUE(cutil_list_at(test->list, (size_t)i, &actual_value));
 
 		CTEST_ASSERT_INT_EQ(actual_value, i);
 	}
 }
 
 /* Get data from invalid index returns false*/
-void list_get_data_at_invalid_index() {
+void at_invalid_index(list_test* test) {
 	int item_count = 5, i = 0, actual_value = 0;
 
+	test->list = cutil_list_create(cutil_trait_int());
+
 	for (i = 0; i < item_count; i++) {
-		cutil_list_push_back(g_list, &i);
+		cutil_list_push_back(test->list, &i);
 	}
 
-	CTEST_ASSERT_FALSE(cutil_list_at(g_list, (size_t)item_count, &actual_value));
+	CTEST_ASSERT_FALSE(cutil_list_at(test->list, (size_t)item_count, &actual_value));
 }
 
 /* Getting the front item of an empty list returns false */
-void list_get_front_data_empty() {
+void front_empty(list_test* test) {
 	int front_val = 0;
-	int get_front_result = cutil_list_front(g_list, (void*)&front_val);
+    int get_front_result = 0;
+
+	test->list = cutil_list_create(cutil_trait_int());
+
+	get_front_result = cutil_list_front(test->list, (void*)&front_val);
 
 	CTEST_ASSERT_FALSE(get_front_result);
 }
 
 /* Pushing data to the back and retrieving it functions correctly */
-void push_get_back_data() {
+void back_pod(list_test* test) {
 	int ival = 3;
 	int back_val;
 	int get_back_result;
 
-	cutil_list_push_back(g_list, &ival);
-	get_back_result = cutil_list_back(g_list, (void*)&back_val);
+	test->list = cutil_list_create(cutil_trait_int());
+
+	cutil_list_push_back(test->list, &ival);
+	get_back_result = cutil_list_back(test->list, (void*)&back_val);
 
 	CTEST_ASSERT_TRUE(get_back_result);
 	CTEST_ASSERT_INT_EQ(back_val, ival);
 }
 
 /* Getting the front item of an empty list returns false */
-void list_get_back_data_empty() {
+void back_empty(list_test* test) {
 	int front_val = 0;
-	int get_back_result = cutil_list_back(g_list, (void*)&front_val);
+    int get_back_result = 0;
+
+	test->list = cutil_list_create(cutil_trait_int());
+
+	get_back_result = cutil_list_back(test->list, (void*)&front_val);
 
 	CTEST_ASSERT_FALSE(get_back_result);
-}
-
-void list_trait_before_each() {
-	g_list_trait = cutil_test_create_trait_tracker(cutil_trait_cstring());
-	g_list = cutil_list_create(g_list_trait);
-}
-
-void list_trait_after_each() {
-	if (g_list) {
-		cutil_list_destroy(g_list);
-		g_list = NULL;
-	}
-
-	if (g_list_trait) {
-		cutil_test_destroy_trait_tracker(g_list_trait);
-		g_list_trait = NULL;
-	}
-
-	cutil_trait_destroy();
 }
 
 void _list_insert_test_strings(cutil_list* list, int count, int push_back) {
@@ -316,104 +359,112 @@ void _list_insert_test_strings(cutil_list* list, int count, int push_back) {
 	free(buffer);
 }
 
-void list_copy_on_push_back() {
+void copy_on_push_back(list_trait_func_test* test) {
 	int expected_copy_count = 10;
-	_list_insert_test_strings(g_list, expected_copy_count, 1);
 
-	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_copy_count(g_list_trait), expected_copy_count);
+    test->trait_tracker = cutil_test_create_trait_tracker(cutil_trait_cstring());
+    test->list = cutil_list_create(test->trait_tracker);
+
+	_list_insert_test_strings(test->list, expected_copy_count, 1);
+
+	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_copy_count(test->trait_tracker), expected_copy_count);
 }
 
-void list_copy_on_push_front() {
+void copy_on_push_front(list_trait_func_test* test) {
 	int expected_copy_count = 10;
-	_list_insert_test_strings(g_list, expected_copy_count, 0);
 
-	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_copy_count(g_list_trait), expected_copy_count);
+    test->trait_tracker = cutil_test_create_trait_tracker(cutil_trait_cstring());
+    test->list = cutil_list_create(test->trait_tracker);
+
+	_list_insert_test_strings(test->list, expected_copy_count, 0);
+
+	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_copy_count(test->trait_tracker), expected_copy_count);
 }
 
-void list_delete_pop_front() {
-	_list_insert_test_strings(g_list, 1, 1);
+void delete_pop_front(list_trait_func_test* test) {
+    test->trait_tracker = cutil_test_create_trait_tracker(cutil_trait_cstring());
+    test->list = cutil_list_create(test->trait_tracker);
 
-	cutil_list_pop_front(g_list);
+	_list_insert_test_strings( test->list, 1, 1);
 
-	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_destroy_count(g_list_trait), 1);
+	cutil_list_pop_front( test->list);
+
+	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_destroy_count(test->trait_tracker), 1);
 }
 
-void list_delete_pop_back() {
-	_list_insert_test_strings(g_list, 1, 1);
+void delete_pop_back(list_trait_func_test* test) {
+    test->trait_tracker = cutil_test_create_trait_tracker(cutil_trait_cstring());
+    test->list = cutil_list_create(test->trait_tracker);
+    
+    _list_insert_test_strings(test->list, 1, 1);
 
-	cutil_list_pop_back(g_list);
+	cutil_list_pop_back(test->list);
 
-	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_destroy_count(g_list_trait), 1);
+	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_destroy_count(test->trait_tracker), 1);
 }
 
-void list_delete_on_destroy() {
+void delete_on_destroy(list_trait_func_test* test) {
 	int expected_destroy_count = 10;
-	_list_insert_test_strings(g_list, expected_destroy_count, 1);
 
-	cutil_list_destroy(g_list);
-	g_list = NULL;
+    test->trait_tracker = cutil_test_create_trait_tracker(cutil_trait_cstring());
+    test->list = cutil_list_create(test->trait_tracker);
+	
+	_list_insert_test_strings(test->list, expected_destroy_count, 1);
 
-	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_destroy_count(g_list_trait), expected_destroy_count);
+	cutil_list_destroy(test->list);
+    test->list = NULL;
+
+	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_destroy_count(test->trait_tracker), expected_destroy_count);
 }
 
-void list_delete_on_clear() {
+void delete_on_clear(list_trait_func_test* test) {
 	int expected_destroy_count = 10;
-	_list_insert_test_strings(g_list, expected_destroy_count, 1);
 
-	cutil_list_clear(g_list);
+    test->trait_tracker = cutil_test_create_trait_tracker(cutil_trait_cstring());
+    test->list = cutil_list_create(test->trait_tracker);
+	
+	_list_insert_test_strings(test->list, expected_destroy_count, 1);
 
-	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_destroy_count(g_list_trait), expected_destroy_count);
+	cutil_list_clear(test->list);
+
+	CTEST_ASSERT_INT_EQ(cutil_test_trait_tracker_destroy_count(test->trait_tracker), expected_destroy_count);
 }
 
 void add_list_tests(){
-    ctest_suite("list");
-    ctest_suite_before_each(&list_before_each);
-    ctest_suite_after_each(&list_after_each);
+    CTEST_ADD_TEST_F(list, init_size_0_list);
 
-    CTEST_ADD_TEST(list_init_size_0);
+    CTEST_ADD_TEST_F(list, clear_size_0);
+    CTEST_ADD_TEST_F(list, clear_empty_list);
 
-    CTEST_ADD_TEST(list_clear_size_0);
-    CTEST_ADD_TEST(list_clear_empty);
+    CTEST_ADD_TEST_F(list, push_front_size);
+	CTEST_ADD_TEST_F(list, push_front_multiple);
 
-    CTEST_ADD_TEST(list_push_data_front_size);
-    CTEST_ADD_TEST(list_push_data_back_size);
+    CTEST_ADD_TEST_F(list, push_back_size);
+    CTEST_ADD_TEST_F(list, push_back_multiple_list);
+    
+    CTEST_ADD_TEST_F(list, pop_back_removes_item);
+	CTEST_ADD_TEST_F(list, pop_back_one_item);
 
-    CTEST_ADD_TEST(list_data_push_multiple_back);
-    CTEST_ADD_TEST(list_data_push_multiple_front);
+    CTEST_ADD_TEST_F(list, pop_front_removes_item);
+    CTEST_ADD_TEST_F(list, pop_front_one_item);
+    CTEST_ADD_TEST_F(list, pop_front_empty);
+    CTEST_ADD_TEST_F(list, pop_back_empty_list);
 
-    CTEST_ADD_TEST(list_multiple_pop_back_removes_item);
-    CTEST_ADD_TEST(list_multiple_pop_front_removes_item);
+    CTEST_ADD_TEST_F(list, front_pod);
+	CTEST_ADD_TEST_F(list, front_pointer);
+	CTEST_ADD_TEST_F(list, front_empty);
 
-    CTEST_ADD_TEST(list_pop_back_one_item);
-    CTEST_ADD_TEST(list_pop_front_one_item);
+    CTEST_ADD_TEST_F(list, back_pod);
+	CTEST_ADD_TEST_F(list, back_pointer);
+    CTEST_ADD_TEST_F(list, back_empty);
+    
+	CTEST_ADD_TEST_F(list, at_valid_index);
+	CTEST_ADD_TEST_F(list, at_invalid_index);
 
-    CTEST_ADD_TEST(list_pop_front_empty);
-    CTEST_ADD_TEST(list_pop_back_empty);
-
-    CTEST_ADD_TEST(push_get_front_data);
-    CTEST_ADD_TEST(push_get_back_data);
-
-    CTEST_ADD_TEST(list_get_back_data_empty);
-    CTEST_ADD_TEST(list_get_front_data_empty);
-
-	CTEST_ADD_TEST(list_get_data_at);
-	CTEST_ADD_TEST(list_get_data_at_invalid_index);
-
-    ctest_suite("listp");
-    ctest_suite_before_each(&listp_before_each);
-    ctest_suite_after_each(&list_after_each);
-
-    CTEST_ADD_TEST(list_push_get_front_pointer);
-    CTEST_ADD_TEST(push_get_back_pointer);
-
-	ctest_suite("list-trait");
-	ctest_suite_before_each(&list_trait_before_each);
-	ctest_suite_after_each(&list_trait_after_each);
-
-	CTEST_ADD_TEST(list_copy_on_push_back);
-	CTEST_ADD_TEST(list_copy_on_push_front);
-	CTEST_ADD_TEST(list_delete_pop_front);
-	CTEST_ADD_TEST(list_delete_pop_back);
-	CTEST_ADD_TEST(list_delete_on_destroy);
-	CTEST_ADD_TEST(list_delete_on_clear);
+	CTEST_ADD_TEST_F(list_trait_func, copy_on_push_back);
+	CTEST_ADD_TEST_F(list_trait_func, copy_on_push_front);
+	CTEST_ADD_TEST_F(list_trait_func, delete_pop_front);
+	CTEST_ADD_TEST_F(list_trait_func, delete_pop_back);
+	CTEST_ADD_TEST_F(list_trait_func, delete_on_destroy);
+	CTEST_ADD_TEST_F(list_trait_func, delete_on_clear);
 }
