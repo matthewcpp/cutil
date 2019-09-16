@@ -56,18 +56,18 @@ int cutil_heap_pop(cutil_heap* heap) {
 		return 0;
 	}
 
-	if (heap->vector->_trait->destroy_func != NULL) {
-	    heap->vector->_trait->destroy_func(heap->vector->_data, heap->vector->_trait->user_data);
+	if (heap->vector->trait->destroy_func != NULL) {
+	    heap->vector->trait->destroy_func(heap->vector->data, heap->vector->trait->user_data);
 	}
 
-	heap->vector->_size -= 1;
+	heap->vector->size -= 1;
 
-	if (heap->vector->_size > 0) {
+	if (heap->vector->size > 0) {
 		swap_space = malloc(trait->size);
 
 		/* move the last item to the top of the heap and trickle down */
 		/* note we do not use pop_back due to the fact it will trigger a destructor if one is defined */
-		memcpy(data, data + (heap->vector->_size) * trait->size, trait->size);
+		memcpy(data, data + (heap->vector->size) * trait->size, trait->size);
 
 
 		while (1) {
