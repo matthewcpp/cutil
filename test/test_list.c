@@ -15,7 +15,7 @@ typedef struct {
 } list_test;
 
 void list_test_setup(list_test* test) {
-	memset(test, 0, sizeof(list_test));
+	test->list = NULL;
 }
 
 void list_test_teardown(list_test* test) {

@@ -21,6 +21,7 @@ int main(int argc, char** argv) {
 	add_btree_tests();
 	add_btree_itr_tests();
 	add_trait_tests();
+	add_heap_tests();
 
 	filter_string = cutil_test_get_filter_string();
 
