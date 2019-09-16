@@ -2,10 +2,10 @@
 #define CUTIL_VECTOR_PRIVATE_H
 
 struct cutil_vector{
-    void* _data;
-    size_t _size;
-    size_t _capacity;
-    cutil_trait* _trait;
+    void* data;
+    size_t size;
+    size_t capacity;
+    cutil_trait* trait;
 };
 
 #endif
