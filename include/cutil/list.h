@@ -75,13 +75,13 @@ int cutil_list_at(cutil_list* list, size_t index, void* out);
 
 /**
 Pushes data to a new element at the front of the list.
-\param data pointer to data of Type T* where T is the type described by the vector's trait.
+\param data pointer to data of Type T* where T is the type described by the list's trait.
 */
 void cutil_list_push_front(cutil_list* list, void* data);
 
 /**
 Pushes data to a new element at the back of the list.
-\param data pointer to data of Type T* where T is the type described by the vector's trait.
+\param data pointer to data of Type T* where T is the type described by the list's trait.
 */
 void cutil_list_push_back(cutil_list* list, void* data);
 
