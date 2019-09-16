@@ -1,7 +1,8 @@
 set(cutil_sources
     ../include/cutil/trait.h trait.c
-	../include/cutil/vector.h vector.c
+	../include/cutil/vector.h vector_private.h vector.c
 	../include/cutil/list.h list.c
+    ../include/cutil/heap.h heap_private.h heap.c
 	../include/cutil/btree.h btree_private.h btree.c btree_itr.c
 )
 

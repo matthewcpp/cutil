@@ -77,3 +77,11 @@ size_t cutil_test_trait_tracker_destroy_count(cutil_trait* trait) {
 
 	return trait_tracker->destroy_func_count;
 }
+
+void cutil_test_trait_tracker_reset_counts(cutil_trait* trait) {
+	cutil_test_trait_tracker* trait_tracker = (cutil_test_trait_tracker*)trait->user_data;
+
+	trait_tracker->compare_func_count = 0;
+	trait_tracker->copy_func_count = 0;
+	trait_tracker->destroy_func_count = 0;
+}

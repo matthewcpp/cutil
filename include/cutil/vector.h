@@ -32,6 +32,7 @@ size_t cutil_vector_size(cutil_vector* vector);
 
 /**
 Clears all items in the vector, setting its size to zero.
+If the vector's trait includes a destroy function, it will be called for every item in the vector.
 This function will not deallocate any memory or adjust the vector's capacity.
 \see cutil_vector_reset()
 */
@@ -65,7 +66,23 @@ Note that the pointer placed in the out parameter is owned by the container and 
 \param out pointer of type T* where T is the type described by the vector's trait.
 \returns non zero value if the index was valid or zero if the index was invalid.
 */
-int cutil_vector_get(cutil_vector* vector, unsigned int index, void* out);
+int cutil_vector_get(cutil_vector* vector, size_t index, void* out);
+
+/**
+Sets the data at a specific index in the vector.
+If the vector's trait includes a destroy function, it will be called for the existing item at the specified index.
+If the vector's trait includes a copy function, it will be called on the new item being placed into the vector.
+\param index the index of the item to set.
+\param data pointer to data of Type T* where T is the type described by the vector's trait.
+\returns non zero value if the index was valid or zero if the index was invalid.
+*/
+int cutil_vector_set(cutil_vector* vector, size_t index, void* data);
+
+/**
+Returns pointer to the underlying buffer used by the vector.
+Note that this pointer may be null if the vector's size is zero and no items have ever been inserted in the vector.
+*/
+void* cutil_vector_data(cutil_vector* vector);
 
 /**
 Gets the trait assocaited with this vector.  It should not be modified.
@@ -76,5 +93,13 @@ cutil_trait* cutil_vector_trait(cutil_vector* vector);
 Gets the current capactiy of the vector.
 */
 size_t cutil_vector_capacity(cutil_vector* vector);
+
+/**
+Compares vectors for equality.
+Both vectos must have the same trait object to be considered for equality.
+If the vector's trait defines a comarison function it will be called on each pair of elements.
+If no comparison function is defined the underlying data buffers will be compared using memcmp
+*/
+int cutil_vector_equals(cutil_vector* a, cutil_vector* b);
 
 #endif

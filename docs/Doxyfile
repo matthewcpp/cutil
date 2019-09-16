@@ -3,7 +3,8 @@ INPUT             =     ../README.md \
                         ../include/cutil/trait.h \
                         ../include/cutil/btree.h \
                         ../include/cutil/list.h \
-                        ../include/cutil/vector.h 
+                        ../include/cutil/vector.h \ 
+                        ../include/cutil/heap.h 
 USE_MDFILE_AS_MAINPAGE = ../README.md
 GENERATE_LATEX    = NO
 GENERATE_MAN      = NO

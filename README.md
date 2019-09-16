@@ -9,6 +9,7 @@ This is a small C utility library inspired by the c++ stl that can be used in C 
 - [list](https://cutil.readthedocs.io/en/master/list_8h.html): Doubly linked list
 - [vector](https://cutil.readthedocs.io/en/master/vector_8h.html): Dynamic vector
 - [btree](https://cutil.readthedocs.io/en/master/btree_8h.html): Self balancing search tree
+- [heap](https://cutil.readthedocs.io/en/master/heap_8h.html): Binary heap
 
 ### Building
 In order to build the library, CMake 3.11 or greater is required.  Cutil depends on [ctest](https://github.com/matthewcpp/ctest) which will automatically be downloaded by Cmake when the project is configured.
