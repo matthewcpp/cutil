@@ -69,8 +69,7 @@ int cutil_heap_pop(cutil_heap* heap) {
 		/* note we do not use pop_back due to the fact it will trigger a destructor if one is defined */
 		memcpy(data, data + (heap->vector->size) * trait->size, trait->size);
 
-
-		while (1) {
+		for ( ; ; ) {
 			/* determine the child that the item will potentially trickle down to */
 			size_t child_index = _cutil_heap_smallest_child_index(heap, current_index);
 
