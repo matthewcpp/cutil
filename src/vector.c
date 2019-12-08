@@ -1,13 +1,17 @@
 #include "cutil/vector.h"
+#include "cutil/allocator.h"
+
 #include "vector_private.h"
 
 #include <stdlib.h>
 #include <string.h>
 
-cutil_vector* cutil_vector_create(cutil_trait* trait){
+cutil_vector* cutil_vector_create(cutil_trait* trait) {
+	cutil_allocator* allocator = cutil_current_allocator();
 	cutil_vector* vector = malloc(sizeof(cutil_vector));
-    
+
 	vector->trait = trait;
+	vector->allocator = allocator;
 	vector->data = NULL;
 	vector->capacity = 0;
 	vector->size = 0;
@@ -17,7 +21,7 @@ cutil_vector* cutil_vector_create(cutil_trait* trait){
 
 void cutil_vector_destroy(cutil_vector* vector) {
 	cutil_vector_reset(vector);
-    free(vector);
+    vector->allocator->free(vector, vector->allocator->user_data);
 }
 
 void cutil_vector_clear(cutil_vector* vector) {
@@ -38,7 +42,7 @@ void cutil_vector_reset(cutil_vector* vector) {
 	cutil_vector_clear(vector);
 
 	if (vector->data) {
-		free(vector->data);
+		vector->allocator->free(vector->data, vector->allocator->user_data);
 		vector->data = NULL;
 	}
 
@@ -52,7 +56,7 @@ size_t cutil_vector_size(cutil_vector* vector){
 int _grow_vector(cutil_vector* vector) {
 	if (vector->size == vector->capacity) {
 		size_t new_capacity = (vector->capacity > 0) ? vector->capacity * 2U : 1U;
-		void* new_data = realloc(vector->data, vector->trait->size * new_capacity);
+		void* new_data = vector->allocator->realloc(vector->data, vector->trait->size * new_capacity, vector->allocator->user_data);
 
 		if (new_data) {
 			vector->capacity = new_capacity;

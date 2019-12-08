@@ -1,12 +1,11 @@
 #include "cutil/btree.h"
+#include "cutil/allocator.h"
 #include "btree_private.h"
 
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include <math.h>
-#include <stdio.h>
 #include <limits.h>
 
 #define ITEM_NOT_PRESENT INT_MAX
@@ -60,7 +59,7 @@ cutil_trait* cutil_btree_get_value_trait(cutil_btree* btree){
 }
 
 _btree_node* _node_create(cutil_btree* btree) {
-	_btree_node* node = malloc(sizeof(_btree_node));
+	_btree_node* node = btree->allocator->malloc(sizeof(_btree_node), btree->allocator->user_data);
 
 	node->parent = NULL;
 	node->position = 0;
@@ -74,14 +73,15 @@ _btree_node* _node_create(cutil_btree* btree) {
 	return node;
 }
 
-void _node_destroy(_btree_node* node) {
-	free(node->values);
-	free(node->keys);
-	free(node->branches);
-	free(node);
+void _node_destroy(cutil_btree* btree, _btree_node* node) {
+	btree->allocator->free(node->values, btree->allocator->user_data);
+	btree->allocator->free(node->keys, btree->allocator->user_data);
+	btree->allocator->free(node->branches, btree->allocator->user_data);
+	btree->allocator->free(node, btree->allocator->user_data);
 }
 
 cutil_btree* cutil_btree_create(unsigned int order, cutil_trait* key_trait, cutil_trait* value_trait) {
+	cutil_allocator* allocator = cutil_current_allocator();
 	cutil_btree* btree = NULL;
 
 	if (order < 3) {
@@ -96,12 +96,13 @@ cutil_btree* cutil_btree_create(unsigned int order, cutil_trait* key_trait, cuti
 		return btree;
 	}
 
-	btree = malloc(sizeof(cutil_btree));
+	btree = allocator->malloc(sizeof(cutil_btree), allocator->user_data);
 
 	btree->order = order;
 	btree->size = 0;
 	btree->key_trait = key_trait;
 	btree->value_trait = value_trait;
+	btree->allocator = allocator;
 	btree->root = _node_create(btree);
 
 	return btree;
@@ -109,7 +110,7 @@ cutil_btree* cutil_btree_create(unsigned int order, cutil_trait* key_trait, cuti
 
 void cutil_btree_destroy(cutil_btree* btree) {
 	_btree_node_recursive_delete(btree, btree->root);
-	free(btree);
+	btree->allocator->free(btree, btree->allocator->user_data);
 }
 
 void _btree_node_recursive_delete(cutil_btree* btree, _btree_node* node) {
@@ -135,7 +136,7 @@ void _btree_node_recursive_delete(cutil_btree* btree, _btree_node* node) {
 		}
 	}
 
-	_node_destroy(node);
+	_node_destroy(btree, node);
 }
 
 /*
@@ -274,8 +275,8 @@ void _split_interior_node(cutil_btree* btree, _btree_node* interior_node, _btree
 	unsigned int insert_position = _node_get_insertion_position(btree, interior_node, key);
 	unsigned int pivot_index = _get_pivot_index(btree);
 
-	void* pivot_key = malloc(btree->key_trait->size);
-	void* pivot_value = malloc(btree->value_trait->size);
+	void* pivot_key = btree->allocator->malloc(btree->key_trait->size, btree->allocator->user_data);
+	void* pivot_value = btree->allocator->malloc(btree->value_trait->size, btree->allocator->user_data);
 
 	_btree_node* split_node = _node_create(btree);
 
@@ -316,8 +317,8 @@ void _split_interior_node(cutil_btree* btree, _btree_node* interior_node, _btree
 		_push_up_one_level(btree, interior_node->parent, interior_node, split_node, pivot_key, pivot_value);
 	}
 
-	free(pivot_key);
-	free(pivot_value);
+	btree->allocator->free(pivot_key, btree->allocator->user_data);
+	btree->allocator->free(pivot_value, btree->allocator->user_data);
 }
 
 void _set_node_child(_btree_node* parent, _btree_node* child, int index) {
@@ -363,8 +364,8 @@ void _split_leaf_node(cutil_btree* btree, _btree_node* node, void* key, void* va
 	unsigned int pivot_index = _get_pivot_index(btree);
 	_btree_node* new_right_node = _node_create(btree);
 
-	void* pivot_key = malloc(btree->key_trait->size);
-	void* pivot_value = malloc(btree->value_trait->size);
+	void* pivot_key = btree->allocator->malloc(btree->key_trait->size, btree->allocator->user_data);
+	void* pivot_value = btree->allocator->malloc(btree->value_trait->size, btree->allocator->user_data);
 
 	if (insert_position > pivot_index ) {
 		memcpy(pivot_key, _node_get_key(node, btree->key_trait, pivot_index), btree->key_trait->size);
@@ -400,8 +401,8 @@ void _split_leaf_node(cutil_btree* btree, _btree_node* node, void* key, void* va
 		_push_up_one_level(btree, node->parent, node, new_right_node, pivot_key, pivot_value);
 	}
 
-	free(pivot_key);
-	free(pivot_value);
+	btree->allocator->free(pivot_key, btree->allocator->user_data);
+	btree->allocator->free(pivot_value, btree->allocator->user_data);
 }
 
 
@@ -449,16 +450,16 @@ void cutil_btree_insert(cutil_btree* btree, void* key, void* value) {
 	}
 
 	if (_node_full(btree, node)) {
-		void* copied_key = malloc(sizeof(btree->key_trait->size));
-		void* copied_value = malloc(sizeof(btree->value_trait->size));
+		void* copied_key = btree->allocator->malloc(sizeof(btree->key_trait->size), btree->allocator->user_data);
+		void* copied_value = btree->allocator->malloc(sizeof(btree->value_trait->size), btree->allocator->user_data);
 
 		_copy_with_trait(copied_key, key, btree->key_trait);
 		_copy_with_trait(copied_value, value, btree->value_trait);
 
 		_split_leaf_node(btree, node, copied_key, copied_value, insert_position);
 
-		free(copied_key);
-		free(copied_value);
+		btree->allocator->free(copied_key, btree->allocator->user_data);
+		btree->allocator->free(copied_value, btree->allocator->user_data);
 	}
 	else {
 		void* new_key, *new_value;
@@ -582,7 +583,7 @@ _btree_node* _btree_merge_node_with_right_sibling(cutil_btree* btree, _btree_nod
 	/* This update the count for the item that was moved out of parent to `node` above */
 	parent->item_count -= 1;
 
-	_node_destroy(right_sibling);
+	_node_destroy(btree, right_sibling);
 
 	return node;
 }
@@ -651,7 +652,7 @@ void _rebalance_node(cutil_btree* btree, _btree_node* node) {
 			btree->root = node->branches[0];
 			btree->root->parent = NULL;
 
-			_node_destroy(old_root);
+			_node_destroy(btree, old_root);
 		}
 	}
 	else {

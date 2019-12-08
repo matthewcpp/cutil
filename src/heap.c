@@ -7,10 +7,12 @@
 #define INVALID_CHILD_INDEX ((size_t)(-1))
 
 cutil_heap* cutil_heap_create(cutil_trait* trait) {
-    cutil_heap* heap = NULL;
+	cutil_allocator* allocator = cutil_current_allocator();
+	cutil_heap* heap = NULL;
+
 	if (trait->compare_func == NULL) return heap;
 
-	heap = malloc(sizeof(cutil_heap));
+	heap = allocator->malloc(sizeof(cutil_heap), allocator->user_data);
 	heap->vector = cutil_vector_create(trait);
 
 	return heap;
@@ -63,7 +65,7 @@ int cutil_heap_pop(cutil_heap* heap) {
 	heap->vector->size -= 1;
 
 	if (heap->vector->size > 0) {
-		swap_space = malloc(trait->size);
+		swap_space = heap->vector->allocator->malloc(trait->size, heap->vector->allocator->user_data);
 
 		/* move the last item to the top of the heap and trickle down */
 		/* note we do not use pop_back due to the fact it will trigger a destructor if one is defined */
@@ -118,7 +120,7 @@ void cutil_heap_insert(cutil_heap* heap, void* data) {
 		cutil_trait* trait = cutil_vector_trait(heap->vector);
 		char* buffer = cutil_vector_data(heap->vector);
 
-		char* swap_space = malloc(trait->size);
+		char* swap_space = heap->vector->allocator->malloc(trait->size, heap->vector->allocator->user_data);
 
 		while (index > 0) {
 			size_t parent = _cutil_heap_get_parent_index(index);
