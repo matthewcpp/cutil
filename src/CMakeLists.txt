@@ -1,4 +1,5 @@
 set(cutil_sources
+    ../include/cutil/allocator.h allocator_private.h allocator.c
     ../include/cutil/trait.h trait.c
 	../include/cutil/vector.h vector_private.h vector.c
 	../include/cutil/list.h list.c

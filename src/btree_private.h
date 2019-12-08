@@ -1,6 +1,8 @@
 #ifndef CUTIL_BTREE_PRIVATE_H
 #define CUTIL_BTREE_PRIVATE_H
 
+#include "cutil/allocator.h"
+
 /*
 This header contains private functions for use by the btree class and its associated test harness.
 */
@@ -28,7 +30,7 @@ _btree_node* _node_create(cutil_btree* btree);
 /*
 Destroys an individual btree node and frees all memory held
 */
-void _node_destroy(_btree_node* node);
+void _node_destroy(cutil_btree* btree, _btree_node* node);
 
 /*
 Gets a pointer to the key in the node with the supplied index.
@@ -48,6 +50,7 @@ struct cutil_btree {
 	unsigned int order;
 	cutil_trait* key_trait;
 	cutil_trait* value_trait;
+	cutil_allocator* allocator;
 };
 
 struct cutil_btree_itr {

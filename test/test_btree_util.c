@@ -63,7 +63,7 @@ cutil_btree* read_btree(const char* data) {
 
     new_root = read_btree_node(btree, NULL, &item_counter, data, &string_pos);
 	if (new_root) {
-		_node_destroy(btree->root);
+		_node_destroy(btree, btree->root);
 
 		new_root->position = 0;
 		btree->order = order;

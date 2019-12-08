@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 
-
 typedef struct cutil_list cutil_list;
 
 /** @name List Functions

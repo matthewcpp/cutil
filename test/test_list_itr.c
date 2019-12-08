@@ -1,6 +1,8 @@
 #include "test_suites.h"
 
 #include "cutil/list.h"
+#include "cutil/allocator.h"
+
 #include "ctest/ctest.h"
 
 #include <stdlib.h>
