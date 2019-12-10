@@ -59,7 +59,8 @@ cutil_trait* cutil_btree_get_value_trait(cutil_btree* btree){
 }
 
 _btree_node* _node_create(cutil_btree* btree) {
-	_btree_node* node = btree->allocator->malloc(sizeof(_btree_node), btree->allocator->user_data);
+	cutil_allocator* allocator = cutil_current_allocator();
+	_btree_node* node = allocator->malloc(sizeof(_btree_node), allocator->user_data);
 
 	node->parent = NULL;
 	node->position = 0;
@@ -74,10 +75,12 @@ _btree_node* _node_create(cutil_btree* btree) {
 }
 
 void _node_destroy(cutil_btree* btree, _btree_node* node) {
-	btree->allocator->free(node->values, btree->allocator->user_data);
-	btree->allocator->free(node->keys, btree->allocator->user_data);
-	btree->allocator->free(node->branches, btree->allocator->user_data);
-	btree->allocator->free(node, btree->allocator->user_data);
+	cutil_allocator* allocator = cutil_current_allocator();
+
+	allocator->free(node->values, allocator->user_data);
+	allocator->free(node->keys, allocator->user_data);
+	allocator->free(node->branches, allocator->user_data);
+	allocator->free(node, allocator->user_data);
 }
 
 cutil_btree* cutil_btree_create(unsigned int order, cutil_trait* key_trait, cutil_trait* value_trait) {
@@ -102,15 +105,16 @@ cutil_btree* cutil_btree_create(unsigned int order, cutil_trait* key_trait, cuti
 	btree->size = 0;
 	btree->key_trait = key_trait;
 	btree->value_trait = value_trait;
-	btree->allocator = allocator;
 	btree->root = _node_create(btree);
 
 	return btree;
 }
 
 void cutil_btree_destroy(cutil_btree* btree) {
+	cutil_allocator* allocator = cutil_current_allocator();
+
 	_btree_node_recursive_delete(btree, btree->root);
-	btree->allocator->free(btree, btree->allocator->user_data);
+	allocator->free(btree, allocator->user_data);
 }
 
 void _btree_node_recursive_delete(cutil_btree* btree, _btree_node* node) {
@@ -272,11 +276,12 @@ void _split_interior_left(cutil_btree* btree,_btree_node* interior_node, _btree_
 }
 
 void _split_interior_node(cutil_btree* btree, _btree_node* interior_node, _btree_node* left_node, _btree_node* right_node, void* key, void* value) {
+	cutil_allocator* allocator = cutil_current_allocator();
 	unsigned int insert_position = _node_get_insertion_position(btree, interior_node, key);
 	unsigned int pivot_index = _get_pivot_index(btree);
 
-	void* pivot_key = btree->allocator->malloc(btree->key_trait->size, btree->allocator->user_data);
-	void* pivot_value = btree->allocator->malloc(btree->value_trait->size, btree->allocator->user_data);
+	void* pivot_key = allocator->malloc(btree->key_trait->size, allocator->user_data);
+	void* pivot_value = allocator->malloc(btree->value_trait->size, allocator->user_data);
 
 	_btree_node* split_node = _node_create(btree);
 
@@ -317,8 +322,8 @@ void _split_interior_node(cutil_btree* btree, _btree_node* interior_node, _btree
 		_push_up_one_level(btree, interior_node->parent, interior_node, split_node, pivot_key, pivot_value);
 	}
 
-	btree->allocator->free(pivot_key, btree->allocator->user_data);
-	btree->allocator->free(pivot_value, btree->allocator->user_data);
+	allocator->free(pivot_key, allocator->user_data);
+	allocator->free(pivot_value, allocator->user_data);
 }
 
 void _set_node_child(_btree_node* parent, _btree_node* child, int index) {
@@ -360,12 +365,13 @@ Called when the target node for insertion cannot accommodate a new new item.
 The node can be split in three ways, depending on the relationship between the insertion position and pivot index of the node.
 */
 void _split_leaf_node(cutil_btree* btree, _btree_node* node, void* key, void* value, unsigned int insert_position) {
+	cutil_allocator* allocator = cutil_current_allocator();
 	/* get key that will be pushed up (ceil) */
 	unsigned int pivot_index = _get_pivot_index(btree);
 	_btree_node* new_right_node = _node_create(btree);
 
-	void* pivot_key = btree->allocator->malloc(btree->key_trait->size, btree->allocator->user_data);
-	void* pivot_value = btree->allocator->malloc(btree->value_trait->size, btree->allocator->user_data);
+	void* pivot_key = allocator->malloc(btree->key_trait->size, allocator->user_data);
+	void* pivot_value = allocator->malloc(btree->value_trait->size, allocator->user_data);
 
 	if (insert_position > pivot_index ) {
 		memcpy(pivot_key, _node_get_key(node, btree->key_trait, pivot_index), btree->key_trait->size);
@@ -401,8 +407,8 @@ void _split_leaf_node(cutil_btree* btree, _btree_node* node, void* key, void* va
 		_push_up_one_level(btree, node->parent, node, new_right_node, pivot_key, pivot_value);
 	}
 
-	btree->allocator->free(pivot_key, btree->allocator->user_data);
-	btree->allocator->free(pivot_value, btree->allocator->user_data);
+	allocator->free(pivot_key, allocator->user_data);
+	allocator->free(pivot_value, allocator->user_data);
 }
 
 
@@ -434,7 +440,7 @@ void _copy_with_trait(void* dest, void* src, cutil_trait* trait) {
 
 
 void cutil_btree_insert(cutil_btree* btree, void* key, void* value) {
-	_btree_node*  node = _btree_find_node_for_key(btree, btree->root, key);
+	_btree_node* node = _btree_find_node_for_key(btree, btree->root, key);
 	unsigned int i, insert_position = _node_get_insertion_position(btree, node, key);
 
 	/* if the key is already present in the btree then we just need to replace the value */
@@ -450,16 +456,17 @@ void cutil_btree_insert(cutil_btree* btree, void* key, void* value) {
 	}
 
 	if (_node_full(btree, node)) {
-		void* copied_key = btree->allocator->malloc(sizeof(btree->key_trait->size), btree->allocator->user_data);
-		void* copied_value = btree->allocator->malloc(sizeof(btree->value_trait->size), btree->allocator->user_data);
+		cutil_allocator* allocator = cutil_current_allocator();
+		void* copied_key = allocator->malloc(sizeof(btree->key_trait->size), allocator->user_data);
+		void* copied_value = allocator->malloc(sizeof(btree->value_trait->size), allocator->user_data);
 
 		_copy_with_trait(copied_key, key, btree->key_trait);
 		_copy_with_trait(copied_value, value, btree->value_trait);
 
 		_split_leaf_node(btree, node, copied_key, copied_value, insert_position);
 
-		btree->allocator->free(copied_key, btree->allocator->user_data);
-		btree->allocator->free(copied_value, btree->allocator->user_data);
+		allocator->free(copied_key, allocator->user_data);
+		allocator->free(copied_value, allocator->user_data);
 	}
 	else {
 		void* new_key, *new_value;

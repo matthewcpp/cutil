@@ -9,7 +9,6 @@ struct cutil_vector{
     size_t size;
     size_t capacity;
     cutil_trait* trait;
-    cutil_allocator* allocator;
 };
 
 #endif

@@ -16,7 +16,6 @@ struct cutil_list {
 	unsigned int size;
 	cutil_list_node base;
 	cutil_trait* trait;
-	cutil_allocator* allocator;
 };
 
 struct cutil_list_itr {
@@ -36,14 +35,15 @@ cutil_list* cutil_list_create(cutil_trait* trait) {
 	list->base.next = &list->base;
 	list->base.data = NULL;
 	list->trait = trait;
-	list->allocator = allocator;
 
 	return list;
 }
 
 void cutil_list_destroy(cutil_list* list) {
+	cutil_allocator* allocator = cutil_current_allocator();
+
 	cutil_list_clear(list);
-	list->allocator->free(list, list->allocator->user_data);
+	allocator->free(list, allocator->user_data);
 }
 
 void cutil_list_clear(cutil_list* list) {
@@ -67,8 +67,9 @@ unsigned int cutil_list_size(cutil_list* list) {
 }
 
 cutil_list_node* cutil_list_node_create(cutil_list* list, void* data) {
-	cutil_list_node* new_node = list->allocator->malloc(sizeof(cutil_list_node), list->allocator->user_data);
-	new_node->data = list->allocator->malloc(list->trait->size, list->allocator->user_data);
+	cutil_allocator* allocator = cutil_current_allocator();
+	cutil_list_node* new_node = allocator->malloc(sizeof(cutil_list_node), allocator->user_data);
+	new_node->data = allocator->malloc(list->trait->size, allocator->user_data);
 	
 	if (list->trait->copy_func) {
 		list->trait->copy_func(new_node->data, data, list->trait->user_data);
@@ -84,12 +85,14 @@ cutil_list_node* cutil_list_node_create(cutil_list* list, void* data) {
 }
 
 void cutil_list_node_destroy(cutil_list* list, cutil_list_node* list_node){
+	cutil_allocator* allocator = cutil_current_allocator();
+
 	if (list->trait->destroy_func) {
 		list->trait->destroy_func(list_node->data, list->trait->user_data);
 	}
 	
-    list->allocator->free(list_node->data, list->allocator->user_data);
-    list->allocator->free(list_node, list->allocator->user_data);
+	allocator->free(list_node->data, allocator->user_data);
+	allocator->free(list_node, allocator->user_data);
 }
 
 void _cutil_list_push_add_first(cutil_list* list, cutil_list_node* new_node) {
@@ -227,7 +230,8 @@ int cutil_list_pop_back(cutil_list* list) {
 }
 
 cutil_list_itr* cutil_list_itr_create(cutil_list* list) {
-	cutil_list_itr* itr = list->allocator->malloc(sizeof(cutil_list_itr), list->allocator->user_data);
+	cutil_allocator* allocator = cutil_current_allocator();
+	cutil_list_itr* itr = allocator->malloc(sizeof(cutil_list_itr), allocator->user_data);
 	
 	itr->list = list;
 	itr->node = &list->base;
@@ -236,7 +240,8 @@ cutil_list_itr* cutil_list_itr_create(cutil_list* list) {
 }
 
 void cutil_list_itr_destroy(cutil_list_itr* itr) {
-    itr->list->allocator->free(itr, itr->list->allocator->user_data);
+	cutil_allocator* allocator = cutil_current_allocator();
+	allocator->free(itr, allocator->user_data);
 }
 
 int cutil_list_itr_has_next(cutil_list_itr* itr) {

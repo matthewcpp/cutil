@@ -65,7 +65,9 @@ int cutil_heap_pop(cutil_heap* heap) {
 	heap->vector->size -= 1;
 
 	if (heap->vector->size > 0) {
-		swap_space = heap->vector->allocator->malloc(trait->size, heap->vector->allocator->user_data);
+		cutil_allocator* allocator = cutil_current_allocator();
+
+		swap_space = allocator->malloc(trait->size, allocator->user_data);
 
 		/* move the last item to the top of the heap and trickle down */
 		/* note we do not use pop_back due to the fact it will trigger a destructor if one is defined */
@@ -117,10 +119,11 @@ void cutil_heap_insert(cutil_heap* heap, void* data) {
 	cutil_vector_push_back(heap->vector, data);
 
 	if (index > 0) {
+		cutil_allocator* allocator = cutil_current_allocator();
 		cutil_trait* trait = cutil_vector_trait(heap->vector);
 		char* buffer = cutil_vector_data(heap->vector);
 
-		char* swap_space = heap->vector->allocator->malloc(trait->size, heap->vector->allocator->user_data);
+		char* swap_space = allocator->malloc(trait->size, allocator->user_data);
 
 		while (index > 0) {
 			size_t parent = _cutil_heap_get_parent_index(index);
