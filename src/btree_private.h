@@ -50,7 +50,6 @@ struct cutil_btree {
 	unsigned int order;
 	cutil_trait* key_trait;
 	cutil_trait* value_trait;
-	cutil_allocator* allocator;
 };
 
 struct cutil_btree_itr {

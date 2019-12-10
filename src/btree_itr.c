@@ -12,16 +12,18 @@ void _itr_set_next_parent_node(cutil_btree_itr* itr);
 
 
 cutil_btree_itr* cutil_btree_itr_create(cutil_btree* btree) {
-    cutil_btree_itr* itr = btree->allocator->malloc(sizeof(cutil_btree_itr), btree->allocator->user_data);
-    itr->node = NULL;
-    itr->btree = btree;
-    itr->node_pos = ITR_POS_UNINIT;
+	cutil_allocator* allocator = cutil_current_allocator();
+	cutil_btree_itr* itr = allocator->malloc(sizeof(cutil_btree_itr), allocator->user_data);
+	itr->node = NULL;
+	itr->btree = btree;
+	itr->node_pos = ITR_POS_UNINIT;
 
     return itr;
 }
 
 void cutil_btree_itr_destroy(cutil_btree_itr* itr) {
-    itr->btree->allocator->free(itr, itr->btree->allocator->user_data);
+	cutil_allocator* allocator = cutil_current_allocator();
+	allocator->free(itr, allocator->user_data);
 }
 
 void _find_starting_node_pos(cutil_btree_itr* itr) {
