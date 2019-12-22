@@ -76,6 +76,7 @@ _btree_node* _node_create(cutil_btree* btree) {
 
 void _node_destroy(cutil_btree* btree, _btree_node* node) {
 	cutil_allocator* allocator = cutil_current_allocator();
+	(void)btree;
 
 	allocator->free(node->values, allocator->user_data);
 	allocator->free(node->keys, allocator->user_data);
