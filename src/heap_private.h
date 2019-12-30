@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 struct cutil_heap {
-	cutil_vector* vector;
+    cutil_vector* vector;
 };
 
 size_t _cutil_heap_get_parent_index(size_t index);

@@ -44,20 +44,20 @@ Some containers require specific functions are defined for a type.
 Using an incompatible trait will result in the constructor for the container failing if all required functions are not present.
 */
 typedef struct {
-	/** Function used for comparing two elements. This member is optional and may be NULL. */
-	cutil_trait_compare_func compare_func;
+    /** Function used for comparing two elements. This member is optional and may be NULL. */
+    cutil_trait_compare_func compare_func;
 
-	/** Function used to free any resources that an element may be holding. This member is optional and may be NULL. */
-	cutil_trait_destroy_func destroy_func;
+    /** Function used to free any resources that an element may be holding. This member is optional and may be NULL. */
+    cutil_trait_destroy_func destroy_func;
 
-	/** Function used to copy an element. This member is optional and may be NULL. */
-	cutil_trait_copy_func copy_func;
+    /** Function used to copy an element. This member is optional and may be NULL. */
+    cutil_trait_copy_func copy_func;
 
-	/** The size in bytes of a single element. This member is required.  */
-	size_t size;
+    /** The size in bytes of a single element. This member is required.  */
+    size_t size;
 
-	/** Arbitrary data that will be passed to trait functions. This member is optional. */
-	void* user_data;
+    /** Arbitrary data that will be passed to trait functions. This member is optional. */
+    void* user_data;
 } cutil_trait;
 
 /**

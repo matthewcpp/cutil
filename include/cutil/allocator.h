@@ -40,17 +40,17 @@ typedef void (*cutil_allocator_free_func)(void* ptr, void* user_data);
 
 typedef struct  {
     /** Function used for allocating new memory. */
-	cutil_allocator_malloc_func malloc;
+    cutil_allocator_malloc_func malloc;
 
-	/** Function used for allocating new zero-initialized memory. */
-	cutil_allocator_calloc_func calloc;
+    /** Function used for allocating new zero-initialized memory. */
+    cutil_allocator_calloc_func calloc;
 
-	/** Function used for reallocating a block of memory. */
-	cutil_allocator_realloc_func realloc;
+    /** Function used for reallocating a block of memory. */
+    cutil_allocator_realloc_func realloc;
 
-	/** Function used for freeing a block of memory. */
-	cutil_allocator_free_func free;
-	void* user_data;
+    /** Function used for freeing a block of memory. */
+    cutil_allocator_free_func free;
+    void* user_data;
 } cutil_allocator;
 
 /**

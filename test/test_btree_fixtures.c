@@ -15,7 +15,7 @@ void btree_test_teardown(btree_test* test) {
         cutil_btree_destroy(test->btree);
     }
 
-	cutil_trait_destroy();
+    cutil_trait_destroy();
 }
 
 void btree_expect_test_setup(btree_expect_test* test) {
@@ -31,7 +31,7 @@ void btree_expect_test_teardown(btree_expect_test* test) {
         cutil_btree_destroy(test->expected_btree);
     }
 
-	cutil_trait_destroy();
+    cutil_trait_destroy();
 }
 
 void btree_get_test_setup(btree_get_test* test) {
@@ -46,28 +46,28 @@ void btree_get_test_teardown(btree_get_test* test) {
     CTEST_UTIL_FREE_PTR_ARRAY(test->int_keys, test->count);
     CTEST_UTIL_FREE_PTR_ARRAY(test->int_values, test->count);
 
-	cutil_trait_destroy();
+    cutil_trait_destroy();
 }
 
 void btree_trait_func_test_setup(btree_trait_func_test* test) {
-	test->key_trait_tracker = cutil_test_create_trait_tracker(cutil_trait_cstring());
-	test->val_trait_tracker = cutil_test_create_trait_tracker(cutil_trait_cstring());
+    test->key_trait_tracker = cutil_test_create_trait_tracker(cutil_trait_cstring());
+    test->val_trait_tracker = cutil_test_create_trait_tracker(cutil_trait_cstring());
 
-	test->btree = cutil_btree_create(5, test->key_trait_tracker, test->val_trait_tracker);
+    test->btree = cutil_btree_create(5, test->key_trait_tracker, test->val_trait_tracker);
 }
 
 void btree_trait_func_test_teardown(btree_trait_func_test* test) {
-	if (test->btree) {
-		cutil_btree_destroy(test->btree);
-	}
+    if (test->btree) {
+        cutil_btree_destroy(test->btree);
+    }
 
-	if (test->key_trait_tracker) {
-		cutil_test_destroy_trait_tracker(test->key_trait_tracker);
-	}
+    if (test->key_trait_tracker) {
+        cutil_test_destroy_trait_tracker(test->key_trait_tracker);
+    }
 
-	if (test->val_trait_tracker) {
-		cutil_test_destroy_trait_tracker(test->val_trait_tracker);
-	}
+    if (test->val_trait_tracker) {
+        cutil_test_destroy_trait_tracker(test->val_trait_tracker);
+    }
 
-	cutil_trait_destroy();
+    cutil_trait_destroy();
 }

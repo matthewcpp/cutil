@@ -8,40 +8,40 @@
 #include <string.h>
 
 typedef struct {
-	cutil_heap* heap;
+    cutil_heap* heap;
 } heap_test;
 
 void heap_test_setup(heap_test* test){
-	test->heap = NULL;
+    test->heap = NULL;
 }
 
 void heap_test_teardown(heap_test* test) {
-	if (test->heap) {
-		cutil_heap_destroy(test->heap);
-	}
+    if (test->heap) {
+        cutil_heap_destroy(test->heap);
+    }
 
-	cutil_trait_destroy();
+    cutil_trait_destroy();
 }
 
 typedef struct {
-	cutil_heap* heap;
-	cutil_trait* trait_tracker;
+    cutil_heap* heap;
+    cutil_trait* trait_tracker;
 } heap_trait_func_test;
 
 void heap_trait_func_test_setup(heap_trait_func_test* test) {
-	memset(test, 0, sizeof(heap_trait_func_test));
+    memset(test, 0, sizeof(heap_trait_func_test));
 }
 
 void heap_trait_func_test_teardown(heap_trait_func_test* test) {
-	if (test->heap) {
-		cutil_heap_destroy(test->heap);
-	}
+    if (test->heap) {
+        cutil_heap_destroy(test->heap);
+    }
 
-	if (test->trait_tracker) {
-		cutil_test_destroy_trait_tracker(test->trait_tracker);
-	}
+    if (test->trait_tracker) {
+        cutil_test_destroy_trait_tracker(test->trait_tracker);
+    }
 
-	cutil_trait_destroy();
+    cutil_trait_destroy();
 }
 
 CTEST_FIXTURE(heap, heap_test, heap_test_setup, heap_test_teardown)
@@ -49,31 +49,31 @@ CTEST_FIXTURE(heap_trait_func, heap_trait_func_test, heap_trait_func_test_setup,
 
 /* using a trait with no comparison function will result in no heap being created */
 void create_invalid_trait(heap_test* test) {
-	cutil_trait invalid_trait;
-	memcpy(&invalid_trait, cutil_trait_int(), sizeof(cutil_trait));
-	invalid_trait.compare_func = NULL;
+    cutil_trait invalid_trait;
+    memcpy(&invalid_trait, cutil_trait_int(), sizeof(cutil_trait));
+    invalid_trait.compare_func = NULL;
 
-	test->heap = cutil_heap_create(&invalid_trait);
+    test->heap = cutil_heap_create(&invalid_trait);
 
-	CTEST_ASSERT_PTR_NULL(test->heap);
+    CTEST_ASSERT_PTR_NULL(test->heap);
 }
 
 void create_size_0(heap_test* test) {
-	test->heap = cutil_heap_create(cutil_trait_int());
+    test->heap = cutil_heap_create(cutil_trait_int());
 
-	CTEST_ASSERT_INT_EQ(cutil_heap_size(test->heap), 0);
+    CTEST_ASSERT_INT_EQ(cutil_heap_size(test->heap), 0);
 }
 
 void insert_valid_heap(heap_test* test) {
     int nums[] = {19, 100, 17, 36, 55, 2};
     int i;
 
-	test->heap = cutil_heap_create(cutil_trait_int());
+    test->heap = cutil_heap_create(cutil_trait_int());
 
-	for (i = 0; i < 6; i++) {
-		cutil_heap_insert(test->heap, &nums[i]);
-		CTEST_ASSERT_TRUE(validate_heap(test->heap));
-	}
+    for (i = 0; i < 6; i++) {
+        cutil_heap_insert(test->heap, &nums[i]);
+        CTEST_ASSERT_TRUE(validate_heap(test->heap));
+    }
 }
 
 void insert_increase_size(heap_test* test) {
@@ -115,59 +115,59 @@ void peek_valid_items(heap_test* test) {
 }
 
 void get_heap_trait(heap_test* test) {
-	cutil_trait* trait = cutil_trait_int();
-	test->heap = cutil_heap_create(trait);
+    cutil_trait* trait = cutil_trait_int();
+    test->heap = cutil_heap_create(trait);
 
-	CTEST_ASSERT_PTR_EQ(cutil_heap_trait(test->heap), trait);
+    CTEST_ASSERT_PTR_EQ(cutil_heap_trait(test->heap), trait);
 }
 
 void remove_empty_heap(heap_test* test) {
-	test->heap = cutil_heap_create(cutil_trait_int());
-	CTEST_ASSERT_FALSE(cutil_heap_pop(test->heap));
+    test->heap = cutil_heap_create(cutil_trait_int());
+    CTEST_ASSERT_FALSE(cutil_heap_pop(test->heap));
 }
 
 void remove_one_item(heap_test* test) {
-	int val = 5566;
+    int val = 5566;
 
-	test->heap = cutil_heap_create(cutil_trait_int());
-	cutil_heap_insert(test->heap, &val);
+    test->heap = cutil_heap_create(cutil_trait_int());
+    cutil_heap_insert(test->heap, &val);
 
-	CTEST_ASSERT_TRUE(cutil_heap_pop(test->heap));
-	CTEST_ASSERT_INT_EQ(cutil_heap_size(test->heap), 0);
+    CTEST_ASSERT_TRUE(cutil_heap_pop(test->heap));
+    CTEST_ASSERT_INT_EQ(cutil_heap_size(test->heap), 0);
 }
 
 void pop_all(heap_test* test) {
-	int i, item_count = 5, pop_count = 0;
+    int i, item_count = 5, pop_count = 0;
 
-	test->heap = cutil_heap_create(cutil_trait_int());
+    test->heap = cutil_heap_create(cutil_trait_int());
 
-	for (i = 0; i < item_count; i++) {
-		cutil_heap_insert(test->heap, &i);
-	}
+    for (i = 0; i < item_count; i++) {
+        cutil_heap_insert(test->heap, &i);
+    }
 
-	while (cutil_heap_size(test->heap) > 0) {
-		cutil_heap_pop(test->heap);
-		pop_count += 1;
-	}
+    while (cutil_heap_size(test->heap) > 0) {
+        cutil_heap_pop(test->heap);
+        pop_count += 1;
+    }
 
-	CTEST_ASSERT_INT_EQ(pop_count, item_count);
+    CTEST_ASSERT_INT_EQ(pop_count, item_count);
 }
 
 /* pops a heap that causes the new root to trickle down to the left child */
 void trickle_down_left(heap_test* test) {
-	int start_vals[] = {7, 10, 20, 31, 22, 35};
-	int expected_vals[] = { 10, 22, 20, 31, 35 };
+    int start_vals[] = {7, 10, 20, 31, 22, 35};
+    int expected_vals[] = { 10, 22, 20, 31, 35 };
     int heaps_equal;
 
-	cutil_heap* expected = create_heap_from_array(expected_vals, 5);
-	test->heap = create_heap_from_array(start_vals, 6);
+    cutil_heap* expected = create_heap_from_array(expected_vals, 5);
+    test->heap = create_heap_from_array(start_vals, 6);
 
-	cutil_heap_pop(test->heap);
+    cutil_heap_pop(test->heap);
 
-	heaps_equal = heaps_are_equal(expected, test->heap);
-	cutil_heap_destroy(expected);
+    heaps_equal = heaps_are_equal(expected, test->heap);
+    cutil_heap_destroy(expected);
 
-	CTEST_ASSERT_TRUE(heaps_equal);
+    CTEST_ASSERT_TRUE(heaps_equal);
 }
 
 /* pops a heap that causes the new root to trickle down to the right child */
@@ -188,29 +188,29 @@ void trickle_down_right(heap_test* test) {
 }
 
 void reset_heap(heap_test* test) {
-	int i;
+    int i;
 
-	test->heap = cutil_heap_create(cutil_trait_int());
+    test->heap = cutil_heap_create(cutil_trait_int());
 
-	for (i = 0; i < 0; i++) {
-		cutil_heap_insert(test->heap, &i);
-	}
+    for (i = 0; i < 0; i++) {
+        cutil_heap_insert(test->heap, &i);
+    }
 
-	cutil_heap_reset(test->heap);
-	CTEST_ASSERT_INT_EQ(cutil_heap_size(test->heap), 0);
+    cutil_heap_reset(test->heap);
+    CTEST_ASSERT_INT_EQ(cutil_heap_size(test->heap), 0);
 }
 
 void clear_heap(heap_test* test) {
-	int i;
+    int i;
 
-	test->heap = cutil_heap_create(cutil_trait_int());
+    test->heap = cutil_heap_create(cutil_trait_int());
 
-	for (i = 0; i < 0; i++) {
-		cutil_heap_insert(test->heap, &i);
-	}
+    for (i = 0; i < 0; i++) {
+        cutil_heap_insert(test->heap, &i);
+    }
 
-	cutil_heap_clear(test->heap);
-	CTEST_ASSERT_INT_EQ(cutil_heap_size(test->heap), 0);
+    cutil_heap_clear(test->heap);
+    CTEST_ASSERT_INT_EQ(cutil_heap_size(test->heap), 0);
 }
 
 void insert_calls_copy_constructor(heap_trait_func_test* test) {
@@ -240,24 +240,24 @@ void pop_calls_destructor(heap_trait_func_test* test) {
 }
 
 void add_heap_tests() {
-	CTEST_ADD_TEST_F(heap, create_invalid_trait);
-	CTEST_ADD_TEST_F(heap, create_size_0);
+    CTEST_ADD_TEST_F(heap, create_invalid_trait);
+    CTEST_ADD_TEST_F(heap, create_size_0);
 
-	CTEST_ADD_TEST_F(heap, insert_valid_heap);
-	CTEST_ADD_TEST_F(heap, insert_increase_size);
+    CTEST_ADD_TEST_F(heap, insert_valid_heap);
+    CTEST_ADD_TEST_F(heap, insert_increase_size);
 
     CTEST_ADD_TEST_F(heap, peek_empty_heap);
     CTEST_ADD_TEST_F(heap, peek_valid_items);
 
-	CTEST_ADD_TEST_F(heap, get_heap_trait);
+    CTEST_ADD_TEST_F(heap, get_heap_trait);
 
-	CTEST_ADD_TEST_F(heap, reset_heap);
-	CTEST_ADD_TEST_F(heap, clear_heap);
+    CTEST_ADD_TEST_F(heap, reset_heap);
+    CTEST_ADD_TEST_F(heap, clear_heap);
 
-	CTEST_ADD_TEST_F(heap, remove_empty_heap);
-	CTEST_ADD_TEST_F(heap, remove_one_item);
-	CTEST_ADD_TEST_F(heap, pop_all);
-	CTEST_ADD_TEST_F(heap, trickle_down_left);
+    CTEST_ADD_TEST_F(heap, remove_empty_heap);
+    CTEST_ADD_TEST_F(heap, remove_one_item);
+    CTEST_ADD_TEST_F(heap, pop_all);
+    CTEST_ADD_TEST_F(heap, trickle_down_left);
     CTEST_ADD_TEST_F(heap, trickle_down_right);
 
     CTEST_ADD_TEST_F(heap_trait_func, insert_calls_copy_constructor);
