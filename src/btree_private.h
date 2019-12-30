@@ -8,12 +8,12 @@ This header contains private functions for use by the btree class and its associ
 */
 
 typedef struct _btree_node {
-	struct _btree_node* parent;
-	unsigned int item_count;
-	unsigned int position;
-	void* keys;
-	void* values;
-	struct _btree_node** branches;
+    struct _btree_node* parent;
+    unsigned int item_count;
+    unsigned int position;
+    void* keys;
+    void* values;
+    struct _btree_node** branches;
 } _btree_node;
 
 unsigned int _btree_node_min_item_count(cutil_btree* btree);
@@ -45,17 +45,17 @@ Precondition: index < node->item_count
 void* _node_get_value(_btree_node* node, cutil_trait* trait, size_t index);
 
 struct cutil_btree {
-	_btree_node* root;
-	size_t size;
-	unsigned int order;
-	cutil_trait* key_trait;
-	cutil_trait* value_trait;
+    _btree_node* root;
+    size_t size;
+    unsigned int order;
+    cutil_trait* key_trait;
+    cutil_trait* value_trait;
 };
 
 struct cutil_btree_itr {
-	_btree_node* node;
-	cutil_btree* btree;
-	unsigned int node_pos;
+    _btree_node* node;
+    cutil_btree* btree;
+    unsigned int node_pos;
 };
 
 #endif
