@@ -1,6 +1,7 @@
 #include "cutil/btree.h"
 #include "cutil/allocator.h"
 #include "btree_private.h"
+#include "defs_private.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -277,12 +278,11 @@ void _split_interior_left(cutil_btree* btree,_btree_node* interior_node, _btree_
 }
 
 void _split_interior_node(cutil_btree* btree, _btree_node* interior_node, _btree_node* left_node, _btree_node* right_node, void* key, void* value) {
-    cutil_allocator* allocator = cutil_current_allocator();
     unsigned int insert_position = _node_get_insertion_position(btree, interior_node, key);
     unsigned int pivot_index = _get_pivot_index(btree);
 
-    void* pivot_key = allocator->malloc(btree->key_trait->size, allocator->user_data);
-    void* pivot_value = allocator->malloc(btree->value_trait->size, allocator->user_data);
+    void* pivot_key = alloca_func(btree->key_trait->size);
+    void* pivot_value = alloca_func(btree->value_trait->size);
 
     _btree_node* split_node = _node_create(btree);
 
@@ -322,9 +322,6 @@ void _split_interior_node(cutil_btree* btree, _btree_node* interior_node, _btree
     else{
         _push_up_one_level(btree, interior_node->parent, interior_node, split_node, pivot_key, pivot_value);
     }
-
-    allocator->free(pivot_key, allocator->user_data);
-    allocator->free(pivot_value, allocator->user_data);
 }
 
 void _set_node_child(_btree_node* parent, _btree_node* child, int index) {
@@ -366,13 +363,12 @@ Called when the target node for insertion cannot accommodate a new new item.
 The node can be split in three ways, depending on the relationship between the insertion position and pivot index of the node.
 */
 void _split_leaf_node(cutil_btree* btree, _btree_node* node, void* key, void* value, unsigned int insert_position) {
-    cutil_allocator* allocator = cutil_current_allocator();
     /* get key that will be pushed up (ceil) */
     unsigned int pivot_index = _get_pivot_index(btree);
     _btree_node* new_right_node = _node_create(btree);
 
-    void* pivot_key = allocator->malloc(btree->key_trait->size, allocator->user_data);
-    void* pivot_value = allocator->malloc(btree->value_trait->size, allocator->user_data);
+    void* pivot_key = alloca_func(btree->key_trait->size);
+    void* pivot_value = alloca_func(btree->value_trait->size);
 
     if (insert_position > pivot_index ) {
         memcpy(pivot_key, _node_get_key(node, btree->key_trait, pivot_index), btree->key_trait->size);
@@ -407,9 +403,6 @@ void _split_leaf_node(cutil_btree* btree, _btree_node* node, void* key, void* va
     else {
         _push_up_one_level(btree, node->parent, node, new_right_node, pivot_key, pivot_value);
     }
-
-    allocator->free(pivot_key, allocator->user_data);
-    allocator->free(pivot_value, allocator->user_data);
 }
 
 
