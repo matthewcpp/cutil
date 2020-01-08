@@ -2,6 +2,7 @@ set(cutil_sources
     ../include/cutil/allocator.h allocator_private.h allocator.c
     ../include/cutil/trait.h trait.c
     ../include/cutil/vector.h vector_private.h vector.c
+    ../include/cutil/forward_list.h forward_list.c
     ../include/cutil/list.h list.c
     ../include/cutil/heap.h heap_private.h heap.c
     ../include/cutil/btree.h btree_private.h btree.c btree_itr.c
