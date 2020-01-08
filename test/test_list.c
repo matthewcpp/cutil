@@ -1,5 +1,3 @@
-#include "test_suites.h"
-
 #include "test_util/defs.h"
 #include "test_util/trait_tracker.h"
 
@@ -99,14 +97,9 @@ void push_front_multiple(list_test* test) {
     for (i = 0; i < 5; i++) {
         int inserted_value = i * 10;
         cutil_list_push_front(test->list, &inserted_value);
-    }
+        cutil_list_front(test->list, &actual_value);
 
-    for (i = 4; i >= 0; i--) {
-        int expected_value = (4 - i) * 10;
-        int result = cutil_list_at(test->list, i, &actual_value);
-
-        CTEST_ASSERT_TRUE(result);
-        CTEST_ASSERT_INT_EQ(expected_value, actual_value);
+        CTEST_ASSERT_INT_EQ(inserted_value, actual_value);
     }
 }
 
@@ -134,21 +127,15 @@ void push_back_multiple_list(list_test* test) {
     for (i = 0; i < 5; i++) {
         int inserted_value = i * 10;
         cutil_list_push_back(test->list, &inserted_value);
-    }
 
-    for (i = 0; i < 5; i++) {
-        int expected_value = i * 10;
-        int result = cutil_list_at(test->list, i, &actual_value);
-
-        CTEST_ASSERT_TRUE(result);
-        CTEST_ASSERT_INT_EQ(expected_value, actual_value);
+        cutil_list_back(test->list, &actual_value);
+        CTEST_ASSERT_INT_EQ(actual_value, inserted_value);
     }
 }
 
 /* Popping an item from the back removes the item */
 void pop_back_removes_item(list_test* test) {
     int list_size = 5;
-    int actual_value;
     int i;
 
     test->list = cutil_list_create(cutil_trait_int());
@@ -160,7 +147,6 @@ void pop_back_removes_item(list_test* test) {
     cutil_list_pop_back(test->list);
 
     CTEST_ASSERT_INT_EQ(cutil_list_size(test->list), list_size - 1);
-    CTEST_ASSERT_FALSE(cutil_list_at(test->list, list_size - 1, &actual_value));
 }
 
 /* Popping the only item from the front correctly sets list pointers */
@@ -185,8 +171,6 @@ void pop_back_empty_list(list_test* test) {
 /* Popping an item from the front removes the item */
 void pop_front_removes_item(list_test* test) {
     int list_size = 5;
-    int actual_value = 0;
-    int at_result;
     int i;
 
     test->list = cutil_list_create(cutil_trait_int());
@@ -197,11 +181,6 @@ void pop_front_removes_item(list_test* test) {
 
     cutil_list_pop_front(test->list);
     CTEST_ASSERT_INT_EQ(cutil_list_size(test->list), list_size - 1);
-
-
-    at_result = cutil_list_at(test->list, 0, &actual_value);
-    CTEST_ASSERT_TRUE(at_result);
-    CTEST_ASSERT_INT_EQ(actual_value, 1);
 }
 
 /* Popping the only item from the back correctly sets list pointers */
@@ -270,36 +249,6 @@ void front_pod(list_test* test) {
 
     CTEST_ASSERT_TRUE(get_front_result);
     CTEST_ASSERT_INT_EQ(front_val, ival);
-}
-
-/* Get data from list by index*/
-void at_valid_index(list_test* test) {
-    int item_count = 5, i = 0, actual_value = 0;
-
-    test->list = cutil_list_create(cutil_trait_int());
-    
-    for (i = 0; i < item_count; i++) {
-        cutil_list_push_back(test->list, &i);
-    }
-
-    for (i = 0; i < item_count; i++) {
-        CTEST_ASSERT_TRUE(cutil_list_at(test->list, (size_t)i, &actual_value));
-
-        CTEST_ASSERT_INT_EQ(actual_value, i);
-    }
-}
-
-/* Get data from invalid index returns false*/
-void at_invalid_index(list_test* test) {
-    int item_count = 5, i = 0, actual_value = 0;
-
-    test->list = cutil_list_create(cutil_trait_int());
-
-    for (i = 0; i < item_count; i++) {
-        cutil_list_push_back(test->list, &i);
-    }
-
-    CTEST_ASSERT_FALSE(cutil_list_at(test->list, (size_t)item_count, &actual_value));
 }
 
 /* Getting the front item of an empty list returns false */
@@ -457,9 +406,6 @@ void add_list_tests(){
     CTEST_ADD_TEST_F(list, back_pod);
     CTEST_ADD_TEST_F(list, back_pointer);
     CTEST_ADD_TEST_F(list, back_empty);
-    
-    CTEST_ADD_TEST_F(list, at_valid_index);
-    CTEST_ADD_TEST_F(list, at_invalid_index);
 
     CTEST_ADD_TEST_F(list_trait_func, copy_on_push_back);
     CTEST_ADD_TEST_F(list_trait_func, copy_on_push_front);
