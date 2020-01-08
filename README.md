@@ -7,7 +7,7 @@ This is a small C utility library inspired by the c++ stl that can be used in C 
 
 #### Containers:
 - [btree](https://cutil.readthedocs.io/en/master/btree_8h.html): Self balancing search tree
-- [forward_list](https://cutil.readthedocs.io/en/master/forward_list_8h.html): Binary heap
+- [forward_list](https://cutil.readthedocs.io/en/master/forward__list_8h.html): Single linked list
 - [heap](https://cutil.readthedocs.io/en/master/heap_8h.html): Binary heap
 - [list](https://cutil.readthedocs.io/en/master/list_8h.html): Doubly linked list
 - [vector](https://cutil.readthedocs.io/en/master/vector_8h.html): Dynamic vector
