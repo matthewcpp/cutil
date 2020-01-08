@@ -8,9 +8,9 @@ include(FetchContent)
 project (cutil C)
 
 if ( CMAKE_COMPILER_IS_GNUCC )
-	if (COVERAGE)
-		message(STATUS "Enabling support for code coverage.")
-	endif()
+    if (COVERAGE)
+        message(STATUS "Enabling support for code coverage.")
+    endif()
 endif()
 
 add_subdirectory (src)

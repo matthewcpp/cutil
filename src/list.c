@@ -2,9 +2,7 @@
 #include "cutil/allocator.h"
 
 #include <stddef.h>
-#include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 typedef struct cutil_list_node {
     void* data;
@@ -141,24 +139,6 @@ int cutil_list_back(cutil_list* list, void* out) {
     else {
         return 0;
     }
-}
-
-int cutil_list_at(cutil_list* list, size_t index, void* out) {
-    cutil_list_node* node = list->base.next;
-    size_t current = 0;
-
-    if (index >= list->size) {
-        return 0;
-    }
-
-    while (current < index) {
-        node = node->next;
-        current += 1;
-    }
-
-    memcpy(out, node->data, list->trait->size);
-
-    return 1;
 }
 
 void cutil_list_push_back(cutil_list* list, void* data) {
