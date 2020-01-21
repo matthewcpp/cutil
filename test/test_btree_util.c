@@ -22,9 +22,9 @@ cutil_btree* read_btree_from_file(const char* test_data_name) {
     int path_size;
 
     test_data_dir = cutil_test_get_data_directory();
-    path_size = cutil_snprintf_func(NULL, 0, "%s/%s.txt", test_data_dir, test_data_name);
+    path_size = cutil_snprintf_func(NULL, 0, "%s/btree/%s.txt", test_data_dir, test_data_name);
     path_str = malloc(path_size + 1);
-    sprintf(path_str, "%s/%s.txt", test_data_dir, test_data_name);
+    sprintf(path_str, "%s/btree/%s.txt", test_data_dir, test_data_name);
 
     file = fopen(path_str, "r");
     free(path_str);
