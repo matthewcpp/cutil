@@ -34,7 +34,7 @@ set_compiler_options(cutil_test)
 target_link_libraries(cutil_test cutil ctest)
 target_include_directories(cutil_test PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../src)
 
-set(test_data_dir ${CMAKE_CURRENT_SOURCE_DIR}/btree_data)
+set(test_data_dir ${CMAKE_CURRENT_SOURCE_DIR}/data)
 
 add_test (NAME test_list COMMAND cutil_test "--cutil-test-filter" "list" "--cutil-test-data-dir" ${test_data_dir})
 add_test (NAME test_forward_list COMMAND cutil_test "--cutil-test-filter" "forward_list" "--cutil-test-data-dir" ${test_data_dir})
