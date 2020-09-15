@@ -248,6 +248,129 @@ void get_invalid(vector_test* test) {
     CTEST_ASSERT_FALSE(get_result);
 }
 
+/* Tests that items are updated correctly when inserted in middle of vector */
+void insert_middle(vector_test* test) {
+    int i, result;
+    int test_index = 5, item_count = 10;
+    int actual_val = 50, expected_val;
+    size_t actual_vector_size;
+
+    test->vector = cutil_vector_create(cutil_trait_int());
+    for (i = 0; i < 10; i++) {
+        cutil_vector_push_back(test->vector, &i);
+    }
+
+    result = cutil_vector_insert(test->vector, test_index, &actual_val);
+    CTEST_ASSERT_TRUE(result);
+
+    actual_vector_size = cutil_vector_size(test->vector);
+    CTEST_ASSERT_INT_EQ(actual_vector_size, item_count + 1);
+
+    CTEST_ASSERT_TRUE(cutil_vector_get(test->vector, test_index, &actual_val));
+    CTEST_ASSERT_INT_EQ(actual_val, 50);
+
+    for (i = test_index + 1; i < actual_vector_size; i++) {
+        expected_val = i - 1;
+        cutil_vector_get(test->vector, i, &actual_val);
+        CTEST_ASSERT_INT_EQ(actual_val, expected_val);
+    }
+}
+
+/* Tests that insertion at an invalid index does not modify the vector. */
+void insert_invalid(vector_test* test) {
+    int i, result;
+    int invalid_index = 500, item_count = 10;
+    int actual_val = 50;
+    size_t actual_vector_size;
+
+    test->vector = cutil_vector_create(cutil_trait_int());
+    for (i = 0; i < 10; i++) {
+        cutil_vector_push_back(test->vector, &i);
+    }
+
+    result = cutil_vector_insert(test->vector, invalid_index, &actual_val);
+    CTEST_ASSERT_FALSE(result);
+
+    actual_vector_size = cutil_vector_size(test->vector);
+    CTEST_ASSERT_INT_EQ(actual_vector_size, item_count);
+
+    for (i = 0; i < item_count; i++) {
+        cutil_vector_get(test->vector, i, &actual_val);
+        CTEST_ASSERT_INT_EQ(actual_val, i);
+    }
+}
+
+/* Tests that items are updated correctly when inserted in middle of vector */
+void remove_middle(vector_test* test) {
+    int i, result;
+    int test_index = 0, item_count = 10;
+    int actual_val = 50, expected_val;
+    size_t actual_vector_size;
+
+    test->vector = cutil_vector_create(cutil_trait_int());
+    for (i = 0; i < 10; i++) {
+        cutil_vector_push_back(test->vector, &i);
+    }
+
+    result = cutil_vector_remove(test->vector, test_index);
+    CTEST_ASSERT_TRUE(result);
+
+    actual_vector_size = cutil_vector_size(test->vector);
+    CTEST_ASSERT_INT_EQ(actual_vector_size, item_count - 1);
+
+    for (i = test_index; i < actual_vector_size; i++) {
+        expected_val = i + 1;
+        cutil_vector_get(test->vector, i, &actual_val);
+        CTEST_ASSERT_INT_EQ(actual_val, expected_val);
+    }
+}
+
+/* Tests removal of last item in the vector */
+void remove_last(vector_test* test) {
+    int result;
+    char* test_str1 = "test1";
+    char* test_str2 = "test2";
+    char actual_value[16];
+
+    char* actual_ptr = &actual_value[0];
+
+    test->vector = cutil_vector_create(cutil_trait_cstring());
+    cutil_vector_push_back(test->vector, &test_str1);
+    cutil_vector_push_back(test->vector, &test_str2);
+
+    result = cutil_vector_remove(test->vector, 1);
+    CTEST_ASSERT_TRUE(result);
+
+    CTEST_ASSERT_INT_EQ(cutil_vector_size(test->vector), 1);
+
+    cutil_vector_get(test->vector, 0, &actual_ptr);
+    CTEST_ASSERT_INT_EQ(strcmp(test_str1, actual_ptr), 0);
+}
+
+/* Tests that insertion at an invalid index does not modify the vector. */
+void remove_invalid(vector_test* test) {
+    int i, result;
+    int invalid_index = 500, item_count = 10;
+    int actual_val = 50;
+    size_t actual_vector_size;
+
+    test->vector = cutil_vector_create(cutil_trait_int());
+    for (i = 0; i < 10; i++) {
+        cutil_vector_push_back(test->vector, &i);
+    }
+
+    result = cutil_vector_remove(test->vector, invalid_index);
+    CTEST_ASSERT_FALSE(result);
+
+    actual_vector_size = cutil_vector_size(test->vector);
+    CTEST_ASSERT_INT_EQ(actual_vector_size, item_count);
+
+    for (i = 0; i < item_count; i++) {
+        cutil_vector_get(test->vector, i, &actual_val);
+        CTEST_ASSERT_INT_EQ(actual_val, i);
+    }
+}
+
 /* Tests access to underlying data ptr*/
 void data_ptr_check_null(vector_test* test) {
     int val = 5566;
@@ -535,6 +658,13 @@ void add_vector_tests(){
 
     CTEST_ADD_TEST_F(vector, set_valid);
     CTEST_ADD_TEST_F(vector, set_invalid);
+
+    CTEST_ADD_TEST_F(vector, insert_middle);
+    CTEST_ADD_TEST_F(vector, insert_invalid);
+
+    CTEST_ADD_TEST_F(vector, remove_middle);
+    CTEST_ADD_TEST_F(vector, remove_last);
+    CTEST_ADD_TEST_F(vector, remove_invalid);
 
     CTEST_ADD_TEST_F(vector, clear_empty_vec);
     CTEST_ADD_TEST_F(vector, clear);

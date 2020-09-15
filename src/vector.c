@@ -56,9 +56,8 @@ size_t cutil_vector_size(cutil_vector* vector){
 }
 
 int _grow_vector(cutil_vector* vector) {
-    cutil_allocator* allocator = cutil_current_allocator();
-
     if (vector->size == vector->capacity) {
+        cutil_allocator* allocator = cutil_current_allocator();
         size_t new_capacity = (vector->capacity > 0) ? vector->capacity * 2U : 1U;
         void* new_data = allocator->realloc(vector->data, vector->trait->size * new_capacity, allocator->user_data);
 
@@ -98,10 +97,8 @@ void cutil_vector_push_back(cutil_vector* vector, void* data) {
     }
 }
 
-
 void cutil_vector_pop_back(cutil_vector* vector) {
     if (vector->size > 0) {
-
         if (vector->trait->destroy_func) {
             void* object = _get_object(vector, vector->size - 1);
             vector->trait->destroy_func(object, vector->trait->user_data);
@@ -137,6 +134,43 @@ int cutil_vector_set(cutil_vector* vector, size_t index, void* data) {
     else {
         return 0;
     }
+}
+
+int cutil_vector_insert(cutil_vector* vector, size_t index, void* data) {
+    if (index >= vector->size)
+        return 0;
+
+    if (_grow_vector(vector)) {
+        char* location = _get_object(vector, index);
+        memmove(location + vector->trait->size, location, (vector->size - index) * vector->trait->size);
+        _set_object(vector, location, data);
+        vector->size += 1;
+
+        return 1;
+    }
+
+    return 0;
+}
+
+int cutil_vector_remove(cutil_vector* vector, size_t index) {
+    if (index >= vector->size)
+        return 0;
+
+    if (index == vector->size - 1) {
+        cutil_vector_pop_back(vector);
+    }
+    else {
+        char* location = _get_object(vector, index);
+        if (vector->trait->destroy_func) {
+            vector->trait->destroy_func(location, vector->trait->user_data);
+        }
+
+        memmove(location, location + vector->trait->size, (vector->size - index - 1) * vector->trait->size);
+
+        vector->size -= 1;
+    }
+
+    return 1;
 }
 
 cutil_trait* cutil_vector_trait(cutil_vector* vector) {

@@ -79,6 +79,21 @@ If the vector's trait includes a copy function, it will be called on the new ite
 int cutil_vector_set(cutil_vector* vector, size_t index, void* data);
 
 /**
+Inserts an item at the specified index in the vector.  Existing items will be shifted if necessary.
+\param index index item will be inserted at.
+\param data pointer to data of Type T* where T is the type described by the vector's trait.
+\return non zero value if the index was valid or zero if the index was invalid.
+ */
+int cutil_vector_insert(cutil_vector* vector, size_t index, void* data);
+
+/**
+Removes an item at the specified index in the vector.  Existing items will be shifted if necessary.
+\param index index item will be inserted at.
+\return non zero value if the index was valid or zero if the index was invalid.
+ */
+int cutil_vector_remove(cutil_vector* vector, size_t index);
+
+/**
 Returns pointer to the underlying buffer used by the vector.
 Note that this pointer may be null if the vector's size is zero and no items have ever been inserted in the vector.
 */
