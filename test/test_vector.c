@@ -552,6 +552,22 @@ void copy_on_set(vector_trait_func_test* test) {
     CTEST_ASSERT_INT_EQ(expected_copy_count, cutil_test_trait_tracker_copy_count(test->trait_tracker));
 }
 
+/* Test that the vector copies new data when inserting at an index */
+void copy_on_insert(vector_trait_func_test* test) {
+    int expected_copy_count = 1;
+    char* str = "test";
+
+    test->trait_tracker = cutil_test_create_trait_tracker(cutil_trait_cstring());
+    test->vector = cutil_vector_create(test->trait_tracker);
+
+    cutil_vector_push_back(test->vector, &str);
+    cutil_test_trait_tracker_reset_counts(test->trait_tracker);
+
+    cutil_vector_insert(test->vector, 0, &str);
+
+    CTEST_ASSERT_INT_EQ(expected_copy_count, cutil_test_trait_tracker_copy_count(test->trait_tracker));
+}
+
 /* Tests that the trait's destroy function is called when popping data from the end of the vector. */
 void destroy_on_pop_back(vector_trait_func_test* test) {
     int expected_destroy_count = 10;
@@ -563,6 +579,22 @@ void destroy_on_pop_back(vector_trait_func_test* test) {
 
     while (cutil_vector_size(test->vector) > 0) {
         cutil_vector_pop_back(test->vector);
+    }
+
+    CTEST_ASSERT_INT_EQ(expected_destroy_count, cutil_test_trait_tracker_destroy_count(test->trait_tracker));
+}
+
+/* Tests that the trait's destroy function is called when removing data from middle of the vector. */
+void destroy_on_vec_remove(vector_trait_func_test* test) {
+    int expected_destroy_count = 10;
+
+    test->trait_tracker = cutil_test_create_trait_tracker(cutil_trait_cstring());
+    test->vector = cutil_vector_create(test->trait_tracker);
+
+    _vector_insert_test_strings(test->vector, expected_destroy_count);
+
+    while (cutil_vector_size(test->vector) > 0) {
+        cutil_vector_remove(test->vector, 0);
     }
 
     CTEST_ASSERT_INT_EQ(expected_destroy_count, cutil_test_trait_tracker_destroy_count(test->trait_tracker));
@@ -682,12 +714,14 @@ void add_vector_tests(){
 
     CTEST_ADD_TEST_F(vector_trait_func, copy_on_push);
     CTEST_ADD_TEST_F(vector_trait_func, copy_on_set);
+    CTEST_ADD_TEST_F(vector_trait_func, copy_on_insert);
     CTEST_ADD_TEST_F(vector_trait_func, destroy_on_pop_back);
     CTEST_ADD_TEST_F(vector_trait_func, destroy_on_vec_destroy);
     CTEST_ADD_TEST_F(vector_trait_func, destroy_on_vec_reset);
     CTEST_ADD_TEST_F(vector_trait_func, destroy_on_vec_clear);
     CTEST_ADD_TEST_F(vector_trait_func, destroy_on_vec_set);
     CTEST_ADD_TEST_F(vector_trait_func, destroy_on_vec_set);
+    CTEST_ADD_TEST_F(vector_trait_func, destroy_on_vec_remove);
 
     CTEST_ADD_TEST_F(vector_trait_func, comparison_on_vector_equals);
 }

@@ -103,7 +103,7 @@ void cutil_vector_pop_back(cutil_vector* vector) {
             void* object = _get_object(vector, vector->size - 1);
             vector->trait->destroy_func(object, vector->trait->user_data);
         }
-        
+
         vector->size -= 1;
     }
 }
