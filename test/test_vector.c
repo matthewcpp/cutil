@@ -250,10 +250,10 @@ void get_invalid(vector_test* test) {
 
 /* Tests that items are updated correctly when inserted in middle of vector */
 void insert_middle(vector_test* test) {
-    int i, result;
+    int result;
     int test_index = 5, item_count = 10;
     int actual_val = 50, expected_val;
-    size_t actual_vector_size;
+    size_t i, actual_vector_size;
 
     test->vector = cutil_vector_create(cutil_trait_int());
     for (i = 0; i < 10; i++) {
@@ -270,7 +270,7 @@ void insert_middle(vector_test* test) {
     CTEST_ASSERT_INT_EQ(actual_val, 50);
 
     for (i = test_index + 1; i < actual_vector_size; i++) {
-        expected_val = i - 1;
+        expected_val = (int)i - 1;
         cutil_vector_get(test->vector, i, &actual_val);
         CTEST_ASSERT_INT_EQ(actual_val, expected_val);
     }
@@ -302,10 +302,10 @@ void insert_invalid(vector_test* test) {
 
 /* Tests that items are updated correctly when inserted in middle of vector */
 void remove_middle(vector_test* test) {
-    int i, result;
+    int result;
     int test_index = 0, item_count = 10;
     int actual_val = 50, expected_val;
-    size_t actual_vector_size;
+    size_t i, actual_vector_size;
 
     test->vector = cutil_vector_create(cutil_trait_int());
     for (i = 0; i < 10; i++) {
@@ -319,7 +319,7 @@ void remove_middle(vector_test* test) {
     CTEST_ASSERT_INT_EQ(actual_vector_size, item_count - 1);
 
     for (i = test_index; i < actual_vector_size; i++) {
-        expected_val = i + 1;
+        expected_val = (int)i + 1;
         cutil_vector_get(test->vector, i, &actual_val);
         CTEST_ASSERT_INT_EQ(actual_val, expected_val);
     }
