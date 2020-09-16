@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.11)
 
-SET(COVERAGE OFF CACHE BOOL "Coverage")
+SET(COVERAGE OFF CACHE BOOL "Enable Code Coverage")
+SET(ENABLE_TESTING ON CACHE BOOL "Generate Test Projects")
 
 include (${CMAKE_CURRENT_SOURCE_DIR}/cmake/util_functions.cmake)
 include(FetchContent)
@@ -15,5 +16,7 @@ endif()
 
 add_subdirectory (src)
 
-enable_testing()
-add_subdirectory (test)
+if (ENABLE_TESTING)
+    enable_testing()
+    add_subdirectory (test)
+endif()
