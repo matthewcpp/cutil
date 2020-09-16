@@ -31,6 +31,11 @@ Returns the number of items currently in the vector.
 size_t cutil_vector_size(cutil_vector* vector);
 
 /**
+Returns a non-zero value if the vector is currently empty or 0 if the vector has items in it.
+ */
+int cutil_vector_empty(cutil_vector* vector);
+
+/**
 Clears all items in the vector, setting its size to zero.
 If the vector's trait includes a destroy function, it will be called for every item in the vector.
 This function will not deallocate any memory or adjust the vector's capacity.

@@ -57,6 +57,20 @@ void init_size_0_vec(vector_test* test) {
     CTEST_ASSERT_INT_EQ(cutil_vector_size(test->vector), 0);
 }
 
+/* Empty returns true when no items in vector */
+void empty_vec(vector_test* test) {
+    int val = 50;
+    test->vector = cutil_vector_create(cutil_trait_int());
+
+    CTEST_ASSERT_TRUE(cutil_vector_empty(test->vector));
+
+    cutil_vector_push_back(test->vector, &val);
+    CTEST_ASSERT_FALSE(cutil_vector_empty(test->vector));
+
+    cutil_vector_pop_back(test->vector);
+    CTEST_ASSERT_TRUE(cutil_vector_empty(test->vector));
+}
+
 /* getting vector trait returns correct pointer */
 void get_vector_trait(vector_test* test) {
     test->vector = cutil_vector_create(cutil_trait_int());
@@ -674,6 +688,7 @@ void comparison_on_vector_equals(vector_trait_func_test* test) {
 
 void add_vector_tests(){
     CTEST_ADD_TEST_F(vector, init_size_0_vec);
+    CTEST_ADD_TEST_F(vector, empty_vec);
     CTEST_ADD_TEST_F(vector, get_vector_trait);
 
     CTEST_ADD_TEST_F(vector, push_back_empty);

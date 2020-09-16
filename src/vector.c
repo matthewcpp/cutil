@@ -55,6 +55,10 @@ size_t cutil_vector_size(cutil_vector* vector){
     return vector->size;
 }
 
+int cutil_vector_empty(cutil_vector* vector) {
+    return vector->size == 0;
+}
+
 int _grow_vector(cutil_vector* vector) {
     if (vector->size == vector->capacity) {
         cutil_allocator* allocator = cutil_current_allocator();
