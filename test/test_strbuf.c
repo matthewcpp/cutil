@@ -129,6 +129,50 @@ static void clear_empty_buffer(strbuf_test* test) {
     CTEST_ASSERT_INT_EQ(compare_result, 0);
 }
 
+static void pop_back_empty_buffer(strbuf_test* test) {
+    test->strbuf = cutil_strbuf_create();
+    CTEST_ASSERT_FALSE(cutil_strbuf_pop_back(test->strbuf));
+}
+
+static void pop_back_removes_last_char(strbuf_test* test) {
+    const char* expected_str = "tes";
+    int result;
+
+    test->strbuf = cutil_strbuf_create_with_cstring("test");
+
+    result = cutil_strbuf_pop_back(test->strbuf);
+    CTEST_ASSERT_TRUE(result);
+
+    result = strcmp(expected_str, cutil_strbuf_cstring(test->strbuf));
+    CTEST_ASSERT_INT_EQ(result, 0);
+}
+
+static void set_invalid_char(strbuf_test* test) {
+    const char* test_str = "test";
+    int result;
+
+    test->strbuf = cutil_strbuf_create_with_cstring(test_str);
+
+    result = cutil_strbuf_set_char(test->strbuf, 25, '!');
+    CTEST_ASSERT_FALSE(result);
+
+    result = strcmp(test_str, cutil_strbuf_cstring(test->strbuf));
+    CTEST_ASSERT_INT_EQ(result, 0);
+}
+
+static void set_char_at_valid_index(strbuf_test* test) {
+    const char* expected_str = "Test";
+    int result;
+
+    test->strbuf = cutil_strbuf_create_with_cstring("test");
+
+    result = cutil_strbuf_set_char(test->strbuf, 0, 'T');
+    CTEST_ASSERT_TRUE(result);
+
+    result = strcmp(expected_str, cutil_strbuf_cstring(test->strbuf));
+    CTEST_ASSERT_INT_EQ(result, 0);
+}
+
 void add_strbuf_tests() {
     CTEST_ADD_TEST_F(strbuf, create_empty);
     CTEST_ADD_TEST_F(strbuf, create_with_string);
@@ -138,4 +182,8 @@ void add_strbuf_tests() {
     CTEST_ADD_TEST_F(strbuf, clear_resets_size);
     CTEST_ADD_TEST_F(strbuf, clear_resets_cstring);
     CTEST_ADD_TEST_F(strbuf, clear_empty_buffer);
+    CTEST_ADD_TEST_F(strbuf, pop_back_empty_buffer);
+    CTEST_ADD_TEST_F(strbuf, pop_back_removes_last_char);
+    CTEST_ADD_TEST_F(strbuf, set_invalid_char);
+    CTEST_ADD_TEST_F(strbuf, set_char_at_valid_index);
 }

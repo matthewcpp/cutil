@@ -111,3 +111,22 @@ const char* cutil_strbuf_cstring(cutil_strbuf* strbuf) {
     else
         return "";
 }
+
+int cutil_strbuf_pop_back(cutil_strbuf* strbuf){
+    if (strbuf->size == 0)
+        return 0;
+
+    strbuf->size -= 1;
+    strbuf->buffer[strbuf->size] = '\0';
+
+    return 1;
+}
+
+int cutil_strbuf_set_char(cutil_strbuf* strbuf, size_t index, char ch) {
+    if (index >= strbuf->size)
+        return 0;
+
+    strbuf->buffer[index] = ch;
+
+    return 1;
+}
